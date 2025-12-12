@@ -15,7 +15,18 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Inter var', ...defaultTheme.fontFamily.sans],
+            },
+            colors: {
+                'kotava': {
+                    blue: '#0e437d',
+                    emerald: '#22ae84',
+                    teal: '#1c978a',
+                    ocean: '#178e8b',
+                },
+            },
+            animation: {
+                'pulse': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
             },
         },
     },

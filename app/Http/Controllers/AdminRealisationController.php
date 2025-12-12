@@ -1,5 +1,8 @@
 <?php
 
+
+// app/Http/Controllers/AdminRealisationController.php
+
 namespace App\Http\Controllers;
 
 use App\Models\Realisation;
@@ -15,7 +18,6 @@ class AdminRealisationController extends Controller
 
     public function index()
     {
-        // Affiche toutes les réalisations
         $realisations = Realisation::all();
         return Inertia::render('Admin/Realisations', [
             'realisations' => $realisations
@@ -24,18 +26,25 @@ class AdminRealisationController extends Controller
 
     public function create()
     {
-        // Affiche le formulaire de création de réalisation
         return Inertia::render('Admin/CreateRealisation');
     }
 
     public function store(Request $request)
     {
-        // Valide et crée une nouvelle réalisation
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'slug' => 'required|unique:realisations',
             'client' => 'required|string|max:255',
-            'description' => 'required|string', // Ajouter d'autres validations nécessaires
+            'sector' => 'required|string|max:255',
+            'country' => 'required|string|max:255',
+            'type' => 'required|string|max:255',
+            'completion_date' => 'required|date',
+            'summary' => 'required|string',
+            'description' => 'required|string',
+            'context' => 'required|string',
+            'solution' => 'required|string',
+            'results' => 'required|string',
+            'media' => 'nullable|array',
         ]);
 
         Realisation::create($validated);
@@ -44,7 +53,6 @@ class AdminRealisationController extends Controller
 
     public function edit(Realisation $realisation)
     {
-        // Affiche le formulaire d'édition d'une réalisation
         return Inertia::render('Admin/EditRealisation', [
             'realisation' => $realisation
         ]);
@@ -52,12 +60,20 @@ class AdminRealisationController extends Controller
 
     public function update(Request $request, Realisation $realisation)
     {
-        // Valide et met à jour une réalisation existante
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'slug' => 'required|unique:realisations,slug,' . $realisation->id,
             'client' => 'required|string|max:255',
-            'description' => 'required|string', // Ajouter d'autres validations nécessaires
+            'sector' => 'required|string|max:255',
+            'country' => 'required|string|max:255',
+            'type' => 'required|string|max:255',
+            'completion_date' => 'required|date',
+            'summary' => 'required|string',
+            'description' => 'required|string',
+            'context' => 'required|string',
+            'solution' => 'required|string',
+            'results' => 'required|string',
+            'media' => 'nullable|array',
         ]);
 
         $realisation->update($validated);
@@ -66,7 +82,6 @@ class AdminRealisationController extends Controller
 
     public function destroy(Realisation $realisation)
     {
-        // Supprime une réalisation
         $realisation->delete();
         return redirect()->route('admin.realisations.index');
     }

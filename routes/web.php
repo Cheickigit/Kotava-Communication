@@ -1,72 +1,39 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\AdminRealisationController;
-use App\Http\Controllers\AdminActualiteController;
-use Inertia\Inertia;
-use Illuminate\Foundation\Application;
+use App\Http\Controllers\HomeController;
 
-// Page d'accueil
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+// Page d'accueil publique
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Routes dashboard standard pour les utilisateurs connectés
-Route::middleware(['auth:sanctum', 'verified'])->group(function () {
-    // Redirection basée sur le rôle
+// Pages publiques à créer plus tard
+Route::get('/services', function () {
+    return Inertia::render('Services');
+})->name('services');
+
+Route::get('/portfolio', function () {
+    return Inertia::render('Portfolio/Index');
+})->name('portfolio');
+
+Route::get('/blog', function () {
+    return Inertia::render('Blog/Index');
+})->name('blog');
+
+Route::get('/about', function () {
+    return Inertia::render('About');
+})->name('about');
+
+Route::get('/contact', function () {
+    return Inertia::render('Contact');
+})->name('contact');
+
+// Dashboard (protégé par auth)
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+])->group(function () {
     Route::get('/dashboard', function () {
-        $user = auth()->user();
-
-        // Si admin, rediriger vers le dashboard admin
-        if ($user->hasRole('admin')) {
-            return redirect()->route('admin.dashboard');
-        }
-
-        // Si manager
-        if ($user->hasRole('manager')) {
-            return redirect()->route('manager.dashboard');
-        }
-
-        // Dashboard par défaut pour les employés
-        return Inertia::render('Dashboard', [
-            'stats' => [
-                'userRole' => $user->getRoleNames()->first() ?? 'Aucun rôle',
-                'permissionsCount' => $user->getAllPermissions()->count(),
-            ]
-        ]);
+        return Inertia::render('Dashboard');
     })->name('dashboard');
-});
-
-// Routes Admin
-Route::middleware(['auth:sanctum', 'verified', 'role:admin'])->prefix('admin')->group(function () {
-
-    // Route pour le dashboard admin
-    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
-
-    // Routes pour les réalisations (portfolio)
-    Route::resource('realisations', AdminRealisationController::class)
-        ->except(['show']); // On gère le show avec une route dédiée dans le controller si nécessaire
-
-    // Routes pour les actualités (blog / news)
-    Route::resource('actualites', AdminActualiteController::class)
-        ->except(['show']); // On gère le show avec une route dédiée dans le controller si nécessaire
-});
-
-// Routes Manager (optionnel)
-Route::middleware(['auth:sanctum', 'verified', 'role:manager'])->group(function () {
-    Route::get('/manager/dashboard', function () {
-        $user = auth()->user();
-        return Inertia::render('Manager/Dashboard', [
-            'stats' => [
-                'userRole' => $user->getRoleNames()->first(),
-                'permissionsCount' => $user->getAllPermissions()->count(),
-            ]
-        ]);
-    })->name('manager.dashboard');
 });
