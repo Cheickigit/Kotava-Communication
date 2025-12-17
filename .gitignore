@@ -19,6 +19,11 @@
 /storage/*.key
 /storage/pail
 /vendor
+/node_modules
+/vue/node_modules
+/vendor
+/public/build
+
 Homestead.json
 Homestead.yaml
 Thumbs.db
