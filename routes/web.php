@@ -2,10 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ContactController;
-use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\RealisationController as AdminRealisationController;
 use App\Http\Controllers\Admin\ActualiteController as AdminActualiteController;
 use App\Http\Controllers\Admin\TeamController;
@@ -20,10 +21,24 @@ use Inertia\Inertia;
 // Page d'accueil
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Pages institutionnelles
-Route::get('/services', function () {
-    return Inertia::render('Services');
-})->name('services');
+// Services avec contrôleur
+Route::controller(ServiceController::class)->group(function () {
+    // Page Services principale
+    Route::get('/services', 'index')->name('services');
+
+    // Pages détaillées pour chaque service
+    Route::get('/services/strategie-conseil', 'strategie')->name('services.strategie');
+    Route::get('/services/branding-design', 'branding')->name('services.branding');
+    Route::get('/services/digital-web', 'digital')->name('services.digital');
+    Route::get('/services/audiovisuel', 'audiovisuel')->name('services.audiovisuel');
+    Route::get('/services/evenementiel', 'evenementiel')->name('services.evenementiel');
+    Route::get('/services/social-media', 'social')->name('services.social');
+});
+
+// Team
+Route::get('/team', function () {
+    return Inertia::render('Team');
+})->name('team');
 
 // Portfolio avec contrôleur
 Route::controller(PortfolioController::class)->group(function () {
@@ -32,7 +47,7 @@ Route::controller(PortfolioController::class)->group(function () {
     Route::get('/api/portfolio/filter', 'filter')->name('api.portfolio.filter');
 });
 
-// Blog
+// Blog avec contrôleur
 Route::controller(BlogController::class)->group(function () {
     Route::get('/blog', 'index')->name('blog');
     Route::get('/blog/{slug}', 'show')->name('blog.show');
@@ -43,7 +58,7 @@ Route::get('/about', function () {
     return Inertia::render('About');
 })->name('about');
 
-// Contact
+// Contact avec contrôleur
 Route::controller(ContactController::class)->group(function () {
     Route::get('/contact', 'index')->name('contact');
     Route::post('/contact', 'store')->name('contact.store');
@@ -55,14 +70,19 @@ Route::controller(ContactController::class)->group(function () {
 |----------------------------------------------------------------------
 */
 
+// Route principale du dashboard (alias pour Jetstream/Inertia)
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+])->get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+// Groupe des routes admin avec prefix
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
 ])->prefix('dashboard')->name('dashboard.')->group(function () {
-
-    // Dashboard principal
-    Route::get('/', [AdminDashboardController::class, 'index'])->name('index');
 
     // Module Réalisations
     Route::prefix('realisations')->name('realisations.')->controller(AdminRealisationController::class)->group(function () {
@@ -112,7 +132,7 @@ Route::middleware([
         })->name('index');
 
         // API pour les statistiques
-        Route::get('/stats', [AdminDashboardController::class, 'getStats'])->name('stats');
+        Route::get('/stats', [DashboardController::class, 'getStats'])->name('stats');
     });
 
     // Module Paramètres
@@ -132,8 +152,8 @@ Route::middleware([
 
     // Routes API pour le dashboard
     Route::prefix('api')->name('api.')->group(function () {
-        Route::get('/stats', [AdminDashboardController::class, 'getStats'])->name('stats');
-        Route::get('/recent-activities', [AdminDashboardController::class, 'getRecentActivities'])->name('recent-activities');
+        Route::get('/stats', [DashboardController::class, 'getStats'])->name('stats');
+        Route::get('/recent-activities', [DashboardController::class, 'getRecentActivities'])->name('recent-activities');
         Route::get('/project-stats', [AdminRealisationController::class, 'getProjectStats'])->name('project-stats');
     });
 });
@@ -155,6 +175,9 @@ Route::prefix('api')->name('api.')->group(function () {
 
     // API Contact
     Route::post('/contact', [ContactController::class, 'apiStore'])->name('contact.store');
+
+    // API Services
+    Route::get('/services', [ServiceController::class, 'apiIndex'])->name('services.index');
 });
 
 /*

@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\Realisation;
 use App\Models\Actualite;
-use App\Models\Lead;
+use App\Models\User;
+// use App\Models\Lead; // Commenté car le modèle n'existe pas encore
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -20,243 +21,201 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $teamId = $user->currentTeam->id ?? null;
 
-        // Statistiques principales
+        // Statistiques principales (sans team_id)
         $stats = [
-            'total_realisations' => Realisation::when($teamId, fn($q) => $q->where('team_id', $teamId))->count(),
-            'total_actualites' => Actualite::when($teamId, fn($q) => $q->where('team_id', $teamId))->count(),
-            'total_users' => User::when($teamId, fn($q) => $q->whereHas('teams', fn($q2) => $q2->where('teams.id', $teamId)))->count(),
-            'total_leads' => Lead::when($teamId, fn($q) => $q->where('team_id', $teamId))->count(),
-            'realisations_publiees' => Realisation::when($teamId, fn($q) => $q->where('team_id', $teamId))->where('published', true)->count(),
-            'actualites_publiees' => Actualite::when($teamId, fn($q) => $q->where('team_id', $teamId))->where('statut', 'publié')->count(),
-            'realisations_en_cours' => Realisation::when($teamId, fn($q) => $q->where('team_id', $teamId))->where('status', 'en_cours')->count(),
-            'leads_nouveaux' => Lead::when($teamId, fn($q) => $q->where('team_id', $teamId))->where('status', 'nouveau')->count(),
+            'total_realisations' => Realisation::count(),
+            'total_actualites' => Actualite::count(),
+            'total_users' => User::count(),
+            'total_leads' => 0,
+            'realisations_publiees' => Realisation::where('published', true)->count(),
+            'actualites_publiees' => Actualite::where('statut', 'publié')->count(),
+            'realisations_en_cours' => 0,
+            'leads_nouveaux' => 0,
+            // Données pour le Dashboard.vue existant
+            'totalUsers' => User::count(),
+            'adminCount' => User::where('role', 'admin')->count(),
+            'managerCount' => User::where('role', 'manager')->count(),
+            'employeeCount' => User::where('role', 'employee')->count(),
+            'userRole' => $user->role ?? 'admin',
         ];
 
         // Réalisations récentes
-        $recentRealisations = Realisation::when($teamId, fn($q) => $q->where('team_id', $teamId))
-            ->with('team')
+        $recentRealisations = Realisation::with('user')
             ->latest()
             ->take(5)
             ->get()
             ->map(function ($realisation) {
                 return [
                     'id' => $realisation->id,
-                    'title' => $realisation->title,
-                    'client' => $realisation->client,
-                    'status' => $realisation->status,
-                    'category' => $realisation->category,
+                    'titre' => $realisation->titre ?? $realisation->title ?? 'Sans titre',
+                    'client' => $realisation->client ?? 'N/A',
+                    // 'status' => $realisation->status ?? 'N/A', // Colonne n'existe pas
+                    'published' => $realisation->published ?? false,
                     'created_at' => $realisation->created_at->format('d/m/Y'),
-                    'team' => $realisation->team?->name,
+                    'user' => $realisation->user ? [
+                        'name' => $realisation->user->name,
+                    ] : null,
                 ];
             });
 
         // Actualités récentes
-        $recentActualites = Actualite::when($teamId, fn($q) => $q->where('team_id', $teamId))
-            ->latest('date_publication')
+        $recentActualites = Actualite::with('user')
+            ->latest()
             ->take(5)
             ->get()
             ->map(function ($actualite) {
                 return [
                     'id' => $actualite->id,
-                    'title' => $actualite->title,
-                    'statut' => $actualite->statut,
-                    'date_publication' => $actualite->date_publication?->format('d/m/Y'),
-                    'category' => $actualite->category,
+                    'titre' => $actualite->titre ?? $actualite->title ?? 'Sans titre',
+                    'statut' => $actualite->statut ?? 'brouillon',
+                    'created_at' => $actualite->created_at->format('d/m/Y'),
+                    'user' => $actualite->user ? [
+                        'name' => $actualite->user->name,
+                    ] : null,
                 ];
             });
 
-        // Utilisateurs récents
-        $recentUsers = User::when($teamId, fn($q) => $q->whereHas('teams', fn($q2) => $q2->where('teams.id', $teamId)))
-            ->with(['teams', 'roles'])
-            ->latest()
+        // Utilisateurs récents (pour le Dashboard.vue)
+        $recentUsers = User::latest()
             ->take(5)
             ->get()
-            ->map(function ($user) {
+            ->map(function ($u) {
                 return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'role' => $user->roles->first()?->name ?? 'Aucun',
-                    'created_at' => $user->created_at->format('d/m/Y'),
-                    'teams' => $user->teams->pluck('name')->join(', '),
+                    'id' => $u->id,
+                    'name' => $u->name,
+                    'email' => $u->email,
+                    'role' => $u->role ?? 'employee',
+                    'created_at' => $u->created_at->format('d/m/Y'),
                 ];
             });
 
-        // Leads récents
-        $recentLeads = Lead::when($teamId, fn($q) => $q->where('team_id', $teamId))
-            ->latest()
-            ->take(5)
-            ->get()
-            ->map(function ($lead) {
-                return [
-                    'id' => $lead->id,
-                    'name' => $lead->name,
-                    'email' => $lead->email,
-                    'status' => $lead->status,
-                    'service' => $lead->service,
-                    'created_at' => $lead->created_at->format('d/m/Y H:i'),
-                ];
-            });
+        // Permissions (pour le Dashboard.vue)
+        $permissions = [
+            'Gérer les utilisateurs',
+            'Gérer les réalisations',
+            'Gérer les actualités',
+            'Voir les statistiques',
+            'Gérer les paramètres',
+        ];
 
-        // Performance mensuelle
-        $monthlyPerformance = $this->getMonthlyPerformance($teamId);
-
-        // Statistiques par catégorie
-        $categoryStats = Realisation::when($teamId, fn($q) => $q->where('team_id', $teamId))
-            ->selectRaw('category, COUNT(*) as count')
-            ->where('published', true)
-            ->groupBy('category')
-            ->get()
-            ->pluck('count', 'category');
+        // Statistiques mensuelles pour les graphiques
+        $monthlyStats = $this->getMonthlyStats();
 
         return Inertia::render('Admin/Dashboard/Index', [
             'stats' => $stats,
             'recentRealisations' => $recentRealisations,
             'recentActualites' => $recentActualites,
             'recentUsers' => $recentUsers,
-            'recentLeads' => $recentLeads,
-            'monthlyPerformance' => $monthlyPerformance,
-            'categoryStats' => $categoryStats,
-            'userRole' => $user->roles->first()?->name ?? 'Utilisateur',
+            'permissions' => $permissions,
+            'monthlyStats' => $monthlyStats,
         ]);
     }
 
     /**
-     * API pour les statistiques du dashboard
+     * Récupère les statistiques (API)
      */
-    public function getStats(Request $request)
+    public function getStats()
     {
-        $user = Auth::user();
-        $teamId = $user->currentTeam->id ?? null;
-
-        $period = $request->get('period', 'monthly'); // daily, weekly, monthly, yearly
-
-        $stats = $this->getPerformanceStats($teamId, $period);
-
         return response()->json([
-            'success' => true,
-            'data' => $stats,
-            'period' => $period,
+            'total_realisations' => Realisation::count(),
+            'total_actualites' => Actualite::count(),
+            'total_users' => User::count(),
+            'total_leads' => 0, // Lead::count(),
+            'realisations_publiees' => Realisation::where('published', true)->count(),
+            'actualites_publiees' => Actualite::where('statut', 'publié')->count(),
+            'leads_nouveaux' => 0, // Lead::where('status', 'nouveau')->count(),
         ]);
     }
 
     /**
-     * Récupère les activités récentes
+     * Récupère les activités récentes (API)
      */
-    public function getRecentActivities(Request $request)
+    public function getRecentActivities()
     {
-        $user = Auth::user();
-        $teamId = $user->currentTeam->id ?? null;
+        $activities = collect();
 
-        // Combiner les activités de différents modèles
-        $activities = [];
-
-        // Réalisations récentes
-        $realisations = Realisation::when($teamId, fn($q) => $q->where('team_id', $teamId))
-            ->where('created_at', '>=', now()->subDays(7))
+        // Dernières réalisations
+        $realisations = Realisation::with('user')
             ->latest()
-            ->take(10)
+            ->take(3)
             ->get()
             ->map(function ($item) {
                 return [
                     'type' => 'realisation',
-                    'title' => $item->title,
                     'action' => 'créée',
+                    'title' => $item->titre,
+                    'user' => $item->user->name ?? 'Système',
                     'date' => $item->created_at,
-                    'user' => 'Système',
+                    'formatted_date' => $item->created_at->diffForHumans(),
                 ];
             });
 
-        // Actualités récentes
-        $actualites = Actualite::when($teamId, fn($q) => $q->where('team_id', $teamId))
-            ->where('created_at', '>=', now()->subDays(7))
+        // Dernières actualités
+        $actualites = Actualite::with('user')
             ->latest()
-            ->take(10)
+            ->take(3)
             ->get()
             ->map(function ($item) {
                 return [
                     'type' => 'actualite',
-                    'title' => $item->title,
-                    'action' => $item->statut === 'publié' ? 'publiée' : 'modifiée',
-                    'date' => $item->updated_at,
-                    'user' => 'Système',
+                    'action' => 'publiée',
+                    'title' => $item->titre,
+                    'user' => $item->user->name ?? 'Système',
+                    'date' => $item->created_at,
+                    'formatted_date' => $item->created_at->diffForHumans(),
                 ];
             });
 
-        // Combiner et trier
-        $activities = collect([...$realisations, ...$actualites])
+        // Derniers leads (désactivé temporairement)
+        /*
+        $leads = Lead::latest()
+            ->take(3)
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'type' => 'lead',
+                    'action' => 'reçu',
+                    'title' => "Contact de {$item->nom}",
+                    'user' => 'Site Web',
+                    'date' => $item->created_at,
+                    'formatted_date' => $item->created_at->diffForHumans(),
+                ];
+            });
+        */
+
+        // Fusionner et trier par date
+        $activities = $activities
+            ->merge($realisations)
+            ->merge($actualites)
+            // ->merge($leads) // Désactivé
             ->sortByDesc('date')
-            ->take(15)
+            ->take(10)
             ->values();
 
-        return response()->json([
-            'success' => true,
-            'activities' => $activities,
-        ]);
+        return response()->json($activities);
     }
 
     /**
-     * Helper: Performance mensuelle
+     * Statistiques mensuelles pour les graphiques
      */
-    private function getMonthlyPerformance($teamId)
+    private function getMonthlyStats()
     {
-        $performance = [];
-
+        $months = [];
         for ($i = 5; $i >= 0; $i--) {
-            $date = now()->subMonths($i);
-            $monthStart = $date->copy()->startOfMonth();
-            $monthEnd = $date->copy()->endOfMonth();
-
-            // Projets créés ce mois
-            $projects = Realisation::when($teamId, fn($q) => $q->where('team_id', $teamId))
-                ->whereBetween('created_at', [$monthStart, $monthEnd])
-                ->count();
-
-            // Chiffre d'affaires ce mois
-            $revenue = Realisation::when($teamId, fn($q) => $q->where('team_id', $teamId))
-                ->whereBetween('created_at', [$monthStart, $monthEnd])
-                ->sum('budget');
-
-            $performance[] = [
-                'month' => $date->format('M'),
-                'year' => $date->format('Y'),
-                'projects' => $projects,
-                'revenue' => $revenue,
+            $date = Carbon::now()->subMonths($i);
+            $months[] = [
+                'month' => $date->format('M Y'),
+                'realisations' => Realisation::whereYear('created_at', $date->year)
+                    ->whereMonth('created_at', $date->month)
+                    ->count(),
+                'actualites' => Actualite::whereYear('created_at', $date->year)
+                    ->whereMonth('created_at', $date->month)
+                    ->count(),
+                'leads' => 0, // Lead::whereYear... désactivé
             ];
         }
 
-        return $performance;
-    }
-
-    /**
-     * Helper: Statistiques de performance
-     */
-    private function getPerformanceStats($teamId, $period = 'monthly')
-    {
-        $now = now();
-        $startDate = match($period) {
-            'daily' => $now->copy()->subDay(),
-            'weekly' => $now->copy()->subWeek(),
-            'monthly' => $now->copy()->subMonth(),
-            'yearly' => $now->copy()->subYear(),
-            default => $now->copy()->subMonth(),
-        };
-
-        return [
-            'new_projects' => Realisation::when($teamId, fn($q) => $q->where('team_id', $teamId))
-                ->whereBetween('created_at', [$startDate, $now])
-                ->count(),
-            'new_articles' => Actualite::when($teamId, fn($q) => $q->where('team_id', $teamId))
-                ->whereBetween('created_at', [$startDate, $now])
-                ->count(),
-            'new_leads' => Lead::when($teamId, fn($q) => $q->where('team_id', $teamId))
-                ->whereBetween('created_at', [$startDate, $now])
-                ->count(),
-            'revenue' => Realisation::when($teamId, fn($q) => $q->where('team_id', $teamId))
-                ->whereBetween('created_at', [$startDate, $now])
-                ->sum('budget'),
-        ];
+        return $months;
     }
 }

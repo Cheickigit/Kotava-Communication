@@ -60,8 +60,8 @@ class User extends Authenticatable
     /**
      * Accesseur pour le current_team_id
      */
-    public function getCurrentTeamIdAttribute()
-    {
-        return $this->currentTeam->id ?? null;
-    }
+    //public function getCurrentTeamIdAttribute()
+    //{
+   //     return $this->currentTeam->id ?? null;
+    //}
 }

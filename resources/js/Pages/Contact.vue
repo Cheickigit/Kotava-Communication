@@ -1,6 +1,24 @@
 <script setup>
 import { Head, useForm } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/GuestLayout.vue';
+import {
+  Sparkles,
+  ChevronRight,
+  Phone,
+  Mail,
+  Globe,
+  MapPin,
+  MessageSquare,
+  Send,
+  Users,
+  Target,
+  Award,
+  Heart,
+  Zap,
+  Calendar,
+  BookOpen
+} from 'lucide-vue-next';
+import { ref, onMounted } from 'vue';
 
 const form = useForm({
   name: '',
@@ -10,202 +28,548 @@ const form = useForm({
   message: ''
 });
 
-const submit = () => {
-  // Pour l'instant, on affiche juste un message
-  alert('Formulaire soumis ! (Vous pouvez configurer l\'envoi d\'email plus tard)');
-  form.reset();
-};
-
 const contactInfo = [
   {
-    icon: 'email',
+    icon: Mail,
     title: 'Email',
     content: 'direction@kotavacommunication.com',
-    link: 'mailto:direction@kotavacommunication.com'
+    link: 'mailto:direction@kotavacommunication.com',
+    color: 'from-[#0e437d] to-[#22ae84]',
+    description: 'Réponse sous 24h'
   },
   {
-    icon: 'phone',
+    icon: Phone,
     title: 'Téléphone',
-    content: '+33 70 89 99 00 / +216 56 455 743',
-    link: 'tel:+33708999000'
+    content: '+33 70 89 99 00',
+    link: 'tel:+33708999900',
+    color: 'from-[#22ae84] to-[#1c978a]',
+    description: 'Du lundi au vendredi, 9h-18h'
   },
   {
-    icon: 'website',
+    icon: Globe,
     title: 'Site web',
     content: 'www.kotavacommunication.com',
     link: 'https://www.kotavacommunication.com',
-    target: '_blank'
+    target: '_blank',
+    color: 'from-[#1c978a] to-[#178e8b]',
+    description: 'Découvrez nos services'
   },
   {
-    icon: 'location',
-    title: 'Adresse',
+    icon: MapPin,
+    title: 'Localisation',
     content: 'Porto-Novo, Bénin',
-    link: null
+    link: null,
+    color: 'from-[#178e8b] to-[#0e437d]',
+    description: 'Service mondial disponible'
   }
 ];
+
+const socialMedia = [
+  {
+    name: 'Facebook',
+    icon: 'FB',
+    link: '#',
+    color: 'hover:bg-[#1877F2] hover:text-white'
+  },
+  {
+    name: 'Twitter',
+    icon: 'TW',
+    link: '#',
+    color: 'hover:bg-[#1DA1F2] hover:text-white'
+  },
+  {
+    name: 'LinkedIn',
+    icon: 'IN',
+    link: '#',
+    color: 'hover:bg-[#0A66C2] hover:text-white'
+  },
+  {
+    name: 'Instagram',
+    icon: 'IG',
+    link: '#',
+    color: 'hover:bg-gradient-to-br hover:from-[#833AB4] hover:via-[#FD1D1D] hover:to-[#FCAF45] hover:text-white'
+  }
+];
+
+const subjects = [
+  { value: '', label: 'Choisir un sujet' },
+  { value: 'strategy', label: 'Stratégie & Conseil' },
+  { value: 'branding', label: 'Branding & Design' },
+  { value: 'web', label: 'Développement Web' },
+  { value: 'marketing', label: 'Marketing Digital' },
+  { value: 'video', label: 'Production Audiovisuel' },
+  { value: 'event', label: 'Événementiel & RP' },
+  { value: 'other', label: 'Autre' }
+];
+
+const stats = ref([
+  { value: '24h', label: 'Délai de réponse', icon: Calendar },
+  { value: '100%', label: 'Projets personnalisés', icon: Target },
+  { value: '95%', label: 'Clients satisfaits', icon: Heart },
+  { value: '7j', label: 'Proposition sous', icon: Zap }
+]);
+
+onMounted(() => {
+  // Animation au scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animate-in');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+  // Créer des particules
+  createParticles();
+});
+
+const createParticles = () => {
+  const heroSection = document.querySelector('.hero-section');
+  if (!heroSection) return;
+
+  for (let i = 0; i < 15; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    particle.style.left = `${Math.random() * 100}%`;
+    particle.style.top = `${Math.random() * 100}%`;
+    particle.style.animationDelay = `${Math.random() * 5}s`;
+    particle.style.animationDuration = `${10 + Math.random() * 20}s`;
+    heroSection.appendChild(particle);
+  }
+};
+
+const submit = () => {
+  // Simulation d'envoi avec animation
+  const submitBtn = document.querySelector('#submit-btn');
+  const originalText = submitBtn.innerHTML;
+
+  // Animation de soumission
+  submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Envoi en cours...';
+  submitBtn.disabled = true;
+
+  // Simulation d'envoi
+  setTimeout(() => {
+    submitBtn.innerHTML = '<i class="fas fa-check mr-2"></i> Message envoyé !';
+    submitBtn.classList.remove('from-[#FFD166]', 'to-[#FFB347]');
+    submitBtn.classList.add('bg-green-500', 'text-white');
+
+    // Réinitialiser après 3 secondes
+    setTimeout(() => {
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('bg-green-500', 'text-white');
+      submitBtn.classList.add('from-[#FFD166]', 'to-[#FFB347]');
+      form.reset();
+    }, 3000);
+  }, 1500);
+};
 </script>
 
 <template>
   <Head title="Contact - KOTAVA Communication" />
 
   <MainLayout>
-    <!-- Hero Section -->
-    <section class="bg-gradient-to-br from-teal-600 to-emerald-600 py-20">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h1 class="text-4xl md:text-6xl font-bold text-white mb-6">
-          Contactez <span class="text-emerald-200">KOTAVA</span>
+    <!-- Hero Section avec animations -->
+    <section class="relative py-20 bg-gradient-to-br from-[#0e437d] via-[#1a6ca3] to-[#22ae84] overflow-hidden min-h-[60vh] flex items-center hero-section animate-on-scroll">
+      <!-- Animation background -->
+      <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute top-20 left-10 w-64 h-64 bg-[#FFD166] rounded-full opacity-20 animate-pulse animation-delay-1000"></div>
+        <div class="absolute bottom-20 right-10 w-80 h-80 bg-[#EF476F] rounded-full opacity-15 animate-pulse animation-delay-2000"></div>
+        <div class="absolute top-1/2 left-1/4 w-48 h-48 bg-[#06D6A0] rounded-full opacity-20 animate-pulse"></div>
+
+        <!-- Effet shimmer -->
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer"></div>
+      </div>
+
+      <div class="relative max-w-7xl mx-auto px-6 text-center">
+        <!-- Badge animé -->
+        <div class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/20 backdrop-blur-lg text-white mb-8 text-sm font-medium animate-bounce-subtle">
+          <MessageSquare :size="16" />
+          <span>Parlez-nous de votre projet</span>
+        </div>
+
+        <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 animate-slide-up">
+          Contactez <span class="text-[#FFD166] relative">
+            KOTAVA
+            <span class="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-[#FFD166] to-transparent animate-underline"></span>
+          </span>
         </h1>
-        <p class="text-xl text-white/90 max-w-3xl mx-auto">
-          Discutons de votre projet et créons ensemble quelque chose d'extraordinaire
+
+        <p class="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed mb-10 animate-slide-up animation-delay-200">
+          Discutons de votre projet et créons ensemble quelque chose d'<span class="text-[#FFD166] font-semibold">extraordinaire</span>
         </p>
       </div>
     </section>
 
+    <!-- Statistiques de contact -->
+    <section class="py-16 bg-gradient-to-r from-white via-gray-50 to-white animate-on-scroll">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div v-for="(stat, index) in stats" :key="index"
+               class="text-center p-6 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group">
+            <div class="flex justify-center mb-4">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0e437d]/10 to-[#22ae84]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <component :is="stat.icon" :size="24" class="text-[#0e437d]" />
+              </div>
+            </div>
+            <div class="text-4xl font-bold text-[#0e437d] mb-2">{{ stat.value }}</div>
+            <div class="text-gray-600 font-medium">{{ stat.label }}</div>
+            <div class="w-12 h-1 bg-gradient-to-r from-[#0e437d] to-[#22ae84] mx-auto mt-3 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Contact Section -->
-    <section class="py-20 bg-gray-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section class="py-20 bg-white animate-on-scroll">
+      <div class="max-w-7xl mx-auto px-6">
         <div class="grid lg:grid-cols-3 gap-8">
           <!-- Contact Info -->
           <div class="lg:col-span-1 space-y-6">
             <div
               v-for="info in contactInfo"
               :key="info.title"
-              class="bg-white rounded-2xl p-6 shadow-lg"
+              class="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 border border-gray-100"
             >
-              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-600 to-emerald-600 flex items-center justify-center mb-4">
-                <!-- Icônes différentes selon le type -->
-                <svg v-if="info.icon === 'email'" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <svg v-else-if="info.icon === 'phone'" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                </svg>
-                <svg v-else-if="info.icon === 'website'" class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-                </svg>
-                <svg v-else class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
+              <div :class="['w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300', info.color]">
+                <component :is="info.icon" :size="24" class="text-white" />
               </div>
-              <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ info.title }}</h3>
+
+              <h3 class="text-lg font-semibold text-gray-900 mb-2 group-hover:text-[#0e437d] transition-colors">
+                {{ info.title }}
+              </h3>
+
               <a
                 v-if="info.link"
                 :href="info.link"
                 :target="info.target || '_self'"
-                class="text-teal-600 hover:text-teal-700 transition-colors"
+                class="text-[#0e437d] hover:text-[#22ae84] transition-colors font-medium block mb-1"
               >
                 {{ info.content }}
               </a>
-              <p v-else class="text-gray-600">{{ info.content }}</p>
+              <p v-else class="text-gray-900 font-medium mb-1">{{ info.content }}</p>
+
+              <p class="text-gray-500 text-sm">{{ info.description }}</p>
             </div>
 
             <!-- Social Media -->
-            <div class="bg-white rounded-2xl p-6 shadow-lg">
-              <h3 class="text-lg font-semibold text-gray-900 mb-4">Suivez-nous</h3>
-              <div class="flex space-x-4">
-                <a href="#" class="w-10 h-10 rounded-lg bg-gray-100 hover:bg-teal-100 flex items-center justify-center transition-colors">
-                  <svg class="w-5 h-5 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                </a>
-                <a href="#" class="w-10 h-10 rounded-lg bg-gray-100 hover:bg-teal-100 flex items-center justify-center transition-colors">
-                  <svg class="w-5 h-5 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
-                  </svg>
-                </a>
-                <a href="#" class="w-10 h-10 rounded-lg bg-gray-100 hover:bg-teal-100 flex items-center justify-center transition-colors">
-                  <svg class="w-5 h-5 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                  </svg>
+            <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-100">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Users :size="18" />
+                Suivez-nous
+              </h3>
+              <div class="flex gap-3">
+                <a
+                  v-for="social in socialMedia"
+                  :key="social.name"
+                  :href="social.link"
+                  target="_blank"
+                  :class="['w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center transition-all duration-300 hover:-translate-y-1', social.color]"
+                >
+                  <span class="font-semibold">{{ social.icon }}</span>
                 </a>
               </div>
+            </div>
+
+            <!-- Info supplémentaire -->
+            <div class="bg-gradient-to-br from-[#0e437d] to-[#22ae84] rounded-2xl p-6 text-white">
+              <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Award :size="18" />
+                Notre engagement
+              </h3>
+              <ul class="space-y-2">
+                <li class="flex items-center gap-2 text-sm">
+                  <div class="w-1.5 h-1.5 bg-[#FFD166] rounded-full"></div>
+                  Analyse gratuite de votre projet
+                </li>
+                <li class="flex items-center gap-2 text-sm">
+                  <div class="w-1.5 h-1.5 bg-[#FFD166] rounded-full"></div>
+                  Devis personnalisé sous 48h
+                </li>
+                <li class="flex items-center gap-2 text-sm">
+                  <div class="w-1.5 h-1.5 bg-[#FFD166] rounded-full"></div>
+                  Suivi régulier et transparent
+                </li>
+              </ul>
             </div>
           </div>
 
           <!-- Contact Form -->
           <div class="lg:col-span-2">
-            <div class="bg-white rounded-2xl shadow-lg p-8">
-              <h2 class="text-3xl font-bold text-gray-900 mb-6">Envoyez-nous un message</h2>
+            <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+              <div class="mb-8">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0e437d]/10 text-[#0e437d] mb-4 text-sm font-semibold">
+                  <Send :size="14" />
+                  Envoyez-nous un message
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-3">
+                  Parlez-nous de votre <span class="text-[#0e437d]">projet</span>
+                </h2>
+                <p class="text-gray-600">
+                  Remplissez le formulaire ci-dessous et notre équipe vous recontactera dans les plus brefs délais
+                </p>
+              </div>
 
               <form @submit.prevent="submit" class="space-y-6">
                 <div class="grid md:grid-cols-2 gap-6">
-                  <div>
+                  <div class="group">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Nom complet</label>
                     <input
                       v-model="form.name"
                       type="text"
                       required
-                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#22ae84] focus:border-transparent transition-all duration-300 group-hover:border-[#22ae84]/50"
                       placeholder="Jean Dupont"
                     />
                   </div>
 
-                  <div>
+                  <div class="group">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
                     <input
                       v-model="form.email"
                       type="email"
                       required
-                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#22ae84] focus:border-transparent transition-all duration-300 group-hover:border-[#22ae84]/50"
                       placeholder="jean@example.com"
                     />
                   </div>
                 </div>
 
                 <div class="grid md:grid-cols-2 gap-6">
-                  <div>
+                  <div class="group">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
                     <input
                       v-model="form.phone"
                       type="tel"
-                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                      placeholder="+216 XX XX XX XX ou +33 X XX XX XX XX"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#22ae84] focus:border-transparent transition-all duration-300 group-hover:border-[#22ae84]/50"
+                      placeholder="+33 70 89 99 00"
                     />
                   </div>
 
-                  <div>
+                  <div class="group">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Sujet</label>
                     <select
                       v-model="form.subject"
                       required
-                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#22ae84] focus:border-transparent transition-all duration-300 group-hover:border-[#22ae84]/50"
                     >
-                      <option value="">Choisir un sujet</option>
-                      <option value="web">Développement Web</option>
-                      <option value="branding">Branding & Design</option>
-                      <option value="marketing">Marketing Digital</option>
-                      <option value="consulting">Consulting</option>
-                      <option value="other">Autre</option>
+                      <option v-for="subject in subjects" :key="subject.value" :value="subject.value">
+                        {{ subject.label }}
+                      </option>
                     </select>
                   </div>
                 </div>
 
-                <div>
+                <div class="group">
                   <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
                   <textarea
                     v-model="form.message"
                     rows="6"
                     required
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
-                    placeholder="Parlez-nous de votre projet..."
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#22ae84] focus:border-transparent resize-none transition-all duration-300 group-hover:border-[#22ae84]/50"
+                    placeholder="Parlez-nous de votre projet, vos objectifs, vos attentes..."
                   ></textarea>
                 </div>
 
                 <button
+                  id="submit-btn"
                   type="submit"
-                  class="w-full px-8 py-4 bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-semibold rounded-lg hover:from-teal-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center"
+                  class="group w-full px-8 py-4 bg-gradient-to-r from-[#FFD166] to-[#FFB347] text-gray-900 font-bold rounded-lg hover:shadow-2xl transition-all duration-300 hover:scale-105 flex items-center justify-center"
                 >
-                  Envoyer le message
-                  <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
+                  <span class="flex items-center gap-2">
+                    Envoyer le message
+                    <Send :size="20" class="group-hover:translate-x-1 transition-transform" />
+                  </span>
                 </button>
               </form>
             </div>
+
+            <!-- Additional Info -->
+            <div class="mt-8 p-6 bg-gradient-to-br from-gray-50 to-white rounded-2xl border border-gray-100">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <BookOpen :size="18" />
+                Comment se déroule notre collaboration ?
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="text-center p-4">
+                  <div class="w-10 h-10 rounded-full bg-[#0e437d]/10 flex items-center justify-center mx-auto mb-3">
+                    <span class="text-[#0e437d] font-bold">1</span>
+                  </div>
+                  <p class="text-sm text-gray-600">Analyse de votre besoin</p>
+                </div>
+                <div class="text-center p-4">
+                  <div class="w-10 h-10 rounded-full bg-[#0e437d]/10 flex items-center justify-center mx-auto mb-3">
+                    <span class="text-[#0e437d] font-bold">2</span>
+                  </div>
+                  <p class="text-sm text-gray-600">Proposition personnalisée</p>
+                </div>
+                <div class="text-center p-4">
+                  <div class="w-10 h-10 rounded-full bg-[#0e437d]/10 flex items-center justify-center mx-auto mb-3">
+                    <span class="text-[#0e437d] font-bold">3</span>
+                  </div>
+                  <p class="text-sm text-gray-600">Démarrage du projet</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Final -->
+    <section class="py-20 bg-gradient-to-br from-gray-50 via-white to-gray-50 animate-on-scroll">
+      <div class="max-w-4xl mx-auto px-6 text-center">
+        <div class="bg-gradient-to-r from-[#0e437d] to-[#22ae84] rounded-2xl p-8 text-white shadow-xl">
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white mb-6 text-sm font-medium">
+            <Sparkles :size="14" />
+            Besoin d'une réponse rapide ?
+          </div>
+
+          <h3 class="text-2xl font-bold mb-4">Contactez-nous directement</h3>
+          <p class="text-white/90 mb-6">Notre équipe est disponible pour répondre à toutes vos questions</p>
+
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="tel:+33708999900"
+               class="px-6 py-3 bg-white text-[#0e437d] rounded-lg font-semibold hover:bg-gray-100 transition-all duration-300 hover:scale-105 group">
+              <span class="flex items-center gap-2">
+                <Phone :size="18" class="group-hover:scale-110 transition-transform" />
+                Appeler maintenant
+              </span>
+            </a>
+            <a href="mailto:direction@kotavacommunication.com"
+               class="px-6 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white/10 transition-all duration-300 hover:scale-105 group">
+              <span class="flex items-center gap-2">
+                <Mail :size="18" class="group-hover:scale-110 transition-transform" />
+                Envoyer un email
+              </span>
+            </a>
           </div>
         </div>
       </div>
     </section>
   </MainLayout>
 </template>
+
+<style scoped>
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes underline {
+  from { width: 0; opacity: 0; }
+  to { width: 100%; opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background-color: white;
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: float linear infinite;
+}
+
+.animate-float {
+  animation: float linear infinite;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+.animate-underline {
+  animation: underline 1s ease-out forwards;
+}
+
+.animate-shimmer {
+  animation: shimmer 3s infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-1000 {
+  animation-delay: 1000ms;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2000ms;
+}
+
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.animate-on-scroll.animate-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .text-5xl {
+    font-size: 3rem;
+  }
+  .text-7xl {
+    font-size: 4rem;
+  }
+}
+</style>
