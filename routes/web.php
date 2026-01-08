@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+<<<<<<< Updated upstream
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\BlogController;
@@ -11,6 +12,9 @@ use App\Http\Controllers\Admin\RealisationController as AdminRealisationControll
 use App\Http\Controllers\Admin\ActualiteController as AdminActualiteController;
 use App\Http\Controllers\Admin\TeamController;
 use Inertia\Inertia;
+=======
+use Inertia\Inertia; 
+>>>>>>> Stashed changes
 
 /*
 |----------------------------------------------------------------------
