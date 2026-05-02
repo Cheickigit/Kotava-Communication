@@ -10,7 +10,6 @@ import {
   Globe2,
   MessageCircle,
   Palette,
-  PlayCircle,
   Sparkles,
   Target,
   Video,
@@ -21,57 +20,75 @@ import {
 const services = [
   {
     icon: Target,
-    title: 'Stratégie & Conseil',
+    title: 'Stratégie',
+    full: 'Stratégie & Conseil',
     href: '/services/strategie-conseil',
     label: 'Positionnement',
-    short: 'Clarifier la vision, l’offre, le message et la trajectoire de marque.',
-    speech: 'On commence par comprendre votre marché, votre audience et votre avantage. Ensuite, on transforme tout ça en stratégie claire.',
-    className: 'service-blue',
+    short: 'Vision, message, trajectoire.',
+    badge: 'bg-brand-blue text-white',
+    soft: 'bg-brand-blue/15 text-brand-blue',
+    glow: 'bg-brand-blue/25',
+    visual: 'strategy',
   },
   {
     icon: Palette,
-    title: 'Branding & Design',
+    title: 'Branding',
+    full: 'Branding & Design',
     href: '/services/branding-design',
     label: 'Identité visuelle',
-    short: 'Créer une identité forte, cohérente, mémorable et exploitable partout.',
-    speech: 'On donne une forme visuelle à votre marque : logo, univers graphique, charte, supports et direction artistique.',
-    className: 'service-emerald',
+    short: 'Logo, charte, univers graphique.',
+    badge: 'bg-brand-emerald text-white',
+    soft: 'bg-brand-emerald/15 text-brand-emerald',
+    glow: 'bg-brand-emerald/25',
+    visual: 'branding',
   },
   {
     icon: Globe2,
-    title: 'Digital & Web',
+    title: 'Digital',
+    full: 'Digital & Web',
     href: '/services/digital-web',
     label: 'Web & UX/UI',
-    short: 'Déployer une présence digitale moderne, lisible et crédible.',
-    speech: 'On conçoit des expériences web fluides, esthétiques et orientées conversion pour renforcer votre crédibilité.',
-    className: 'service-orange',
+    short: 'Sites, interfaces, présence digitale.',
+    badge: 'bg-brand-orange text-white',
+    soft: 'bg-brand-orange/15 text-brand-orange',
+    glow: 'bg-brand-orange/25',
+    visual: 'digital',
   },
   {
     icon: Video,
-    title: 'Production Audiovisuelle',
+    title: 'Audiovisuel',
+    full: 'Production Audiovisuelle',
     href: '/services/audiovisuel',
     label: 'Photo · Vidéo',
-    short: 'Créer des contenus visuels qui captent l’attention et valorisent l’image.',
-    speech: 'On produit des contenus premium : photo, vidéo, motion design, formats réseaux sociaux et contenus corporate.',
-    className: 'service-mint',
+    short: 'Contenus visuels premium.',
+    badge: 'bg-brand-blue text-white',
+    soft: 'bg-brand-blue/15 text-brand-blue',
+    glow: 'bg-brand-blue/25',
+    visual: 'video',
   },
   {
     icon: CalendarDays,
-    title: 'Événementiel & RP',
+    title: 'Événementiel',
+    full: 'Événementiel & RP',
     href: '/services/evenementiel',
     label: 'Activation',
-    short: 'Créer des moments de marque visibles, maîtrisés et engageants.',
-    speech: 'On transforme vos actions terrain en expériences de marque : événements, relations publiques, influence et activations.',
-    className: 'service-sun',
+    short: 'Événements, RP, influence.',
+    badge: 'bg-brand-orange text-white',
+    soft: 'bg-brand-orange/15 text-brand-orange',
+    glow: 'bg-brand-orange/25',
+    visual: 'event',
   },
   {
     icon: MessageCircle,
     title: 'Social Media',
+    full: 'Social Media',
     href: '/services/social-media',
     label: 'Audience',
-    short: 'Construire une présence sociale régulière, engageante et mesurable.',
-    speech: 'On anime votre présence sociale avec une ligne éditoriale claire, des contenus forts et des campagnes ciblées.',
-    className: 'service-deep',
+    short: 'Contenus, campagnes, animation.',
+    badge: 'bg-brand-emerald text-white',
+    soft: 'bg-brand-emerald/15 text-brand-emerald',
+    glow: 'bg-brand-emerald/25',
+    visual: 'social',
   },
 ];
 
@@ -80,8 +97,6 @@ const isPaused = ref(false);
 let timer = null;
 
 const activeService = computed(() => services[activeIndex.value]);
-
-const progressWidth = computed(() => `${((activeIndex.value + 1) / services.length) * 100}%`);
 
 const setActiveService = (index) => {
   activeIndex.value = index;
@@ -98,7 +113,7 @@ const startRotation = () => {
     if (!isPaused.value) {
       nextService();
     }
-  }, 3400);
+  }, 3600);
 };
 
 const stopRotation = () => {
@@ -106,14 +121,6 @@ const stopRotation = () => {
     clearInterval(timer);
     timer = null;
   }
-};
-
-const pause = () => {
-  isPaused.value = true;
-};
-
-const resume = () => {
-  isPaused.value = false;
 };
 
 onMounted(() => {
@@ -128,719 +135,363 @@ onUnmounted(() => {
 <template>
   <section
     class="relative overflow-hidden bg-brand-dark py-20 text-white sm:py-24 lg:py-28"
-    @mouseenter="pause"
-    @mouseleave="resume"
+    @mouseenter="isPaused = true"
+    @mouseleave="isPaused = false"
   >
-    <div class="absolute inset-0 bg-grid-dark opacity-40"></div>
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_8%_20%,rgba(16,185,129,0.22),transparent_27%),radial-gradient(circle_at_92%_72%,rgba(249,115,22,0.18),transparent_26%),radial-gradient(circle_at_55%_48%,rgba(30,58,138,0.32),transparent_32%)]"></div>
+    <!-- Background du départ -->
+    <div class="absolute inset-0 bg-grid-dark opacity-35"></div>
+
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_8%_18%,rgba(16,185,129,0.18),transparent_28%),radial-gradient(circle_at_92%_72%,rgba(249,115,22,0.15),transparent_28%),radial-gradient(circle_at_50%_50%,rgba(30,58,138,0.35),transparent_34%)]"></div>
+
+    <div class="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-dark to-transparent"></div>
+    <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-brand-dark to-transparent"></div>
 
     <div class="pointer-events-none absolute inset-0 overflow-hidden">
-      <img src="/logo.png" alt="" class="service-logo-float left-[5%] top-[12%] h-20 w-auto opacity-[0.05]" />
-      <img src="/logo.png" alt="" class="service-logo-float service-logo-float-slow right-[5%] top-[20%] h-24 w-auto opacity-[0.05]" />
-      <img src="/logo.png" alt="" class="service-logo-float service-logo-float-reverse bottom-[12%] left-[42%] h-20 w-auto opacity-[0.04]" />
+      <img
+        src="/logo.png"
+        alt=""
+        class="absolute left-[5%] top-[14%] hidden h-24 w-auto opacity-[0.04] lg:block"
+      />
+
+      <img
+        src="/logo.png"
+        alt=""
+        class="absolute right-[5%] bottom-[14%] hidden h-28 w-auto opacity-[0.035] lg:block"
+      />
+
+      <div class="absolute inset-x-0 top-[18%] hidden text-center text-[13vw] font-black uppercase leading-none tracking-[-0.09em] text-white/[0.025] lg:block">
+        SERVICES
+      </div>
     </div>
 
-    <div class="site-container relative">
-      <div class="mb-12 grid gap-6 lg:grid-cols-12 lg:items-end">
-        <div class="lg:col-span-7">
-          <div class="eyebrow-dark">
-            <PlayCircle :size="15" />
-            Services en mouvement
-          </div>
-
-          <h2 class="mt-5 max-w-4xl text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Un guide créatif présente nos expertises une par une.
-          </h2>
+    <div class="site-container relative z-10">
+      <!-- Header court -->
+      <div class="mx-auto mb-12 max-w-3xl text-center">
+        <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-emerald backdrop-blur">
+          <Sparkles :size="14" />
+          Nos expertises
         </div>
 
-        <div class="lg:col-span-5">
-          <div class="rounded-2xl border border-white/10 bg-white/[0.06] p-5 backdrop-blur">
-            <div class="flex items-center justify-between gap-4">
-              <div>
-                <div class="text-sm font-black text-white">Mode présentation</div>
-                <p class="mt-1 text-sm leading-6 text-white/55">
-                  Les services tournent automatiquement. Cliquez sur une carte pour explorer.
-                </p>
-              </div>
-
-              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-orange text-white shadow-orange">
-                <Sparkles :size="22" />
-              </div>
-            </div>
-
-            <div class="mt-5 h-2 overflow-hidden rounded-xl bg-white/10">
-              <div
-                class="h-full rounded-xl bg-gradient-to-r from-brand-blue via-brand-emerald to-brand-orange transition-all duration-500"
-                :style="{ width: progressWidth }"
-              ></div>
-            </div>
-          </div>
-        </div>
+        <h2 class="mt-5 text-4xl font-black leading-[0.94] tracking-[-0.055em] sm:text-5xl lg:text-6xl">
+          Un studio.
+          <span class="block bg-gradient-to-r from-brand-emerald via-white to-brand-orange bg-clip-text text-transparent">
+            Six expertises.
+          </span>
+        </h2>
       </div>
 
-      <div class="grid gap-6 xl:grid-cols-[0.92fr_1.08fr] xl:items-stretch">
-        <div class="service-presenter">
-          <div class="presenter-orbit presenter-orbit-one"></div>
-          <div class="presenter-orbit presenter-orbit-two"></div>
-          <div class="presenter-orbit presenter-orbit-three"></div>
-
-          <div class="presenter-stage">
-            <div class="presenter-avatar-wrap">
-              <div class="presenter-aura"></div>
-
-              <div class="presenter-avatar">
-                <div class="avatar-ring"></div>
-
-                <div class="avatar-head">
-                  <div class="avatar-eye"></div>
-                  <div class="avatar-eye"></div>
-                  <div class="avatar-mouth"></div>
-                </div>
-
-                <div class="avatar-body">
-                  <div class="avatar-logo">
-                    <img src="/logo_horizontal.png" alt="" class="h-6 w-6 object-contain" />
-                  </div>
-                  <div class="avatar-light"></div>
-                </div>
-
-                <div class="avatar-arm avatar-arm-left"></div>
-                <div class="avatar-arm avatar-arm-right"></div>
-              </div>
-            </div>
-
-            <div class="service-bubble">
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="inline-flex items-center gap-2 rounded-xl bg-brand-light px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-brand-blue">
-                  <component :is="activeService.icon" :size="14" />
-                  {{ activeService.label }}
-                </span>
-
-                <span class="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-black uppercase tracking-[0.18em] text-brand-emerald ring-1 ring-slate-200">
-                  0{{ activeIndex + 1 }}/0{{ services.length }}
-                </span>
-              </div>
-
-              <Transition
-                mode="out-in"
-                enter-active-class="transition duration-300 ease-out"
-                enter-from-class="opacity-0 translate-y-4"
-                enter-to-class="opacity-100 translate-y-0"
-                leave-active-class="transition duration-150 ease-in"
-                leave-from-class="opacity-100 translate-y-0"
-                leave-to-class="opacity-0 -translate-y-3"
-              >
-                <div :key="activeService.title">
-                  <h3 class="mt-5 text-3xl font-black tracking-tight text-brand-ink sm:text-4xl">
-                    {{ activeService.title }}
-                  </h3>
-
-                  <p class="mt-4 text-base leading-8 text-brand-gray">
-                    {{ activeService.speech }}
-                  </p>
-                </div>
-              </Transition>
-
-              <div class="mt-7 flex flex-col gap-3 sm:flex-row">
-                <Link :href="activeService.href" class="btn-primary">
-                  Découvrir
-                  <ArrowRight :size="18" />
-                </Link>
-
-                <Link href="/services" class="btn-secondary">
-                  Toutes les expertises
-                  <ArrowUpRight :size="18" />
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <div class="presenter-bottom">
-            <div
-              v-for="(service, index) in services"
-              :key="service.title"
-              class="presenter-dot"
-              :class="activeIndex === index ? 'presenter-dot-active' : ''"
-              @click="setActiveService(index)"
-            ></div>
-          </div>
-        </div>
-
-        <div class="service-map">
+      <!-- Section principale -->
+      <div class="grid gap-6 xl:grid-cols-[0.95fr_1.05fr] xl:items-center">
+        <!-- Services list compacte -->
+        <div class="grid gap-3 sm:grid-cols-2">
           <button
             v-for="(service, index) in services"
             :key="service.title"
             type="button"
-            class="service-card group"
-            :class="[service.className, activeIndex === index ? 'service-card-active' : '']"
+            :class="[
+              'group relative overflow-hidden rounded-[1.7rem] border p-4 text-left backdrop-blur-xl transition duration-300 hover:-translate-y-1',
+              activeIndex === index
+                ? 'border-brand-orange/45 bg-white/[0.12] shadow-[0_24px_70px_rgba(0,0,0,0.22)]'
+                : 'border-white/10 bg-white/[0.06] hover:border-white/20 hover:bg-white/[0.09]'
+            ]"
             @click="setActiveService(index)"
           >
-            <div class="service-card-glow"></div>
+            <div :class="['absolute -right-10 -top-10 h-36 w-36 rounded-[2.5rem] blur-3xl', service.glow]"></div>
 
             <div class="relative">
-              <div class="flex items-start justify-between gap-5">
-                <div class="service-icon">
-                  <component :is="service.icon" :size="24" />
+              <div class="flex items-center justify-between gap-4">
+                <div :class="['flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg', service.badge]">
+                  <component :is="service.icon" :size="21" />
                 </div>
 
-                <div class="service-index">
+                <span class="text-[10px] font-black uppercase tracking-[0.18em] text-white/35">
                   0{{ index + 1 }}
-                </div>
+                </span>
               </div>
 
-              <div class="mt-8">
-                <div class="text-xs font-black uppercase tracking-[0.18em] text-white/42">
+              <h3 class="mt-5 text-xl font-black text-white">
+                {{ service.full }}
+              </h3>
+
+              <p class="mt-2 text-sm leading-6 text-white/55">
+                {{ service.short }}
+              </p>
+
+              <div class="mt-5 flex items-center justify-between">
+                <span
+                  :class="[
+                    'inline-flex rounded-xl px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.16em]',
+                    service.soft
+                  ]"
+                >
                   {{ service.label }}
-                </div>
-
-                <h3 class="mt-2 text-2xl font-black text-white">
-                  {{ service.title }}
-                </h3>
-
-                <p class="mt-4 text-sm leading-7 text-white/60">
-                  {{ service.short }}
-                </p>
-              </div>
-
-              <div class="mt-8 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <span
-                    v-for="dot in 3"
-                    :key="dot"
-                    class="h-2 w-2 rounded-full"
-                    :class="activeIndex === index && dot === 2 ? 'bg-brand-orange' : 'bg-white/18'"
-                  ></span>
-                </div>
+                </span>
 
                 <ChevronRight
-                  :size="20"
+                  :size="19"
                   class="text-white/35 transition group-hover:translate-x-1 group-hover:text-brand-orange"
                 />
               </div>
             </div>
           </button>
         </div>
+
+        <!-- Visuel 3D premium -->
+        <div class="relative min-h-[620px] overflow-hidden rounded-[2.4rem] border border-white/10 bg-white/[0.055] p-5 shadow-[0_35px_100px_rgba(0,0,0,0.25)] backdrop-blur-2xl">
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(16,185,129,0.14),transparent_30%),radial-gradient(circle_at_84%_80%,rgba(249,115,22,0.12),transparent_32%)]"></div>
+
+          <div class="absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-[4rem] border border-white/10 [transform:translate(-50%,-50%)_rotate(12deg)]"></div>
+
+          <div class="absolute left-1/2 top-1/2 h-[390px] w-[390px] -translate-x-1/2 -translate-y-1/2 rounded-[3rem] border border-brand-emerald/15 [transform:translate(-50%,-50%)_rotate(-10deg)]"></div>
+
+          <Transition
+            mode="out-in"
+            enter-active-class="transition duration-300 ease-out"
+            enter-from-class="opacity-0 translate-y-5 scale-[0.98]"
+            enter-to-class="opacity-100 translate-y-0 scale-100"
+            leave-active-class="transition duration-150 ease-in"
+            leave-from-class="opacity-100 translate-y-0 scale-100"
+            leave-to-class="opacity-0 -translate-y-4 scale-[0.98]"
+          >
+            <div :key="activeService.title" class="relative z-10 flex min-h-[570px] items-center justify-center">
+              <!-- Main 3D board -->
+              <div class="relative w-full max-w-[520px] [perspective:1200px]">
+                <div class="relative rounded-[2rem] border border-white/10 bg-slate-950/82 p-5 shadow-[0_30px_90px_rgba(0,0,0,0.32)] [transform:rotateX(8deg)_rotateY(-10deg)]">
+                  <!-- Top bar -->
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="h-2.5 w-2.5 rounded-md bg-brand-emerald"></span>
+                      <span class="h-2.5 w-2.5 rounded-md bg-brand-orange"></span>
+                      <span class="h-2.5 w-2.5 rounded-md bg-white/30"></span>
+                    </div>
+
+                    <div class="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-white/50">
+                      <img src="/logo_horizontal.png" alt="" class="h-4 w-4 object-contain" />
+                      Studio live
+                    </div>
+                  </div>
+
+                  <!-- Visual -->
+                  <div class="mt-5 overflow-hidden rounded-[1.6rem] border border-white/10 bg-white/[0.05] p-4">
+                    <!-- Strategy -->
+                    <div v-if="activeService.visual === 'strategy'" class="min-h-[260px]">
+                      <div class="grid gap-4 sm:grid-cols-[0.8fr_1.2fr]">
+                        <div class="rounded-[1.4rem] bg-brand-blue p-5 text-white">
+                          <Target :size="30" />
+                          <div class="mt-12 text-[10px] font-black uppercase tracking-[0.18em] text-white/60">
+                            Roadmap
+                          </div>
+                          <div class="mt-1 text-2xl font-black">
+                            Vision
+                          </div>
+                        </div>
+
+                        <div class="space-y-3">
+                          <div class="rounded-[1.2rem] bg-white/10 p-4">
+                            <div class="h-3 w-4/5 rounded-full bg-brand-emerald"></div>
+                          </div>
+
+                          <div class="rounded-[1.2rem] bg-white/10 p-4">
+                            <div class="h-3 w-2/3 rounded-full bg-brand-orange"></div>
+                          </div>
+
+                          <div class="rounded-[1.2rem] bg-white/10 p-4">
+                            <div class="flex items-center justify-between">
+                              <span class="text-sm font-black text-white">Positionnement</span>
+                              <BadgeCheck :size="20" class="text-brand-emerald" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Branding -->
+                    <div v-else-if="activeService.visual === 'branding'" class="min-h-[260px]">
+                      <div class="grid grid-cols-3 gap-3">
+                        <div class="h-28 rounded-[1.4rem] bg-brand-blue"></div>
+                        <div class="h-28 rounded-[1.4rem] bg-brand-emerald"></div>
+                        <div class="h-28 rounded-[1.4rem] bg-brand-orange"></div>
+                      </div>
+
+                      <div class="mt-4 rounded-[1.5rem] bg-white/10 p-5">
+                        <div class="flex items-center gap-4">
+                          <img src="/logo_horizontal.png" alt="" class="h-14 w-14 rounded-2xl bg-white object-contain p-2" />
+
+                          <div>
+                            <div class="text-[10px] font-black uppercase tracking-[0.18em] text-brand-emerald">
+                              Identity
+                            </div>
+
+                            <div class="mt-1 text-3xl font-black text-white">
+                              KOTAVA
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Digital -->
+                    <div v-else-if="activeService.visual === 'digital'" class="min-h-[260px]">
+                      <div class="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/10">
+                        <div class="flex items-center justify-between border-b border-white/10 px-4 py-3">
+                          <div class="flex items-center gap-1.5">
+                            <span class="h-2.5 w-2.5 rounded-md bg-brand-orange"></span>
+                            <span class="h-2.5 w-2.5 rounded-md bg-brand-emerald"></span>
+                            <span class="h-2.5 w-2.5 rounded-md bg-white/30"></span>
+                          </div>
+
+                          <Globe2 :size="18" class="text-brand-orange" />
+                        </div>
+
+                        <div class="p-4">
+                          <div class="h-32 rounded-[1.3rem] bg-gradient-to-br from-brand-orange/80 to-brand-blue/60"></div>
+
+                          <div class="mt-3 grid grid-cols-3 gap-2">
+                            <span class="h-14 rounded-xl bg-white/10"></span>
+                            <span class="h-14 rounded-xl bg-white/10"></span>
+                            <span class="h-14 rounded-xl bg-white/10"></span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Video -->
+                    <div v-else-if="activeService.visual === 'video'" class="min-h-[260px]">
+                      <div class="relative h-52 overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-brand-blue/85 via-brand-emerald/60 to-brand-orange/65">
+                        <div class="absolute left-1/2 top-1/2 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[1.6rem] bg-white text-brand-blue shadow-xl">
+                          <Video :size="34" />
+                        </div>
+                      </div>
+
+                      <div class="mt-4 grid grid-cols-5 gap-2">
+                        <span class="h-10 rounded-xl bg-brand-blue"></span>
+                        <span class="h-10 rounded-xl bg-white/15"></span>
+                        <span class="h-10 rounded-xl bg-brand-orange"></span>
+                        <span class="h-10 rounded-xl bg-white/15"></span>
+                        <span class="h-10 rounded-xl bg-brand-emerald"></span>
+                      </div>
+                    </div>
+
+                    <!-- Event -->
+                    <div v-else-if="activeService.visual === 'event'" class="min-h-[260px]">
+                      <div class="grid grid-cols-7 gap-2">
+                        <span
+                          v-for="day in 28"
+                          :key="day"
+                          :class="[
+                            'h-8 rounded-lg',
+                            day === 6 || day === 13 || day === 22
+                              ? 'bg-brand-orange'
+                              : day === 17
+                                ? 'bg-brand-emerald'
+                                : 'bg-white/10'
+                          ]"
+                        ></span>
+                      </div>
+
+                      <div class="mt-4 rounded-[1.4rem] bg-white/10 p-4">
+                        <div class="flex items-center justify-between">
+                          <CalendarDays :size="26" class="text-brand-orange" />
+
+                          <div class="text-right">
+                            <div class="text-[10px] font-black uppercase tracking-[0.18em] text-white/45">
+                              Activation
+                            </div>
+                            <div class="text-2xl font-black text-white">
+                              Live
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Social -->
+                    <div v-else class="min-h-[260px]">
+                      <div class="grid grid-cols-[0.85fr_1.15fr] gap-3">
+                        <div class="rounded-[1.5rem] bg-white/10 p-3">
+                          <div class="h-28 rounded-[1.2rem] bg-brand-emerald"></div>
+
+                          <div class="mt-3 space-y-2">
+                            <div class="h-3 rounded-full bg-white/20"></div>
+                            <div class="h-3 w-2/3 rounded-full bg-white/10"></div>
+                          </div>
+                        </div>
+
+                        <div class="space-y-3">
+                          <div class="rounded-[1.2rem] bg-white/10 p-3">
+                            <div class="flex items-center gap-2">
+                              <MessageCircle :size="18" class="text-brand-emerald" />
+                              <div class="h-2 flex-1 rounded-full bg-white/20"></div>
+                            </div>
+                          </div>
+
+                          <div class="rounded-[1.2rem] bg-white/10 p-3">
+                            <div class="grid grid-cols-3 gap-2">
+                              <span class="h-12 rounded-xl bg-brand-blue/70"></span>
+                              <span class="h-12 rounded-xl bg-brand-emerald"></span>
+                              <span class="h-12 rounded-xl bg-brand-orange/80"></span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Bottom text minimal -->
+                  <div class="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <div :class="['inline-flex rounded-xl px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em]', activeService.soft]">
+                        {{ activeService.label }}
+                      </div>
+
+                      <h3 class="mt-3 text-3xl font-black text-white">
+                        {{ activeService.full }}
+                      </h3>
+                    </div>
+
+                    <Link
+                      :href="activeService.href"
+                      class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] bg-white px-5 py-3 text-sm font-black text-brand-blue transition hover:-translate-y-0.5"
+                    >
+                      Découvrir
+                      <ArrowRight :size="17" />
+                    </Link>
+                  </div>
+                </div>
+
+                <!-- Floating 3D cards -->
+                <div class="absolute -left-5 top-20 hidden rounded-[1.4rem] border border-white/10 bg-white/90 p-4 text-brand-ink shadow-xl lg:block [transform:rotate(-8deg)]">
+                  <Wand2 :size="22" class="text-brand-emerald" />
+                  <div class="mt-3 text-sm font-black">Création</div>
+                </div>
+
+                <div class="absolute -right-5 bottom-24 hidden rounded-[1.4rem] border border-white/10 bg-white/90 p-4 text-brand-ink shadow-xl lg:block [transform:rotate(8deg)]">
+                  <Zap :size="22" class="text-brand-orange" />
+                  <div class="mt-3 text-sm font-black">Impact</div>
+                </div>
+              </div>
+            </div>
+          </Transition>
+        </div>
       </div>
 
+      <!-- Proof line courte -->
       <div class="mt-10 grid gap-4 md:grid-cols-3">
-        <div class="service-proof">
+        <div class="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 backdrop-blur-xl">
           <BadgeCheck :size="22" class="text-brand-emerald" />
-          <div>
-            <div class="font-black text-white">Approche intégrée</div>
-            <div class="mt-1 text-sm text-white/55">Stratégie, image, contenu et diffusion connectés.</div>
-          </div>
+          <div class="mt-3 font-black text-white">Approche intégrée</div>
         </div>
 
-        <div class="service-proof">
-          <Wand2 :size="22" class="text-brand-emerald" />
-          <div>
-            <div class="font-black text-white">Direction créative</div>
-            <div class="mt-1 text-sm text-white/55">Une identité visuelle pensée pour durer.</div>
-          </div>
+        <div class="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 backdrop-blur-xl">
+          <Wand2 :size="22" class="text-brand-orange" />
+          <div class="mt-3 font-black text-white">Design personnalisé</div>
         </div>
 
-        <div class="service-proof">
-          <Zap :size="22" class="text-brand-emerald" />
-          <div>
-            <div class="font-black text-white">Déploiement dynamique</div>
-            <div class="mt-1 text-sm text-white/55">Des actions cohérentes sur les bons canaux.</div>
-          </div>
+        <div class="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 backdrop-blur-xl">
+          <Zap :size="22" class="text-brand-blue" />
+          <div class="mt-3 font-black text-white">Déploiement rapide</div>
         </div>
       </div>
     </div>
   </section>
 </template>
-
-<style scoped>
-.service-logo-float {
-  position: absolute;
-  animation: serviceLogoFloat 18s ease-in-out infinite;
-}
-
-.service-logo-float-slow {
-  animation-duration: 24s;
-}
-
-.service-logo-float-reverse {
-  animation-direction: reverse;
-}
-
-.service-presenter {
-  position: relative;
-  min-height: 640px;
-  overflow: hidden;
-  border-radius: 2.25rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background:
-    radial-gradient(circle at top left, rgba(16, 185, 129, 0.18), transparent 34%),
-    radial-gradient(circle at bottom right, rgba(249, 115, 22, 0.12), transparent 32%),
-    rgba(255, 255, 255, 0.055);
-  padding: clamp(1rem, 2vw, 2rem);
-  backdrop-filter: blur(18px);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.22);
-}
-
-.presenter-stage {
-  position: relative;
-  z-index: 5;
-  display: grid;
-  min-height: 540px;
-  grid-template-columns: minmax(180px, 0.72fr) minmax(0, 1.28fr);
-  align-items: center;
-  gap: clamp(1rem, 2vw, 2rem);
-}
-
-.presenter-avatar-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 360px;
-}
-
-.presenter-aura {
-  position: absolute;
-  height: 220px;
-  width: 220px;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle, rgba(16, 185, 129, 0.34), rgba(30, 58, 138, 0.18), transparent 70%);
-  filter: blur(12px);
-  animation: auraPulse 3.5s ease-in-out infinite;
-}
-
-.presenter-avatar {
-  position: relative;
-  z-index: 2;
-  width: 170px;
-  height: 240px;
-  animation: avatarFloat 5.4s ease-in-out infinite;
-}
-
-.avatar-ring {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  width: 150px;
-  height: 150px;
-  transform: translateX(-50%);
-  border-radius: 999px;
-  border: 1px dashed rgba(16, 185, 129, 0.55);
-  animation: spinSlow 12s linear infinite;
-}
-
-.avatar-head {
-  position: absolute;
-  left: 50%;
-  top: 38px;
-  z-index: 4;
-  display: flex;
-  width: 78px;
-  height: 78px;
-  transform: translateX(-50%);
-  align-items: center;
-  justify-content: center;
-  gap: 0.65rem;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #ffffff, #dbeafe);
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.24);
-}
-
-.avatar-eye {
-  width: 7px;
-  height: 7px;
-  margin-top: -8px;
-  border-radius: 999px;
-  background: #1E3A8A;
-}
-
-.avatar-mouth {
-  position: absolute;
-  bottom: 20px;
-  width: 24px;
-  height: 10px;
-  border-bottom: 3px solid #10B981;
-  border-radius: 0 0 999px 999px;
-}
-
-.avatar-body {
-  position: absolute;
-  left: 50%;
-  top: 122px;
-  z-index: 3;
-  width: 118px;
-  height: 94px;
-  transform: translateX(-50%);
-  border-radius: 2rem;
-  background:
-    radial-gradient(circle at top left, rgba(255,255,255,0.22), transparent 36%),
-    linear-gradient(135deg, #1E3A8A, #10B981);
-  box-shadow: 0 25px 65px rgba(15, 23, 42, 0.32);
-}
-
-.avatar-logo {
-  position: absolute;
-  right: -8px;
-  top: -10px;
-  display: flex;
-  height: 38px;
-  width: 38px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: #ffffff;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18);
-}
-
-.avatar-light {
-  position: absolute;
-  left: 22px;
-  top: 28px;
-  width: 72px;
-  height: 10px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.18);
-}
-
-.avatar-arm {
-  position: absolute;
-  top: 130px;
-  z-index: 2;
-  width: 20px;
-  height: 78px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, #10B981, #1E3A8A);
-  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.18);
-}
-
-.avatar-arm-left {
-  left: 16px;
-  transform-origin: top;
-  transform: rotate(28deg);
-  animation: armLeft 3.2s ease-in-out infinite;
-}
-
-.avatar-arm-right {
-  right: 16px;
-  transform-origin: top;
-  transform: rotate(-28deg);
-  animation: armRight 3.2s ease-in-out infinite;
-}
-
-.service-bubble {
-  position: relative;
-  border-radius: 2rem;
-  background: linear-gradient(180deg, #ffffff, #f8fafc);
-  padding: clamp(1.25rem, 2vw, 2rem);
-  color: #111827;
-  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
-}
-
-.service-bubble::before {
-  content: '';
-  position: absolute;
-  left: -10px;
-  top: 76px;
-  width: 22px;
-  height: 22px;
-  transform: rotate(45deg);
-  background: #ffffff;
-}
-
-.presenter-orbit {
-  position: absolute;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.08);
-  pointer-events: none;
-}
-
-.presenter-orbit-one {
-  left: 4%;
-  top: 8%;
-  width: 320px;
-  height: 320px;
-  animation: orbitRotate 24s linear infinite;
-}
-
-.presenter-orbit-two {
-  right: -10%;
-  top: 8%;
-  width: 420px;
-  height: 420px;
-  animation: orbitRotate 32s linear infinite reverse;
-}
-
-.presenter-orbit-three {
-  left: 18%;
-  bottom: -18%;
-  width: 520px;
-  height: 520px;
-  animation: orbitRotate 38s linear infinite;
-}
-
-.presenter-bottom {
-  position: relative;
-  z-index: 8;
-  display: flex;
-  justify-content: center;
-  gap: 0.6rem;
-}
-
-.presenter-dot {
-  width: 10px;
-  height: 10px;
-  cursor: pointer;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.22);
-  transition: 0.25s ease;
-}
-
-.presenter-dot-active {
-  width: 34px;
-  background: #F97316;
-}
-
-.service-map {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.service-card {
-  position: relative;
-  min-height: 290px;
-  overflow: hidden;
-  border-radius: 2rem;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.055);
-  padding: clamp(1.15rem, 1.6vw, 1.5rem);
-  text-align: left;
-  backdrop-filter: blur(18px);
-  transition: transform 0.3s ease, border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
-}
-
-.service-card:hover,
-.service-card-active {
-  transform: translateY(-8px);
-  border-color: rgba(16,185,129,0.42);
-  background: rgba(255,255,255,0.09);
-  box-shadow: 0 28px 80px rgba(0,0,0,0.2);
-}
-
-.service-card-glow {
-  position: absolute;
-  right: -35px;
-  top: -35px;
-  width: 160px;
-  height: 160px;
-  border-radius: 2rem;
-  filter: blur(28px);
-  opacity: 0.75;
-}
-
-.service-blue .service-card-glow {
-  background: rgba(30, 58, 138, 0.28);
-}
-
-.service-emerald .service-card-glow {
-  background: rgba(16, 185, 129, 0.24);
-}
-
-.service-orange .service-card-glow {
-  background: rgba(249, 115, 22, 0.22);
-}
-
-.service-mint .service-card-glow {
-  background: rgba(16, 185, 129, 0.2);
-}
-
-.service-sun .service-card-glow {
-  background: rgba(249, 115, 22, 0.22);
-}
-
-.service-deep .service-card-glow {
-  background: rgba(30, 58, 138, 0.24);
-}
-
-.service-icon {
-  display: flex;
-  height: 56px;
-  width: 56px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 1.25rem;
-  color: white;
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.22);
-}
-
-.service-blue .service-icon {
-  background: linear-gradient(135deg, #1E3A8A, #10B981);
-}
-
-.service-emerald .service-icon {
-  background: linear-gradient(135deg, #10B981, #F97316);
-}
-
-.service-orange .service-icon {
-  background: linear-gradient(135deg, #1E3A8A, #F97316);
-}
-
-.service-mint .service-icon {
-  background: linear-gradient(135deg, #10B981, #1E3A8A);
-}
-
-.service-sun .service-icon {
-  background: linear-gradient(135deg, #F97316, #10B981);
-}
-
-.service-deep .service-icon {
-  background: linear-gradient(135deg, #1E3A8A, #10B981);
-}
-
-.service-index {
-  font-size: 0.8rem;
-  font-weight: 900;
-  letter-spacing: 0.18em;
-  color: rgba(255,255,255,0.3);
-}
-
-.service-proof {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-  border-radius: 1.5rem;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.06);
-  padding: 1.25rem;
-  backdrop-filter: blur(14px);
-}
-
-@keyframes serviceLogoFloat {
-  0%, 100% {
-    transform: translate3d(0, 0, 0) rotate(0deg);
-  }
-
-  50% {
-    transform: translate3d(18px, -20px, 0) rotate(4deg);
-  }
-}
-
-@keyframes auraPulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-
-  50% {
-    transform: scale(1.08);
-    opacity: 1;
-  }
-}
-
-@keyframes avatarFloat {
-  0%, 100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-14px);
-  }
-}
-
-@keyframes spinSlow {
-  to {
-    transform: translateX(-50%) rotate(360deg);
-  }
-}
-
-@keyframes armLeft {
-  0%, 100% {
-    transform: rotate(28deg);
-  }
-
-  50% {
-    transform: rotate(10deg);
-  }
-}
-
-@keyframes armRight {
-  0%, 100% {
-    transform: rotate(-28deg);
-  }
-
-  50% {
-    transform: rotate(-8deg);
-  }
-}
-
-@keyframes orbitRotate {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (max-width: 1280px) {
-  .service-map {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .service-card {
-    min-height: 270px;
-  }
-
-  .presenter-stage {
-    grid-template-columns: 1fr;
-  }
-
-  .service-bubble::before {
-    display: none;
-  }
-}
-
-@media (max-width: 1024px) {
-  .service-presenter {
-    min-height: auto;
-  }
-
-  .presenter-stage {
-    min-height: auto;
-  }
-
-  .service-map {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 720px) {
-  .service-map {
-    grid-template-columns: 1fr;
-  }
-
-  .service-card {
-    min-height: auto;
-  }
-
-  .presenter-avatar {
-    transform: scale(0.9);
-  }
-
-  .service-presenter {
-    border-radius: 1.5rem;
-  }
-
-  .service-bubble {
-    border-radius: 1.5rem;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .service-logo-float,
-  .presenter-aura,
-  .presenter-avatar,
-  .avatar-ring,
-  .avatar-arm,
-  .presenter-orbit {
-    animation: none !important;
-  }
-}
-</style>
