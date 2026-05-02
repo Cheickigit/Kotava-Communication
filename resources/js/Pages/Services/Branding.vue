@@ -1,514 +1,693 @@
-<!-- resources/js/Pages/Services/Branding.vue -->
 <script setup>
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/GuestLayout.vue';
-import { ArrowLeft, Palette, Check, Sparkles, Brush, Layers, Type, Grid, Compass, Eye, Zap, ChevronRight, Mail, Phone, Target, Award, TrendingUp, Heart, Users, Clock, Shield } from 'lucide-vue-next';
-import { ref, onMounted } from 'vue';
+import {
+  ArrowLeft,
+  ArrowRight,
+  BadgeCheck,
+  Brush,
+  CheckCircle2,
+  Eye,
+  FileText,
+  Image as ImageIcon,
+  Layers3,
+  Mail,
+  Package,
+  Palette,
+  PenTool,
+  Phone,
+  Sparkles,
+  Type,
+  Wand2,
+  Zap,
+} from 'lucide-vue-next';
 
 defineOptions({ layout: MainLayout });
 
-const services = ref([
+const contactEmail = 'Contact@kotavacom.com';
+const contactPhoneDisplay = '+229 93 37 49 63';
+const contactPhoneHref = 'tel:+22993374963';
+
+const activeIndex = ref(0);
+let intervalId = null;
+
+const signatures = [
   {
-    title: 'Création de Logo',
-    description: 'Logo unique et mémorable qui représente l\'essence de votre marque',
-    icon: Compass,
-    color: 'from-[#22ae84] to-[#1c978a]',
-    features: ['Recherche approfondie', 'Esquisses multiples', 'Déclinaisons complètes', 'Guide d\'utilisation'],
-    deliverables: ['Logo principal', 'Variantes', 'Format vectoriel', 'Pack d\'icônes']
+    number: '01',
+    title: 'Signe',
+    label: 'Logo, symbole, variantes',
+    display: 'K',
+    caption: 'Une marque doit être identifiable même sans explication.',
+    icon: PenTool,
+    accent: 'text-brand-orange',
+    bg: 'bg-brand-orange',
+    glow: 'bg-brand-orange/25',
+    items: ['Logo principal', 'Monogramme', 'Déclinaisons', 'Zone de protection'],
   },
   {
-    title: 'Charte Graphique',
-    description: 'Système visuel cohérent pour une identité unifiée sur tous les supports',
-    icon: Grid,
-    color: 'from-[#1c978a] to-[#178e8b]',
-    features: ['Palette de couleurs', 'Typographie harmonieuse', 'Éléments graphiques', 'Guidelines complètes'],
-    deliverables: ['Guide d\'identité', 'Système de couleurs', 'Typographie', 'Éléments UI']
+    number: '02',
+    title: 'Couleur',
+    label: 'Palette, contraste, émotion',
+    display: 'RGB',
+    caption: 'La couleur donne une mémoire visuelle à votre marque.',
+    icon: Palette,
+    accent: 'text-brand-emerald',
+    bg: 'bg-brand-emerald',
+    glow: 'bg-brand-emerald/25',
+    items: ['Palette primaire', 'Secondaires', 'Contrastes', 'Codes couleur'],
   },
   {
-    title: 'Design Print',
-    description: 'Supports physiques premium qui impressionnent vos clients',
+    number: '03',
+    title: 'Typographie',
+    label: 'Hiérarchie, rythme, personnalité',
+    display: 'Aa',
+    caption: 'La typographie rend votre message reconnaissable.',
     icon: Type,
-    color: 'from-[#178e8b] to-[#0e437d]',
-    features: ['Cartes de visite', 'Papeterie corporate', 'Brochures', 'Packaging'],
-    deliverables: ['Fichiers print-ready', 'Maquettes 3D', 'Spécifications techniques', 'Impression conseil']
+    accent: 'text-white',
+    bg: 'bg-brand-blue',
+    glow: 'bg-brand-blue/25',
+    items: ['Titres', 'Textes', 'Accents', 'Règles d’usage'],
   },
   {
-    title: 'Design UI/UX Digital',
-    description: 'Interfaces utilisateur intuitives et expériences digitales fluides',
-    icon: Eye,
-    color: 'from-[#0e437d] to-[#22ae84]',
-    features: ['Wireframes', 'Prototypes interactifs', 'Design système', 'Tests utilisateur'],
-    deliverables: ['Maquettes Figma', 'Prototypes cliquables', 'Design system', 'Documentation']
+    number: '04',
+    title: 'Univers',
+    label: 'Supports, formes, assets',
+    display: 'KIT',
+    caption: 'Une identité forte doit rester cohérente sur tous les supports.',
+    icon: Layers3,
+    accent: 'text-brand-orange',
+    bg: 'bg-white',
+    glow: 'bg-white/20',
+    items: ['Templates', 'Social media', 'Print', 'Assets visuels'],
   },
   {
-    title: 'Identité de Marque',
-    description: 'Stratégie de marque complète avec positionnement unique',
-    icon: Layers,
-    color: 'from-[#22ae84] to-[#1c978a]',
-    features: ['Positionnement', 'Tone of voice', 'Archétype de marque', 'Récit narratif'],
-    deliverables: ['Brand book', 'Personas', 'Messaging', 'Stratégie contenu']
-  },
-  {
-    title: 'Motion Design Branding',
-    description: 'Animations qui donnent vie à votre identité visuelle',
+    number: '05',
+    title: 'Mouvement',
+    label: 'Animation, transition, présence',
+    display: '↗',
+    caption: 'Le mouvement rend l’identité plus vivante et mémorable.',
     icon: Zap,
-    color: 'from-[#1c978a] to-[#178e8b]',
-    features: ['Logo animé', 'Animations UI', 'Vidéos explicatives', 'Stickers animés'],
-    deliverables: ['Animations After Effects', 'Lottie files', 'GIFs animés', 'Vidéos courtes']
-  }
-]);
+    accent: 'text-brand-emerald',
+    bg: 'bg-brand-emerald',
+    glow: 'bg-brand-emerald/25',
+    items: ['Logo animé', 'Transitions', 'Lottie', 'Formats courts'],
+  },
+];
 
-const deliverables = ref([
-  { name: 'Logo Vectoriel', category: 'Format scalable' },
-  { name: 'Brand Book', category: 'Guide complet' },
-  { name: 'Pack UI/UX', category: 'Design système' },
-  { name: 'Animations', category: 'Motion design' },
-  { name: 'Templates', category: 'Modèles réutilisables' },
-  { name: 'Assets Pack', category: 'Bibliothèque complète' }
-]);
+const atelier = [
+  {
+    title: 'Logo signature',
+    note: 'Créer le signe qui porte la marque.',
+    icon: PenTool,
+    index: '01',
+    tags: ['Symbole', 'Versions', 'Icône', 'Vectoriel'],
+  },
+  {
+    title: 'Système graphique',
+    note: 'Construire les couleurs, formes et règles.',
+    icon: Palette,
+    index: '02',
+    tags: ['Palette', 'Formes', 'Grille', 'Contrastes'],
+  },
+  {
+    title: 'Expression visuelle',
+    note: 'Déployer l’identité sur les supports utiles.',
+    icon: ImageIcon,
+    index: '03',
+    tags: ['Print', 'Social', 'Digital', 'Templates'],
+  },
+  {
+    title: 'Brand book',
+    note: 'Documenter l’identité pour garder la cohérence.',
+    icon: FileText,
+    index: '04',
+    tags: ['Règles', 'Usages', 'Interdits', 'Formats'],
+  },
+];
 
-const benefits = ref([
-  { title: 'Design Unique', description: 'Créations originales sur-mesure', icon: Brush },
-  { title: 'Cohérence Visuelle', description: 'Identité unifiée sur tous les supports', icon: Grid },
-  { title: 'Livrables Complets', description: 'Tous les formats et versions inclus', icon: Layers },
-  { title: 'Support Continu', description: 'Accompagnement après livraison', icon: Shield }
-]);
+const assets = [
+  { title: 'SVG', label: 'vectoriel' },
+  { title: 'PNG', label: 'digital' },
+  { title: 'PDF', label: 'print' },
+  { title: 'Brand book', label: 'guide' },
+  { title: 'Templates', label: 'supports' },
+  { title: 'Motion', label: 'animation' },
+];
+
+const process = [
+  {
+    title: 'Observer',
+    text: 'Comprendre l’univers, les références et la perception actuelle.',
+    icon: Eye,
+  },
+  {
+    title: 'Signer',
+    text: 'Créer une direction visuelle forte et immédiatement reconnaissable.',
+    icon: Brush,
+  },
+  {
+    title: 'Systématiser',
+    text: 'Transformer le design en règles, formats et supports réutilisables.',
+    icon: Wand2,
+  },
+  {
+    title: 'Livrer',
+    text: 'Préparer les fichiers finaux, propres, organisés et prêts à l’usage.',
+    icon: Package,
+  },
+];
+
+const activeSignature = computed(() => signatures[activeIndex.value] || signatures[0]);
+
+const setActive = (index) => {
+  activeIndex.value = index;
+};
 
 onMounted(() => {
-  // Animation au scroll
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('animate-in');
-      }
-    });
-  }, { threshold: 0.1 });
+  intervalId = window.setInterval(() => {
+    activeIndex.value = (activeIndex.value + 1) % signatures.length;
+  }, 2600);
+});
 
-  document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+onUnmounted(() => {
+  if (intervalId) {
+    window.clearInterval(intervalId);
+  }
 });
 </script>
 
 <template>
-  <Head title="Branding & Design - KOTAVA Communication" />
+  <Head title="Branding & Design — KOTAVA Communication">
+    <meta
+      name="description"
+      content="KOTAVA Communication crée des identités visuelles premium : logo, charte graphique, brand book, supports print, templates digitaux, assets visuels et motion branding."
+    />
+  </Head>
 
-  <!-- Hero Section avec animation -->
-  <section class="relative bg-gradient-to-br from-[#22ae84] via-[#1c978a] to-[#178e8b] py-24 overflow-hidden min-h-[80vh] flex items-center">
-    <!-- Animation background -->
-    <div class="absolute inset-0 overflow-hidden">
-      <!-- Effets design créatifs -->
-      <div class="absolute top-10 left-10 w-48 h-48 bg-[#FFD166] rounded-full opacity-20 animate-pulse animation-delay-1000"></div>
-      <div class="absolute bottom-20 right-20 w-64 h-64 bg-[#EF476F] rounded-full opacity-15 animate-pulse animation-delay-1500"></div>
-      <div class="absolute top-1/3 right-1/4 w-32 h-32 bg-[#06D6A0] rounded-full opacity-20 animate-pulse"></div>
+  <main class="relative overflow-hidden bg-brand-dark text-white">
+    <!-- HERO SIGNATURE -->
+    <section class="relative isolate overflow-hidden pb-12 pt-32 sm:pb-16 lg:pt-36">
+      <div class="absolute inset-0 bg-grid-dark opacity-20"></div>
 
-      <!-- Effet design pattern -->
-      <div class="absolute inset-0 opacity-5"
-           style="background-image: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.3) 1px, transparent 1px),
-                  radial-gradient(circle at 80% 20%, rgba(255,255,255,0.2) 1px, transparent 1px);
-                  background-size: 50px 50px, 70px 70px;"></div>
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_12%_20%,rgba(249,115,22,0.22),transparent_27%),radial-gradient(circle_at_88%_74%,rgba(16,185,129,0.16),transparent_30%),radial-gradient(circle_at_50%_42%,rgba(30,58,138,0.36),transparent_34%)]"></div>
 
-      <!-- Particules créatives -->
-      <div v-for="i in 15" :key="i"
-           class="absolute w-2 h-2 bg-white rounded-full opacity-30 animate-float"
-           :style="{
-             left: `${Math.random() * 100}%`,
-             top: `${Math.random() * 100}%`,
-             animationDelay: `${Math.random() * 4}s`,
-             animationDuration: `${8 + Math.random() * 15}s`
-           }"></div>
-    </div>
+      <div class="absolute inset-x-0 top-0 h-52 bg-gradient-to-b from-brand-dark via-brand-dark/90 to-transparent"></div>
 
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 animate-on-scroll">
-      <!-- Bouton retour -->
-      <Link :href="route('services')"
-            class="group inline-flex items-center gap-2 text-white hover:text-white/80 mb-8 transition-all duration-300 hover:-translate-x-1">
-        <ArrowLeft :size="20" class="group-hover:-translate-x-1 transition-transform" />
-        <span>Retour aux services</span>
-      </Link>
-
-      <!-- Header avec badge animé -->
-      <div class="flex flex-col sm:flex-row sm:items-center gap-6 mb-8">
-        <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#22ae84] to-[#1c978a] flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-500">
-          <Palette :size="36" class="text-white" />
+      <div class="pointer-events-none absolute inset-0 overflow-hidden">
+        <div class="absolute left-1/2 top-[12%] hidden -translate-x-1/2 select-none text-[10vw] font-black uppercase leading-none tracking-[-0.12em] text-white/[0.025] lg:block">
+          SIGNATURE
         </div>
-        <div class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/20 backdrop-blur-lg text-white text-sm font-medium animate-bounce-subtle">
-          <Sparkles :size="16" />
-          <span>Identité visuelle sur-mesure</span>
-        </div>
+
+        <div class="brand-line absolute left-[7%] top-[28%] h-36 w-5 rotate-[22deg] rounded-full bg-brand-orange/35 blur-[1px]"></div>
+        <div class="brand-line animation-delay-700 absolute right-[10%] top-[22%] h-44 w-5 -rotate-[18deg] rounded-full bg-brand-emerald/30 blur-[1px]"></div>
+        <div class="brand-line animation-delay-1200 absolute bottom-[18%] left-[20%] h-32 w-5 rotate-[48deg] rounded-full bg-brand-blue/35 blur-[1px]"></div>
+
+        <div class="absolute -left-32 top-52 h-80 w-80 rounded-[5rem] border border-white/[0.05] brand-frame"></div>
+        <div class="absolute -right-28 bottom-24 h-96 w-96 rounded-full border border-brand-orange/10 brand-frame-reverse"></div>
       </div>
 
-      <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 animate-slide-up">
-        Branding & <span class="text-[#FFD166] relative">
-          Design
-          <span class="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-[#FFD166] to-transparent animate-underline"></span>
-        </span>
-      </h1>
+      <div class="site-container relative z-10">
+        <Link
+          href="/services"
+          class="mb-7 inline-flex items-center gap-2 text-sm font-black text-white/[0.62] transition hover:-translate-x-1 hover:text-brand-orange"
+        >
+          <ArrowLeft :size="18" />
+          Retour aux services
+        </Link>
 
-      <p class="text-xl md:text-2xl text-white/90 max-w-3xl leading-relaxed mb-10 animate-slide-up animation-delay-200">
-        Créez une identité visuelle <span class="text-[#FFD166] font-semibold">forte et mémorable</span>
-        qui marque les esprits, fidélise vos clients et différencie votre marque.
-      </p>
-
-      <!-- CTA Hero -->
-      <div class="flex flex-col sm:flex-row gap-4 animate-slide-up animation-delay-400">
-        <a href="/contact"
-           class="group relative px-8 py-4 bg-gradient-to-r from-[#FFD166] to-[#FFB347] text-gray-900 rounded-xl font-bold text-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105 animate-pulse-subtle max-w-xs">
-          <span class="relative z-10 flex items-center gap-2">
-            Créer mon identité visuelle <ChevronRight :size="20" class="group-hover:translate-x-1 transition-transform" />
-          </span>
-          <div class="absolute inset-0 bg-gradient-to-r from-[#FFD166] to-[#FFB347] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </a>
-
-        <a href="tel:+33612345678"
-           class="group px-6 py-4 bg-white/10 backdrop-blur-lg text-white rounded-xl font-semibold text-lg border-2 border-white/20 hover:bg-white/20 hover:border-white/40 transition-all duration-300 max-w-xs">
-          <span class="flex items-center gap-2">
-            <Phone :size="20" /> Demander un audit branding
-          </span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Statistiques -->
-  <section class="py-16 bg-gradient-to-r from-white via-gray-50 to-white stats-section animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-        <div v-for="(stat, index) in [
-          { value: '100%', label: 'Design sur-mesure', icon: Brush },
-          { value: '3x', label: 'Reconnaissance augmentée', icon: Eye },
-          { value: '24/7', label: 'Support créatif', icon: Shield },
-          { value: 'A+', label: 'Qualité garantie', icon: Award }
-        ]" :key="index"
-        class="text-center p-6 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-          <div class="text-4xl font-bold text-[#22ae84] mb-2">{{ stat.value }}</div>
-          <div class="text-gray-600 font-medium">{{ stat.label }}</div>
-          <div class="w-12 h-1 bg-gradient-to-r from-[#22ae84] to-[#1c978a] mx-auto mt-3"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Nos services branding -->
-  <section class="py-20 bg-white animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Nos Services de Branding</h2>
-        <p class="text-gray-600 text-lg max-w-2xl mx-auto">Une approche complète pour construire une marque forte</p>
-      </div>
-
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div v-for="(service, index) in services" :key="service.title"
-             class="group bg-white rounded-3xl p-8 border border-gray-100 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
-          <!-- Icon animé -->
-          <div :class="['w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br flex items-center justify-center group-hover:scale-110 transition-transform duration-300', service.color]">
-            <component :is="service.icon" :size="28" class="text-white" />
-          </div>
-
-          <!-- Titre et description -->
-          <h3 class="text-xl font-bold text-gray-900 mb-4 group-hover:text-[#22ae84] transition-colors duration-300">
-            {{ service.title }}
-          </h3>
-          <p class="text-gray-600 mb-6 leading-relaxed">{{ service.description }}</p>
-
-          <!-- Features -->
-          <div class="space-y-3 mb-6">
-            <div v-for="feature in service.features" :key="feature"
-                 class="flex items-center gap-3 group-hover:translate-x-2 transition-transform duration-300">
-              <div class="w-2 h-2 bg-gradient-to-r from-[#22ae84] to-[#1c978a] rounded-full flex-shrink-0"></div>
-              <span class="text-gray-700 font-medium text-sm">{{ feature }}</span>
-            </div>
-          </div>
-
-          <!-- Livrables -->
-          <div class="p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-100 mb-6">
-            <div class="text-sm text-gray-500 mb-2">Livrables inclus :</div>
-            <div class="flex flex-wrap gap-2">
-              <span v-for="item in service.deliverables" :key="item"
-                    class="inline-block px-3 py-1 bg-white text-gray-700 text-xs rounded-full border border-gray-200">
-                {{ item }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Lien vers plus d'info -->
-          <div class="mt-6 pt-6 border-t border-gray-100">
-            <div class="flex items-center text-sm text-[#22ae84] font-medium group-hover:text-[#1c978a] transition-colors cursor-pointer">
-              <span>Voir des exemples</span>
-              <ChevronRight :size="16" class="ml-1 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Livrables inclus -->
-  <section class="py-20 bg-gradient-to-br from-gray-50 via-white to-gray-50 animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Livrables Complets</h2>
-        <p class="text-gray-600 text-lg">Tous les fichiers et formats nécessaires pour votre marque</p>
-      </div>
-
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-        <div v-for="item in deliverables" :key="item.name"
-             class="group bg-white rounded-2xl p-6 text-center shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-          <div class="text-lg font-bold text-gray-900 mb-2 group-hover:text-[#22ae84] transition-colors">
-            {{ item.name }}
-          </div>
-          <div class="text-sm text-gray-500">{{ item.category }}</div>
-          <div class="w-8 h-1 bg-gradient-to-r from-[#22ae84] to-[#1c978a] mx-auto mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </div>
-      </div>
-
-      <!-- Note sur les formats -->
-      <div class="mt-12 bg-gradient-to-r from-[#22ae84]/5 to-[#1c978a]/5 rounded-2xl p-6 border border-[#22ae84]/10">
-        <div class="flex items-start gap-4">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#22ae84] to-[#1c978a] flex items-center justify-center flex-shrink-0">
-            <Layers :size="24" class="text-white" />
-          </div>
+        <div class="grid gap-10 lg:grid-cols-[0.76fr_1.24fr] lg:items-center">
           <div>
-            <h4 class="text-lg font-semibold text-gray-900 mb-2">Formats standards et professionnels</h4>
-            <p class="text-gray-600">
-              Nous fournissons tous les formats nécessaires : vectoriels (AI, EPS, SVG), pixels (PNG, JPG),
-              fichiers d'impression (PDF print-ready) et fichiers digitaux optimisés. Tous nos livrables
-              sont organisés dans une structure claire et professionnelle.
+            <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-orange backdrop-blur">
+              <Palette :size="14" />
+              Brand Signature Design
+            </div>
+
+            <h1 class="mt-6 max-w-4xl text-5xl font-black leading-[0.9] tracking-[-0.07em] text-white sm:text-6xl lg:text-7xl">
+              Une marque doit avoir
+              <span class="block bg-gradient-to-r from-brand-orange via-white to-brand-emerald bg-clip-text text-transparent">
+                une signature impossible à confondre.
+              </span>
+            </h1>
+
+            <p class="mt-6 max-w-xl text-base leading-8 text-white/[0.64]">
+              Nous construisons des identités visuelles distinctives : logo, système graphique,
+              typographie, couleurs, supports et fichiers prêts à l’usage.
             </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- Avantages -->
-  <section class="py-20 bg-white animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Pourquoi choisir notre branding ?</h2>
-        <p class="text-gray-600 text-lg">L'investissement qui transforme votre image de marque</p>
-      </div>
+            <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/contact"
+                class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] bg-brand-orange px-6 py-4 text-sm font-black text-white shadow-orange transition hover:-translate-y-0.5 hover:bg-brand-orange/90"
+              >
+                Créer mon identité
+                <ArrowRight :size="18" />
+              </Link>
 
-      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div v-for="(benefit, index) in benefits" :key="benefit.title"
-             class="group text-center p-6 bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
-          <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-[#22ae84]/10 to-[#1c978a]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-            <component :is="benefit.icon" :size="28" class="text-[#22ae84]" />
-          </div>
-          <h3 class="text-xl font-bold text-gray-900 mb-3">{{ benefit.title }}</h3>
-          <p class="text-gray-600">{{ benefit.description }}</p>
-          <div class="w-12 h-1 bg-gradient-to-r from-[#22ae84] to-[#1c978a] mx-auto mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Processus créatif -->
-  <section class="py-20 bg-gradient-to-br from-[#22ae84]/5 to-[#1c978a]/5 animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Notre Processus Créatif</h2>
-        <p class="text-gray-600 text-lg">Une méthodologie éprouvée pour des résultats exceptionnels</p>
-      </div>
-
-      <div class="grid md:grid-cols-4 gap-8">
-        <div v-for="(step, index) in [
-          { title: 'Découverte', desc: 'Audit, brief créatif, recherche' },
-          { title: 'Conception', desc: 'Esquisses, exploration, concepts' },
-          { title: 'Développement', desc: 'Affinage, feedback, itérations' },
-          { title: 'Livraison', desc: 'Finalisation, formats, formation' }
-        ]" :key="index"
-        class="relative">
-          <div class="text-center p-6 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-            <div class="text-4xl font-bold text-[#22ae84]/20 mb-4">0{{ index + 1 }}</div>
-            <h3 class="text-xl font-bold text-gray-900 mb-3">{{ step.title }}</h3>
-            <p class="text-gray-600">{{ step.desc }}</p>
-          </div>
-          <div v-if="index < 3" class="hidden md:block absolute top-1/2 right-0 w-8 h-1 bg-gradient-to-r from-[#22ae84] to-[#1c978a] transform translate-x-full"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Portfolio branding (placeholder) -->
-  <section class="py-20 bg-white animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Notre Portfolio Branding</h2>
-        <p class="text-gray-600 text-lg">Découvrez des identités visuelles qui ont transformé des marques</p>
-      </div>
-
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div v-for="i in 4" :key="i"
-             class="group relative aspect-square bg-gradient-to-br from-[#22ae84]/20 to-[#1c978a]/20 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300">
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <Palette :size="24" class="text-white" />
+              <a
+                :href="contactPhoneHref"
+                class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] border border-white/10 bg-white/[0.08] px-6 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-white/[0.12]"
+              >
+                <Phone :size="18" />
+                Audit branding
+              </a>
             </div>
           </div>
-          <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div class="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-            <p class="text-sm font-semibold">Projet branding {{ i }}</p>
+
+          <!-- Signature composition -->
+          <div class="relative">
+            <div
+              :class="[
+                'absolute left-1/2 top-1/2 h-[110%] w-[80%] -translate-x-1/2 -translate-y-1/2 rounded-[6rem] blur-3xl transition duration-700',
+                activeSignature.glow
+              ]"
+            ></div>
+
+            <div class="brand-signature relative overflow-hidden rounded-[3.2rem] border border-white/10 bg-white/[0.055] p-4 shadow-[0_40px_130px_rgba(0,0,0,0.36)] backdrop-blur-2xl sm:p-5">
+              <div class="relative min-h-[610px] overflow-hidden rounded-[2.6rem] border border-white/10 bg-slate-950/72 p-6">
+                <div class="absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.06)_0,transparent_24%,rgba(249,115,22,0.13)_48%,transparent_76%)]"></div>
+
+                <!-- Central sculpture -->
+                <div class="absolute left-1/2 top-1/2 z-10 flex h-80 w-80 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[4.6rem] border border-white/10 bg-brand-dark shadow-2xl">
+                  <div class="brand-rotate absolute h-64 w-64 rounded-[4rem] border border-dashed border-brand-orange/30"></div>
+                  <div class="absolute h-44 w-44 rounded-full border border-brand-emerald/25"></div>
+                  <div class="absolute h-28 w-28 rounded-[2rem] border border-white/10"></div>
+
+                  <div class="relative text-center">
+                    <div
+                      :class="[
+                        'text-8xl font-black leading-none tracking-[-0.12em]',
+                        activeSignature.accent
+                      ]"
+                    >
+                      {{ activeSignature.display }}
+                    </div>
+
+                    <div class="mt-3 text-[10px] font-black uppercase tracking-[0.24em] text-white/[0.35]">
+                      Brand mark
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Floating signature panels -->
+                <button
+                  v-for="(item, index) in signatures"
+                  :key="item.title"
+                  type="button"
+                  :class="[
+                    'absolute z-20 w-48 rounded-[1.6rem] border p-4 text-left shadow-2xl transition duration-300',
+                    index === 0 ? 'left-5 top-6' : '',
+                    index === 1 ? 'right-5 top-24' : '',
+                    index === 2 ? 'left-7 bottom-24' : '',
+                    index === 3 ? 'right-8 bottom-8' : '',
+                    index === 4 ? 'left-1/2 top-8 -translate-x-1/2' : '',
+                    activeIndex === index
+                      ? 'border-brand-orange/50 bg-white text-slate-950'
+                      : 'border-white/10 bg-white/[0.075] text-white backdrop-blur hover:bg-white/[0.14]'
+                  ]"
+                  @click="setActive(index)"
+                >
+                  <div class="flex items-center justify-between gap-3">
+                    <div
+                      :class="[
+                        'flex h-11 w-11 items-center justify-center rounded-2xl',
+                        item.bg,
+                        item.bg === 'bg-white' ? 'text-brand-blue' : 'text-white'
+                      ]"
+                    >
+                      <component :is="item.icon" :size="21" />
+                    </div>
+
+                    <span
+                      :class="[
+                        'text-xs font-black',
+                        activeIndex === index ? 'text-slate-400' : 'text-white/[0.40]'
+                      ]"
+                    >
+                      {{ item.number }}
+                    </span>
+                  </div>
+
+                  <div class="mt-4 text-lg font-black tracking-[-0.04em]">
+                    {{ item.title }}
+                  </div>
+
+                  <div
+                    :class="[
+                      'mt-1 text-xs font-bold',
+                      activeIndex === index ? 'text-slate-500' : 'text-white/[0.48]'
+                    ]"
+                  >
+                    {{ item.label }}
+                  </div>
+                </button>
+
+                <!-- Bottom caption -->
+                <div class="absolute inset-x-5 bottom-5 z-30 rounded-[1.6rem] border border-white/10 bg-brand-dark/82 p-5 backdrop-blur">
+                  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div>
+                      <div class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-orange">
+                        Signature active
+                      </div>
+
+                      <h3 class="mt-2 text-3xl font-black tracking-[-0.055em] text-white">
+                        {{ activeSignature.title }}
+                      </h3>
+
+                      <p class="mt-1 max-w-lg text-sm leading-6 text-white/[0.56]">
+                        {{ activeSignature.caption }}
+                      </p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2">
+                      <span
+                        v-for="item in activeSignature.items"
+                        :key="item"
+                        class="rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-white/[0.55]"
+                      >
+                        {{ item }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="absolute -left-5 top-12 hidden rotate-[-7deg] rounded-[1.3rem] bg-white px-5 py-4 text-slate-950 shadow-2xl lg:block">
+              <Sparkles :size="19" class="text-brand-orange" />
+              <div class="mt-2 text-sm font-black">Design original</div>
+            </div>
           </div>
         </div>
       </div>
+    </section>
 
-      <div class="text-center mt-8">
-        <a href="/portfolio"
-           class="group inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#22ae84] to-[#1c978a] text-white font-semibold rounded-xl hover:shadow-xl transition-all duration-300 hover:scale-105">
-          <span>Voir notre portfolio complet</span>
-          <ChevronRight :size="18" class="group-hover:translate-x-1 transition-transform" />
-        </a>
-      </div>
-    </div>
-  </section>
+    <!-- EDITORIAL STRIPS -->
+    <section class="relative isolate overflow-hidden py-12 sm:py-14 lg:py-16">
+      <div class="absolute inset-0 bg-grid-dark opacity-15"></div>
 
-  <!-- CTA Final -->
-  <section class="py-20 bg-gradient-to-br from-[#22ae84] via-[#1c978a] to-[#178e8b] text-white animate-on-scroll">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <Sparkles :size="48" class="mx-auto mb-6 text-[#FFD166] animate-pulse" />
+      <div class="site-container relative z-10">
+        <div class="mb-9 max-w-4xl">
+          <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-orange">
+            <Brush :size="15" />
+            Design layers
+          </div>
 
-      <h2 class="text-4xl md:text-5xl font-bold mb-6">
-        Prêt à <span class="text-[#FFD166]">transformer</span> votre image ?
-      </h2>
+          <h2 class="mt-4 text-4xl font-black leading-[0.95] tracking-[-0.06em] sm:text-5xl">
+            Une identité premium se construit
+            <span class="block text-brand-orange">par couches visuelles.</span>
+          </h2>
+        </div>
 
-      <p class="text-xl opacity-90 mb-10 max-w-2xl mx-auto">
-        Discutons de votre projet branding et créons ensemble une identité visuelle qui vous ressemble.
-      </p>
+        <div class="space-y-4">
+          <div
+            v-for="item in atelier"
+            :key="item.title"
+            class="group relative overflow-hidden rounded-[2.2rem] border border-white/10 bg-white/[0.055] p-4 backdrop-blur-xl transition duration-300 hover:bg-white/[0.09]"
+          >
+            <div class="absolute inset-y-0 left-0 w-1 bg-brand-orange opacity-0 transition group-hover:opacity-100"></div>
 
-      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-        <a href="/contact"
-           class="group relative px-8 py-4 bg-white text-[#22ae84] rounded-xl font-bold text-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <span class="relative z-10 flex items-center gap-3">
-            <Mail :size="20" /> Obtenir un devis personnalisé
-          </span>
-          <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </a>
+            <div class="grid gap-5 lg:grid-cols-[0.16fr_0.34fr_0.5fr] lg:items-center">
+              <div class="flex items-center gap-4">
+                <div class="text-6xl font-black tracking-[-0.1em] text-white/[0.12]">
+                  {{ item.index }}
+                </div>
 
-        <a href="tel:+33612345678"
-           class="group px-6 py-4 bg-transparent border-2 border-white text-white rounded-xl font-semibold text-lg hover:bg-white/10 transition-all duration-300">
-          <span class="flex items-center gap-2">
-            <Phone :size="20" /> +33 6 12 34 56 78
-          </span>
-        </a>
-      </div>
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-brand-blue">
+                  <component :is="item.icon" :size="24" />
+                </div>
+              </div>
 
-      <div class="mt-12 pt-8 border-t border-white/20">
-        <p class="text-white/80 mb-4">Ou contactez-nous directement :</p>
-        <div class="flex flex-wrap justify-center gap-6">
-          <a href="mailto:contact@kotava.com" class="flex items-center gap-2 hover:text-[#FFD166] transition-colors">
-            <Mail :size="18" /> contact@kotava.com
-          </a>
-          <a href="tel:+33612345678" class="flex items-center gap-2 hover:text-[#FFD166] transition-colors">
-            <Phone :size="18" /> +33 6 12 34 56 78
-          </a>
+              <div>
+                <h3 class="text-2xl font-black tracking-[-0.045em] text-white">
+                  {{ item.title }}
+                </h3>
+
+                <p class="mt-1 text-sm font-bold text-brand-orange">
+                  {{ item.note }}
+                </p>
+              </div>
+
+              <div class="flex flex-wrap gap-2">
+                <span
+                  v-for="tag in item.tags"
+                  :key="tag"
+                  class="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-white/[0.55]"
+                >
+                  <CheckCircle2 :size="13" class="text-brand-emerald" />
+                  {{ tag }}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+
+    <!-- VISUAL SYSTEM -->
+    <section class="relative isolate overflow-hidden py-12 sm:py-14 lg:py-16">
+      <div class="site-container relative z-10">
+        <div class="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+          <div class="relative overflow-hidden rounded-[2.8rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-2xl">
+            <div class="absolute -right-24 -top-24 h-80 w-80 rounded-[5rem] bg-brand-orange/15 blur-3xl"></div>
+
+            <div class="relative">
+              <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-emerald">
+                    <Wand2 :size="14" />
+                    Visual language
+                  </div>
+
+                  <h2 class="mt-5 max-w-2xl text-4xl font-black leading-[0.95] tracking-[-0.06em] text-white">
+                    Le style doit être
+                    <span class="block text-brand-orange">visible sans lire le logo.</span>
+                  </h2>
+                </div>
+
+                <div class="rounded-[1.5rem] bg-white px-5 py-4 text-slate-950">
+                  <div class="text-xs font-black uppercase tracking-[0.14em] text-slate-400">
+                    Cohérence
+                  </div>
+                  <div class="mt-1 text-4xl font-black tracking-[-0.07em]">A+</div>
+                </div>
+              </div>
+
+              <div class="mt-8 grid gap-4 sm:grid-cols-3">
+                <div class="group min-h-72 overflow-hidden rounded-[2.2rem] bg-brand-blue p-5">
+                  <div class="text-sm font-black text-white">Confiance</div>
+                  <div class="mt-36 text-6xl font-black tracking-[-0.1em] text-white/20">01</div>
+                </div>
+
+                <div class="group min-h-72 overflow-hidden rounded-[2.2rem] bg-brand-emerald p-5">
+                  <div class="text-sm font-black text-white">Élan</div>
+                  <div class="mt-36 text-6xl font-black tracking-[-0.1em] text-white/20">02</div>
+                </div>
+
+                <div class="group min-h-72 overflow-hidden rounded-[2.2rem] bg-brand-orange p-5">
+                  <div class="text-sm font-black text-white">Impact</div>
+                  <div class="mt-36 text-6xl font-black tracking-[-0.1em] text-white/25">03</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative overflow-hidden rounded-[2.8rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-2xl">
+            <div class="absolute -bottom-24 -right-20 h-80 w-80 rounded-[4rem] bg-brand-emerald/15 blur-3xl"></div>
+
+            <div class="relative">
+              <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-emerald">
+                <Layers3 :size="14" />
+                Méthode studio
+              </div>
+
+              <div class="mt-6 space-y-3">
+                <div
+                  v-for="(step, index) in process"
+                  :key="step.title"
+                  class="rounded-[1.6rem] border border-white/10 bg-slate-950/40 p-4"
+                >
+                  <div class="flex items-start gap-4">
+                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-brand-blue">
+                      <component :is="step.icon" :size="21" />
+                    </div>
+
+                    <div>
+                      <div class="text-[10px] font-black uppercase tracking-[0.18em] text-white/[0.32]">
+                        0{{ index + 1 }}
+                      </div>
+
+                      <h3 class="mt-1 text-base font-black text-white">
+                        {{ step.title }}
+                      </h3>
+
+                      <p class="mt-1 text-sm leading-6 text-white/[0.52]">
+                        {{ step.text }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Assets + CTA -->
+          <div class="relative overflow-hidden rounded-[2.8rem] border border-white/10 bg-white/[0.065] p-6 backdrop-blur-2xl lg:col-span-2 sm:p-8">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(249,115,22,0.16),transparent_30%),radial-gradient(circle_at_86%_80%,rgba(16,185,129,0.14),transparent_32%)]"></div>
+
+            <div class="relative grid gap-7 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+              <div>
+                <div class="flex h-16 w-16 items-center justify-center rounded-[1.4rem] bg-brand-orange text-white shadow-orange">
+                  <Package :size="28" />
+                </div>
+
+                <h2 class="mt-6 text-4xl font-black leading-[0.95] tracking-[-0.06em] text-white sm:text-5xl">
+                  Un brand kit propre,
+                  <span class="block bg-gradient-to-r from-brand-orange via-white to-brand-emerald bg-clip-text text-transparent">
+                    complet et prêt à utiliser.
+                  </span>
+                </h2>
+
+                <p class="mt-4 max-w-xl text-sm leading-7 text-white/[0.60]">
+                  Fichiers, règles, formats, supports et éléments visuels livrés de manière claire.
+                </p>
+              </div>
+
+              <div>
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <div
+                    v-for="asset in assets"
+                    :key="asset.title"
+                    class="rounded-[1.5rem] border border-white/10 bg-slate-950/45 p-4"
+                  >
+                    <BadgeCheck :size="19" class="text-brand-emerald" />
+
+                    <div class="mt-5 text-lg font-black text-white">
+                      {{ asset.title }}
+                    </div>
+
+                    <div class="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-white/[0.40]">
+                      {{ asset.label }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-5 grid gap-3 sm:grid-cols-3">
+                  <Link
+                    href="/contact"
+                    class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] bg-brand-orange px-5 py-4 text-sm font-black text-white shadow-orange transition hover:-translate-y-0.5 hover:bg-brand-orange/90 sm:col-span-3"
+                  >
+                    Demander un devis branding
+                    <ArrowRight :size="18" />
+                  </Link>
+
+                  <a
+                    :href="contactPhoneHref"
+                    class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] border border-white/10 bg-white/[0.08] px-5 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-white/[0.12] sm:col-span-3 lg:col-span-1"
+                  >
+                    <Phone :size="18" />
+                    Appeler
+                  </a>
+
+                  <a
+                    :href="`mailto:${contactEmail}`"
+                    class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] border border-white/10 bg-white/[0.08] px-5 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-white/[0.12] sm:col-span-3 lg:col-span-2"
+                  >
+                    <Mail :size="18" />
+                    {{ contactEmail }}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
 </template>
 
 <style scoped>
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(180deg); }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
+@keyframes brandSignature {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  50% {
+    transform: translateY(-10px) rotate(0.16deg);
   }
 }
 
-@keyframes underline {
-  from { width: 0; opacity: 0; }
-  to { width: 100%; opacity: 1; }
-}
-
-@keyframes pulse-subtle {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-}
-
-@keyframes bounce-subtle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.animate-float {
-  animation: float linear infinite;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.8s ease-out forwards;
-}
-
-.animate-underline {
-  animation: underline 1s ease-out forwards;
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s ease-in-out infinite;
-}
-
-.animate-bounce-subtle {
-  animation: bounce-subtle 2s ease-in-out infinite;
-}
-
-.animate-shimmer {
-  animation: shimmer 3s infinite;
-}
-
-.animation-delay-200 {
-  animation-delay: 200ms;
-}
-
-.animation-delay-400 {
-  animation-delay: 400ms;
-}
-
-.animation-delay-500 {
-  animation-delay: 500ms;
-}
-
-.animation-delay-1000 {
-  animation-delay: 1000ms;
-}
-
-.animation-delay-1500 {
-  animation-delay: 1500ms;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2000ms;
-}
-
-.animate-on-scroll {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.animate-on-scroll.animate-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .text-5xl {
-    font-size: 3rem;
+@keyframes brandRotate {
+  0% {
+    transform: rotate(0deg) scale(1);
   }
-  .text-7xl {
-    font-size: 4rem;
+
+  50% {
+    transform: rotate(180deg) scale(1.08);
   }
+
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+@keyframes brandLine {
+  0%, 100% {
+    transform: translateY(0) rotate(var(--tw-rotate));
+    opacity: 0.25;
+  }
+
+  50% {
+    transform: translateY(-18px) rotate(var(--tw-rotate));
+    opacity: 0.75;
+  }
+}
+
+@keyframes brandFrame {
+  0%, 100% {
+    transform: rotate(0deg) translateY(0);
+  }
+
+  50% {
+    transform: rotate(7deg) translateY(-12px);
+  }
+}
+
+@keyframes brandFrameReverse {
+  0%, 100% {
+    transform: rotate(0deg) translateY(0);
+  }
+
+  50% {
+    transform: rotate(-7deg) translateY(12px);
+  }
+}
+
+.brand-signature {
+  animation: brandSignature 7s ease-in-out infinite;
+}
+
+.brand-rotate {
+  animation: brandRotate 18s linear infinite;
+}
+
+.brand-line {
+  animation: brandLine 7s ease-in-out infinite;
+}
+
+.brand-frame {
+  animation: brandFrame 9s ease-in-out infinite;
+}
+
+.brand-frame-reverse {
+  animation: brandFrameReverse 10s ease-in-out infinite;
+}
+
+.animation-delay-700 {
+  animation-delay: 700ms;
+}
+
+.animation-delay-1200 {
+  animation-delay: 1200ms;
 }
 </style>

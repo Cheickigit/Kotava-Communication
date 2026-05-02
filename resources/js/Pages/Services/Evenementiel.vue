@@ -1,522 +1,823 @@
-<!-- resources/js/Pages/Services/Evenementiel.vue -->
 <script setup>
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/GuestLayout.vue';
-import { ArrowLeft, Calendar, Check, Sparkles, Users, Mic, Megaphone, TrendingUp, Star, Globe, MessageSquare, Zap, ChevronRight, Mail, Phone, Target, Award, Heart, Shield, Clock } from 'lucide-vue-next';
-import { ref, onMounted } from 'vue';
+import {
+  ArrowLeft,
+  ArrowRight,
+  BadgeCheck,
+  CalendarDays,
+  Camera,
+  CheckCircle2,
+  Clock3,
+  Globe2,
+  Mail,
+  MapPin,
+  Megaphone,
+  MessageCircle,
+  Mic,
+  Phone,
+  QrCode,
+  Radio,
+  Send,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Ticket,
+  TrendingUp,
+  UsersRound,
+  Zap,
+} from 'lucide-vue-next';
 
 defineOptions({ layout: MainLayout });
 
-const services = ref([
+const contactEmail = 'Contact@kotavacom.com';
+const contactPhoneDisplay = '+229 93 37 49 63';
+const contactPhoneHref = 'tel:+22993374963';
+
+const activeIndex = ref(0);
+let intervalId = null;
+
+const eventModes = [
   {
-    title: 'Organisation d\'Événements',
-    description: 'Gestion complète d\'événements corporate, lancements produits et soirées institutionnelles',
-    icon: Users,
-    color: 'from-[#22ae84] to-[#1c978a]',
-    features: ['Planification stratégique', 'Logistique complète', 'Animation et modération', 'Gestion des invités'],
-    scale: ['Événements 50-1000 personnes', 'Lieux prestigieux', 'Catering premium', 'Équipe dédiée']
+    code: 'PASS-01',
+    title: 'Événement corporate',
+    label: 'Conférence · séminaire · soirée institutionnelle',
+    badge: 'Corporate',
+    icon: UsersRound,
+    accent: 'bg-brand-emerald',
+    glow: 'bg-brand-emerald/[0.24]',
+    objective: 'Créer un moment professionnel, fluide, élégant et aligné avec votre image.',
+    items: ['Accueil', 'Scène', 'Invités', 'Coordination'],
   },
   {
-    title: 'Relations Presse & Médias',
-    description: 'Stratégie de communication média, relations avec journalistes et couverture presse',
-    icon: Megaphone,
-    color: 'from-[#1c978a] to-[#178e8b]',
-    features: ['Dossiers de presse', 'Communiqués média', 'Interviews médiatiques', 'Reportages TV'],
-    contacts: ['Journalistes nationaux', 'Médias spécialisés', 'Influenceurs sectoriels', 'Blogueurs clés']
-  },
-  {
-    title: 'Stratégie d\'Influence',
-    description: 'Campagnes d\'influence avec ambassadeurs de marque et partenariats stratégiques',
-    icon: TrendingUp,
-    color: 'from-[#178e8b] to-[#0e437d]',
-    features: ['Identification d\'ambassadeurs', 'Campagnes d\'influence', 'Partenariats stratégiques', 'Suivi ROI'],
-    platforms: ['Réseaux sociaux', 'Blogs influence', 'Podcasts', 'Événements sectoriels']
-  },
-  {
-    title: 'Événements Digitaux & Hybrides',
-    description: 'Webinaires, conférences virtuelles et événements hybrides à portée internationale',
-    icon: Globe,
-    color: 'from-[#0e437d] to-[#22ae84]',
-    features: ['Plateformes streaming', 'Animation interactive', 'Networking virtuel', 'Analytics avancés'],
-    technologies: ['Zoom/Teams pro', 'Plateformes dédiées', 'Outils interactifs', 'Studio virtuel']
-  },
-  {
-    title: 'Gestion de Crise & RP',
-    description: 'Stratégie de communication de crise et gestion de l\'image en situations sensibles',
-    icon: Shield,
-    color: 'from-[#22ae84] to-[#1c978a]',
-    features: ['Veille média 24/7', 'Stratégie de crise', 'Communication réactive', 'Rétablissement image'],
-    expertise: ['Crisis management', 'Formation porte-parole', 'Monitoring', 'Rapports d\'impact']
-  },
-  {
-    title: 'Production de Contenu Événementiel',
-    description: 'Couverture média, live reporting et contenu exclusif pour vos événements',
+    code: 'PASS-02',
+    title: 'Lancement produit',
+    label: 'Annonce · démonstration · activation',
+    badge: 'Launch',
     icon: Star,
-    color: 'from-[#1c978a] to-[#178e8b]',
-    features: ['Photographie événementielle', 'Vidéos highlights', 'Live social media', 'Interviews exclusives'],
-    deliverables: ['Album photo premium', 'Vidéo aftermovie', 'Contenu réseaux sociaux', 'Reportage média']
-  }
-]);
+    accent: 'bg-brand-orange',
+    glow: 'bg-brand-orange/[0.24]',
+    objective: 'Mettre votre nouveauté en scène pour générer attention, désir et conversation.',
+    items: ['Concept', 'Démo', 'Médias', 'Activation'],
+  },
+  {
+    code: 'PASS-03',
+    title: 'Relations presse',
+    label: 'Journalistes · médias · retombées',
+    badge: 'RP',
+    icon: Megaphone,
+    accent: 'bg-brand-blue',
+    glow: 'bg-brand-blue/[0.30]',
+    objective: 'Transformer votre actualité en visibilité médiatique crédible et structurée.',
+    items: ['Communiqué', 'Presse', 'Interview', 'Suivi'],
+  },
+  {
+    code: 'PASS-04',
+    title: 'Événement hybride',
+    label: 'Présentiel · live · replay',
+    badge: 'Hybrid',
+    icon: Globe2,
+    accent: 'bg-brand-emerald',
+    glow: 'bg-brand-emerald/[0.24]',
+    objective: 'Étendre l’expérience au-delà du lieu physique avec du live et du contenu réutilisable.',
+    items: ['Streaming', 'Replay', 'Interaction', 'Diffusion'],
+  },
+  {
+    code: 'PASS-05',
+    title: 'Influence & partenariats',
+    label: 'Ambassadeurs · créateurs · relais',
+    badge: 'Influence',
+    icon: TrendingUp,
+    accent: 'bg-brand-orange',
+    glow: 'bg-brand-orange/[0.24]',
+    objective: 'Créer des relais humains et digitaux autour de votre événement.',
+    items: ['Créateurs', 'Partenaires', 'Social', 'ROI'],
+  },
+  {
+    code: 'PASS-06',
+    title: 'Crise & réputation',
+    label: 'Veille · message · image',
+    badge: 'Crisis',
+    icon: ShieldCheck,
+    accent: 'bg-brand-blue',
+    glow: 'bg-brand-blue/[0.30]',
+    objective: 'Préparer les bons messages et protéger votre image en contexte sensible.',
+    items: ['Veille', 'Réponse', 'Porte-parole', 'Image'],
+  },
+];
 
-const eventTypes = ref([
-  { name: 'Lancements Produits', category: 'Événements corporate' },
-  { name: 'Conférences & Séminaires', category: 'Événements professionnels' },
-  { name: 'Soirées Institutionnelles', category: 'Événements réseautage' },
-  { name: 'Inaugurations', category: 'Événements officiels' },
-  { name: 'Webinaires', category: 'Événements digitaux' },
-  { name: 'Team Buildings', category: 'Événements internes' }
-]);
+const journey = [
+  {
+    time: 'Avant',
+    title: 'Créer l’attente',
+    text: 'Concept, invitations, médias, partenaires et teasing.',
+    icon: CalendarDays,
+  },
+  {
+    time: 'Pendant',
+    title: 'Maîtriser le moment',
+    text: 'Accueil, scène, timing, régie, animation et expérience invités.',
+    icon: Mic,
+  },
+  {
+    time: 'Live',
+    title: 'Amplifier en direct',
+    text: 'Live posting, photos, vidéos, presse, stories et interactions.',
+    icon: Radio,
+  },
+  {
+    time: 'Après',
+    title: 'Faire durer l’impact',
+    text: 'Aftermovie, retombées, reporting, contenus et suivi relationnel.',
+    icon: Send,
+  },
+];
 
-const benefits = ref([
-  { title: 'Logistique Complète', description: 'Gestion de A à Z de votre événement', icon: Calendar },
-  { title: 'Réseau Média Étendu', description: 'Contacts presse et influenceurs clés', icon: Megaphone },
-  { title: 'Suivi Personnalisé', description: 'Accompagnement avant/pendant/après', icon: Users },
-  { title: 'Impact Garanti', description: 'Mesure précise des résultats et ROI', icon: TrendingUp }
-]);
+const experienceDesk = [
+  {
+    title: 'Invitation',
+    label: 'RSVP, badges, invités',
+    icon: Ticket,
+  },
+  {
+    title: 'Lieu',
+    label: 'Plan, scène, accueil',
+    icon: MapPin,
+  },
+  {
+    title: 'Médias',
+    label: 'Presse, influence, RP',
+    icon: Megaphone,
+  },
+  {
+    title: 'Contenu',
+    label: 'Photo, vidéo, live',
+    icon: Camera,
+  },
+];
+
+const deliverables = [
+  { title: 'Concept event', label: 'angle & expérience' },
+  { title: 'Guest list', label: 'invités & RSVP' },
+  { title: 'Kit presse', label: 'médias & message' },
+  { title: 'Live content', label: 'posts & stories' },
+  { title: 'Aftermovie', label: 'souvenir premium' },
+  { title: 'Reporting', label: 'impact & retombées' },
+];
+
+const proof = [
+  { title: 'Logistique cadrée', icon: BadgeCheck },
+  { title: 'Expérience premium', icon: Sparkles },
+  { title: 'Retombées médias', icon: Megaphone },
+  { title: 'Suivi post-event', icon: Clock3 },
+];
+
+const confetti = [
+  'left-[8%] top-[18%] bg-brand-orange',
+  'left-[18%] top-[72%] bg-brand-emerald',
+  'left-[38%] top-[12%] bg-white',
+  'right-[12%] top-[20%] bg-brand-orange',
+  'right-[20%] bottom-[24%] bg-brand-emerald',
+  'left-[58%] bottom-[16%] bg-brand-blue',
+  'left-[74%] top-[42%] bg-white',
+  'left-[46%] bottom-[38%] bg-brand-orange',
+];
+
+const activeMode = computed(() => eventModes[activeIndex.value] || eventModes[0]);
+
+const setActive = (index) => {
+  activeIndex.value = index;
+};
 
 onMounted(() => {
-  // Animation au scroll
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('animate-in');
-      }
-    });
-  }, { threshold: 0.1 });
+  intervalId = window.setInterval(() => {
+    activeIndex.value = (activeIndex.value + 1) % eventModes.length;
+  }, 2800);
+});
 
-  document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+onUnmounted(() => {
+  if (intervalId) {
+    window.clearInterval(intervalId);
+  }
 });
 </script>
 
 <template>
-  <Head title="Événementiel & RP - KOTAVA Communication" />
+  <Head title="Événementiel & RP — KOTAVA Communication">
+    <meta
+      name="description"
+      content="KOTAVA Communication conçoit et organise des événements corporate, lancements produits, relations presse, campagnes d’influence, événements hybrides et dispositifs RP."
+    />
+  </Head>
 
-  <!-- Hero Section avec animation -->
-  <section class="relative bg-gradient-to-br from-[#22ae84] via-[#1c978a] to-[#178e8b] py-24 overflow-hidden min-h-[80vh] flex items-center">
-    <!-- Animation background événementiel -->
-    <div class="absolute inset-0 overflow-hidden">
-      <!-- Effets lumineux événementiels -->
-      <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer"></div>
-      <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer animation-delay-1000"></div>
+  <main class="relative overflow-hidden bg-[#06070B] text-white">
+    <!-- EVENT PASSPORT HERO -->
+    <section class="relative isolate min-h-screen overflow-hidden px-3 pb-10 pt-28 sm:px-4 lg:px-6 lg:pt-32">
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_18%_16%,rgba(249,115,22,0.20),transparent_28%),radial-gradient(circle_at_86%_78%,rgba(16,185,129,0.16),transparent_30%),linear-gradient(180deg,#06070B_0%,#08111F_50%,#06070B_100%)]"></div>
 
-      <!-- Projecteurs événementiels -->
-      <div class="absolute top-10 left-1/4 w-32 h-64 bg-gradient-to-b from-white/10 to-transparent opacity-20 animate-pulse"></div>
-      <div class="absolute top-10 right-1/4 w-32 h-64 bg-gradient-to-b from-white/10 to-transparent opacity-20 animate-pulse animation-delay-500"></div>
+      <div class="absolute left-[10%] top-0 h-[76%] w-[20%] -skew-x-12 bg-gradient-to-b from-brand-orange/[0.20] via-brand-orange/[0.04] to-transparent blur-2xl"></div>
+      <div class="absolute right-[12%] top-0 h-[78%] w-[22%] skew-x-12 bg-gradient-to-b from-brand-emerald/[0.18] via-brand-emerald/[0.04] to-transparent blur-2xl"></div>
 
-      <!-- Particules événementielles (confettis) -->
-      <div v-for="i in 20" :key="i"
-           class="absolute w-3 h-3 opacity-30 animate-float"
-           :style="{
-             left: `${Math.random() * 100}%`,
-             top: `${Math.random() * 100}%`,
-             backgroundColor: ['#FFD166', '#EF476F', '#06D6A0', '#118AB2'][Math.floor(Math.random() * 4)],
-             animationDelay: `${Math.random() * 3}s`,
-             animationDuration: `${5 + Math.random() * 10}s`
-           }"></div>
+      <div class="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          v-for="(item, index) in confetti"
+          :key="item"
+          :class="['event-confetti absolute h-3 w-2 rounded-[0.25rem]', item]"
+          :style="{ animationDelay: `${index * 180}ms` }"
+        ></div>
 
-      <!-- Effet de foule subtil -->
-      <div class="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-white/5 to-transparent"></div>
-    </div>
-
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 animate-on-scroll">
-      <!-- Bouton retour -->
-      <Link :href="route('services')"
-            class="group inline-flex items-center gap-2 text-white hover:text-white/80 mb-8 transition-all duration-300 hover:-translate-x-1">
-        <ArrowLeft :size="20" class="group-hover:-translate-x-1 transition-transform" />
-        <span>Retour aux services</span>
-      </Link>
-
-      <!-- Header avec badge animé -->
-      <div class="flex flex-col sm:flex-row sm:items-center gap-6 mb-8">
-        <div class="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#22ae84] to-[#1c978a] flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-500">
-          <Calendar :size="36" class="text-white" />
-        </div>
-        <div class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/20 backdrop-blur-lg text-white text-sm font-medium animate-bounce-subtle">
-          <Sparkles :size="16" />
-          <span>Événements & influence premium</span>
+        <div class="absolute left-1/2 top-[12%] hidden -translate-x-1/2 select-none text-[10vw] font-black uppercase leading-none tracking-[-0.12em] text-white/[0.025] lg:block">
+          EVENT PASS
         </div>
       </div>
 
-      <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 animate-slide-up">
-        Événementiel & <span class="text-[#FFD166] relative">
-          RP
-          <span class="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-[#FFD166] to-transparent animate-underline"></span>
-        </span>
-      </h1>
+      <div class="site-container relative z-10">
+        <Link
+          href="/services"
+          class="mb-7 inline-flex items-center gap-2 text-sm font-black text-white/[0.62] transition hover:-translate-x-1 hover:text-brand-orange"
+        >
+          <ArrowLeft :size="18" />
+          Retour aux services
+        </Link>
 
-      <p class="text-xl md:text-2xl text-white/90 max-w-3xl leading-relaxed mb-10 animate-slide-up animation-delay-200">
-        Organisez des événements <span class="text-[#FFD166] font-semibold">mémorables et impactants</span>
-        qui développent votre influence médiatique et renforcent votre notoriété.
-      </p>
-
-      <!-- CTA Hero -->
-      <div class="flex flex-col sm:flex-row gap-4 animate-slide-up animation-delay-400">
-        <a href="/contact"
-           class="group relative px-8 py-4 bg-gradient-to-r from-[#FFD166] to-[#FFB347] text-gray-900 rounded-xl font-bold text-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105 animate-pulse-subtle max-w-xs">
-          <span class="relative z-10 flex items-center gap-2">
-            Planifier mon événement <ChevronRight :size="20" class="group-hover:translate-x-1 transition-transform" />
-          </span>
-          <div class="absolute inset-0 bg-gradient-to-r from-[#FFD166] to-[#FFB347] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </a>
-
-        <a href="tel:+33612345678"
-           class="group px-6 py-4 bg-white/10 backdrop-blur-lg text-white rounded-xl font-semibold text-lg border-2 border-white/20 hover:bg-white/20 hover:border-white/40 transition-all duration-300 max-w-xs">
-          <span class="flex items-center gap-2">
-            <Phone :size="20" /> Conseil événementiel gratuit
-          </span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Statistiques événementielles -->
-  <section class="py-16 bg-gradient-to-r from-white via-gray-50 to-white stats-section animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-        <div v-for="(stat, index) in [
-          { value: '500+', label: 'Événements organisés', icon: Calendar },
-          { value: '95%', label: 'Satisfaction clients', icon: Heart },
-          { value: '100+', label: 'Contacts média', icon: Megaphone },
-          { value: '24/7', label: 'Support événementiel', icon: Shield }
-        ]" :key="index"
-        class="text-center p-6 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-          <div class="text-4xl font-bold text-[#22ae84] mb-2">{{ stat.value }}</div>
-          <div class="text-gray-600 font-medium">{{ stat.label }}</div>
-          <div class="w-12 h-1 bg-gradient-to-r from-[#22ae84] to-[#1c978a] mx-auto mt-3"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Nos services événementiels -->
-  <section class="py-20 bg-white animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Nos Services Événementiels</h2>
-        <p class="text-gray-600 text-lg max-w-2xl mx-auto">Une expertise complète pour des événements réussis</p>
-      </div>
-
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div v-for="(service, index) in services" :key="service.title"
-             class="group bg-white rounded-3xl p-8 border border-gray-100 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
-          <!-- Icon animé -->
-          <div :class="['w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br flex items-center justify-center group-hover:scale-110 transition-transform duration-300', service.color]">
-            <component :is="service.icon" :size="28" class="text-white" />
-          </div>
-
-          <!-- Titre et description -->
-          <h3 class="text-xl font-bold text-gray-900 mb-4 group-hover:text-[#22ae84] transition-colors duration-300">
-            {{ service.title }}
-          </h3>
-          <p class="text-gray-600 mb-6 leading-relaxed">{{ service.description }}</p>
-
-          <!-- Features -->
-          <div class="space-y-3 mb-6">
-            <div v-for="feature in service.features" :key="feature"
-                 class="flex items-center gap-3 group-hover:translate-x-2 transition-transform duration-300">
-              <div class="w-2 h-2 bg-gradient-to-r from-[#22ae84] to-[#1c978a] rounded-full flex-shrink-0"></div>
-              <span class="text-gray-700 font-medium text-sm">{{ feature }}</span>
-            </div>
-          </div>
-
-          <!-- Échelle/Réseau -->
-          <div class="p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-100 mb-6">
-            <div class="text-sm text-gray-500 mb-2">
-              <span v-if="service.scale">Échelle :</span>
-              <span v-if="service.contacts">Réseau :</span>
-              <span v-if="service.platforms">Plateformes :</span>
-              <span v-if="service.technologies">Technologies :</span>
-              <span v-if="service.expertise">Expertise :</span>
-              <span v-if="service.deliverables">Livrables :</span>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <span v-for="item in (service.scale || service.contacts || service.platforms || service.technologies || service.expertise || service.deliverables)" :key="item"
-                    class="inline-block px-3 py-1 bg-white text-gray-700 text-xs rounded-full border border-gray-200">
-                {{ item }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Lien vers plus d'info -->
-          <div class="mt-6 pt-6 border-t border-gray-100">
-            <div class="flex items-center text-sm text-[#22ae84] font-medium group-hover:text-[#1c978a] transition-colors cursor-pointer">
-              <span>Voir des références</span>
-              <ChevronRight :size="16" class="ml-1 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Types d'événements -->
-  <section class="py-20 bg-gradient-to-br from-gray-50 via-white to-gray-50 animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Types d\'Événements</h2>
-        <p class="text-gray-600 text-lg">Nous organisons tous types d'événements, du corporate au festif</p>
-      </div>
-
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-        <div v-for="item in eventTypes" :key="item.name"
-             class="group bg-white rounded-2xl p-6 text-center shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-          <div class="text-lg font-bold text-gray-900 mb-2 group-hover:text-[#22ae84] transition-colors">
-            {{ item.name }}
-          </div>
-          <div class="text-sm text-gray-500">{{ item.category }}</div>
-          <div class="w-8 h-1 bg-gradient-to-r from-[#22ae84] to-[#1c978a] mx-auto mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </div>
-      </div>
-
-      <!-- Note sur la personnalisation -->
-      <div class="mt-12 bg-gradient-to-r from-[#22ae84]/5 to-[#1c978a]/5 rounded-2xl p-6 border border-[#22ae84]/10">
-        <div class="flex items-start gap-4">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#22ae84] to-[#1c978a] flex items-center justify-center flex-shrink-0">
-            <Sparkles :size="24" class="text-white" />
-          </div>
+        <div class="grid gap-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-center">
           <div>
-            <h4 class="text-lg font-semibold text-gray-900 mb-2">Personnalisation complète</h4>
-            <p class="text-gray-600">
-              Chaque événement est conçu sur-mesure selon vos objectifs, votre budget et votre cible.
-              Nous adaptons notre approche pour créer des expériences uniques et mémorables qui
-              correspondent parfaitement à l'identité de votre marque.
+            <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-orange backdrop-blur">
+              <Ticket :size="14" />
+              Event Passport Experience
+            </div>
+
+            <h1 class="mt-6 max-w-4xl text-5xl font-black leading-[0.88] tracking-[-0.075em] text-white sm:text-6xl lg:text-7xl">
+              Un événement doit
+              <span class="block bg-gradient-to-r from-brand-orange via-white to-brand-emerald bg-clip-text text-transparent">
+                exister avant le jour J.
+              </span>
+            </h1>
+
+            <p class="mt-6 max-w-xl text-base leading-8 text-white/[0.64]">
+              Concept, invités, scène, médias, influence, live et contenus post-event :
+              nous créons une expérience complète, pas une simple organisation.
+            </p>
+
+            <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/contact"
+                class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] bg-brand-orange px-6 py-4 text-sm font-black text-white shadow-orange transition hover:-translate-y-0.5 hover:bg-brand-orange/90"
+              >
+                Planifier mon événement
+                <ArrowRight :size="18" />
+              </Link>
+
+              <a
+                :href="contactPhoneHref"
+                class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] border border-white/10 bg-white/[0.08] px-6 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-white/[0.12]"
+              >
+                <Phone :size="18" />
+                Conseil événementiel
+              </a>
+            </div>
+          </div>
+
+          <!-- Passport composition -->
+          <div class="relative min-h-[720px]">
+            <div :class="['absolute left-1/2 top-1/2 h-[86%] w-[72%] -translate-x-1/2 -translate-y-1/2 rounded-[6rem] blur-3xl transition duration-700', activeMode.glow]"></div>
+
+            <!-- Big invitation pass -->
+            <div class="event-pass absolute left-1/2 top-1/2 z-20 w-full max-w-[620px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[3rem] border border-white/10 bg-white/[0.07] p-5 shadow-[0_45px_150px_rgba(0,0,0,0.45)] backdrop-blur-2xl">
+              <div class="relative overflow-hidden rounded-[2.4rem] border border-white/10 bg-[#080D15] p-6">
+                <div class="absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.08)_0,transparent_24%,rgba(249,115,22,0.14)_52%,transparent_78%)]"></div>
+
+                <div class="relative z-10 flex items-start justify-between gap-5 border-b border-white/10 pb-6">
+                  <div>
+                    <div class="text-[10px] font-black uppercase tracking-[0.24em] text-brand-orange">
+                      Invitation officielle
+                    </div>
+
+                    <h2 class="mt-3 text-4xl font-black leading-[0.9] tracking-[-0.07em] text-white sm:text-5xl">
+                      {{ activeMode.title }}
+                    </h2>
+
+                    <p class="mt-3 max-w-sm text-sm leading-6 text-white/[0.56]">
+                      {{ activeMode.label }}
+                    </p>
+                  </div>
+
+                  <div :class="['flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.4rem] text-white', activeMode.accent]">
+                    <component :is="activeMode.icon" :size="30" />
+                  </div>
+                </div>
+
+                <div class="relative z-10 mt-6 grid gap-5 lg:grid-cols-[0.68fr_0.32fr]">
+                  <div>
+                    <div class="rounded-[2rem] border border-white/10 bg-black/[0.32] p-5">
+                      <div class="flex items-center justify-between gap-4">
+                        <div>
+                          <div class="text-[10px] font-black uppercase tracking-[0.18em] text-white/[0.36]">
+                            Objectif
+                          </div>
+
+                          <p class="mt-3 text-sm leading-6 text-white/[0.62]">
+                            {{ activeMode.objective }}
+                          </p>
+                        </div>
+
+                        <Sparkles :size="26" class="shrink-0 text-brand-orange" />
+                      </div>
+                    </div>
+
+                    <div class="mt-4 grid grid-cols-2 gap-3">
+                      <div
+                        v-for="item in activeMode.items"
+                        :key="item"
+                        class="rounded-[1.3rem] border border-white/10 bg-white/[0.055] p-4"
+                      >
+                        <CheckCircle2 :size="16" class="text-brand-emerald" />
+                        <div class="mt-4 text-sm font-black text-white">
+                          {{ item }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="rounded-[2rem] border border-white/10 bg-white p-4 text-slate-950">
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <div class="text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">
+                          Access
+                        </div>
+                        <div class="mt-1 text-2xl font-black tracking-[-0.07em]">
+                          VIP
+                        </div>
+                      </div>
+
+                      <QrCode :size="32" class="text-brand-blue" />
+                    </div>
+
+                    <div class="mt-8 space-y-2">
+                      <div class="h-2 rounded-[999px] bg-slate-200"></div>
+                      <div class="h-2 w-4/5 rounded-[999px] bg-slate-200"></div>
+                      <div class="h-2 w-2/3 rounded-[999px] bg-slate-200"></div>
+                    </div>
+
+                    <div class="mt-8 rounded-[1.2rem] bg-brand-orange px-4 py-3 text-center text-xs font-black uppercase tracking-[0.16em] text-white">
+                      {{ activeMode.badge }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="relative z-10 mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-5">
+                  <div>
+                    <div class="text-[10px] font-black uppercase tracking-[0.20em] text-white/[0.36]">
+                      {{ activeMode.code }}
+                    </div>
+                    <div class="mt-1 text-sm font-bold text-white/[0.55]">
+                      Expérience conçue par KOTAVA
+                    </div>
+                  </div>
+
+                  <div class="flex gap-2">
+                    <span class="h-3 w-12 rounded-[999px] bg-brand-orange"></span>
+                    <span class="h-3 w-12 rounded-[999px] bg-brand-emerald"></span>
+                    <span class="h-3 w-12 rounded-[999px] bg-white"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Floating RSVP cards -->
+            <div class="guest-float absolute left-0 top-12 z-10 hidden w-56 rotate-[-8deg] rounded-[2rem] border border-white/10 bg-white p-5 text-slate-950 shadow-2xl lg:block">
+              <Ticket :size="22" class="text-brand-orange" />
+              <div class="mt-5 text-2xl font-black tracking-[-0.06em]">RSVP</div>
+              <div class="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-400">Invités confirmés</div>
+            </div>
+
+            <div class="guest-float-delay absolute bottom-12 right-0 z-10 hidden w-64 rotate-[7deg] rounded-[2rem] border border-white/10 bg-brand-orange p-5 text-white shadow-2xl lg:block">
+              <Megaphone :size="24" />
+              <div class="mt-8 text-2xl font-black tracking-[-0.06em]">Media push</div>
+              <div class="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-white/[0.65]">Presse · influence · social</div>
+            </div>
+
+            <!-- Selectors -->
+            <div class="absolute inset-x-0 bottom-0 z-30 grid grid-cols-3 gap-2 sm:grid-cols-6">
+              <button
+                v-for="(mode, index) in eventModes"
+                :key="mode.title"
+                type="button"
+                :class="[
+                  'rounded-[1.15rem] border p-3 text-left backdrop-blur transition',
+                  activeIndex === index
+                    ? 'border-brand-orange/50 bg-brand-orange/[0.16]'
+                    : 'border-white/10 bg-white/[0.055] hover:bg-white/[0.10]'
+                ]"
+                @click="setActive(index)"
+              >
+                <component
+                  :is="mode.icon"
+                  :size="17"
+                  :class="activeIndex === index ? 'text-brand-orange' : 'text-white/[0.42]'"
+                />
+
+                <div
+                  :class="[
+                    'mt-2 text-[10px] font-black uppercase tracking-[0.12em]',
+                    activeIndex === index ? 'text-white' : 'text-white/[0.46]'
+                  ]"
+                >
+                  {{ mode.badge }}
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPERIENCE JOURNEY -->
+    <section class="relative isolate overflow-hidden px-3 py-14 sm:px-4 lg:px-6">
+      <div class="absolute inset-0 bg-[linear-gradient(180deg,#06070B,#08111F_54%,#06070B)]"></div>
+
+      <div class="site-container relative z-10">
+        <div class="grid gap-8 lg:grid-cols-[0.42fr_1.58fr] lg:items-start">
+          <div>
+            <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-orange">
+              <Clock3 :size="15" />
+              Event journey
+            </div>
+
+            <h2 class="mt-5 text-4xl font-black leading-[0.95] tracking-[-0.06em] text-white sm:text-5xl">
+              L’impact se construit
+              <span class="block text-brand-orange">en quatre temps.</span>
+            </h2>
+
+            <p class="mt-5 text-sm leading-7 text-white/[0.55]">
+              La force d’un événement vient de ce qui se passe avant, pendant et après.
             </p>
           </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- Avantages -->
-  <section class="py-20 bg-white animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Pourquoi nous choisir ?</h2>
-        <p class="text-gray-600 text-lg">L'expertise qui fait la différence pour vos événements</p>
-      </div>
+          <div class="relative overflow-hidden rounded-[2.6rem] border border-white/10 bg-white/[0.055] p-5 backdrop-blur-2xl">
+            <div class="event-line absolute left-0 top-1/2 h-1 w-full -translate-y-1/2 bg-gradient-to-r from-brand-orange via-brand-emerald to-brand-blue opacity-60"></div>
 
-      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div v-for="(benefit, index) in benefits" :key="benefit.title"
-             class="group text-center p-6 bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
-          <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-[#22ae84]/10 to-[#1c978a]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-            <component :is="benefit.icon" :size="28" class="text-[#22ae84]" />
-          </div>
-          <h3 class="text-xl font-bold text-gray-900 mb-3">{{ benefit.title }}</h3>
-          <p class="text-gray-600">{{ benefit.description }}</p>
-          <div class="w-12 h-1 bg-gradient-to-r from-[#22ae84] to-[#1c978a] mx-auto mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </div>
-      </div>
-    </div>
-  </section>
+            <div class="relative grid gap-4 md:grid-cols-4">
+              <div
+                v-for="(step, index) in journey"
+                :key="step.title"
+                class="relative min-h-72 rounded-[2rem] border border-white/10 bg-black/[0.38] p-5"
+              >
+                <div class="absolute -top-4 left-5 rounded-xl bg-white px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-slate-950">
+                  {{ step.time }}
+                </div>
 
-  <!-- Processus événementiel -->
-  <section class="py-20 bg-gradient-to-br from-[#22ae84]/5 to-[#1c978a]/5 animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Notre Processus Événementiel</h2>
-        <p class="text-gray-600 text-lg">Une méthodologie structurée pour garantir le succès</p>
-      </div>
+                <div class="mt-8 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-orange text-white">
+                  <component :is="step.icon" :size="24" />
+                </div>
 
-      <div class="grid md:grid-cols-4 gap-8">
-        <div v-for="(step, index) in [
-          { title: 'Conception', desc: 'Brief, objectifs, stratégie' },
-          { title: 'Planification', desc: 'Logistique, budget, planning' },
-          { title: 'Exécution', desc: 'Organisation, animation, gestion' },
-          { title: 'Suivi', desc: 'Reporting, ROI, fidélisation' }
-        ]" :key="index"
-        class="relative">
-          <div class="text-center p-6 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-            <div class="text-4xl font-bold text-[#22ae84]/20 mb-4">0{{ index + 1 }}</div>
-            <h3 class="text-xl font-bold text-gray-900 mb-3">{{ step.title }}</h3>
-            <p class="text-gray-600">{{ step.desc }}</p>
-          </div>
-          <div v-if="index < 3" class="hidden md:block absolute top-1/2 right-0 w-8 h-1 bg-gradient-to-r from-[#22ae84] to-[#1c978a] transform translate-x-full"></div>
-        </div>
-      </div>
-    </div>
-  </section>
+                <h3 class="mt-16 text-xl font-black tracking-[-0.04em] text-white">
+                  {{ step.title }}
+                </h3>
 
-  <!-- Galerie événementielle (placeholder) -->
-  <section class="py-20 bg-white animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Nos Événements à Succès</h2>
-        <p class="text-gray-600 text-lg">Des moments mémorables créés pour nos clients</p>
-      </div>
+                <p class="mt-3 text-sm leading-6 text-white/[0.55]">
+                  {{ step.text }}
+                </p>
 
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div v-for="i in 4" :key="i"
-             class="group relative aspect-square bg-gradient-to-br from-[#22ae84]/20 to-[#1c978a]/20 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300">
-          <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <Users :size="24" class="text-white" />
+                <div class="absolute bottom-5 right-5 text-5xl font-black tracking-[-0.08em] text-white/[0.08]">
+                  0{{ index + 1 }}
+                </div>
+              </div>
             </div>
           </div>
-          <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div class="absolute bottom-0 left-0 right-0 p-4 text-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-            <p class="text-sm font-semibold">Événement {{ i }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTROL DESK + MEDIA PULSE -->
+    <section class="relative isolate overflow-hidden px-3 py-14 pb-20 sm:px-4 lg:px-6 lg:pb-24">
+      <div class="site-container relative z-10">
+        <div class="grid gap-5 lg:grid-cols-[1fr_0.92fr]">
+          <div class="relative overflow-hidden rounded-[2.8rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-2xl">
+            <div class="absolute -right-24 -top-24 h-80 w-80 rounded-[5rem] bg-brand-orange/[0.16] blur-3xl"></div>
+
+            <div class="relative">
+              <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-orange">
+                <Radio :size="14" />
+                Experience desk
+              </div>
+
+              <h2 class="mt-5 max-w-2xl text-4xl font-black leading-[0.95] tracking-[-0.06em] text-white">
+                Invités, médias, lieu :
+                <span class="block text-brand-orange">tout est orchestré.</span>
+              </h2>
+
+              <div class="mt-8 grid gap-3 sm:grid-cols-2">
+                <div
+                  v-for="item in experienceDesk"
+                  :key="item.title"
+                  class="min-h-44 rounded-[1.7rem] border border-white/10 bg-black/[0.35] p-5"
+                >
+                  <component :is="item.icon" :size="25" class="text-brand-orange" />
+
+                  <div class="mt-16 text-xl font-black text-white">
+                    {{ item.title }}
+                  </div>
+
+                  <div class="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-white/[0.42]">
+                    {{ item.label }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative overflow-hidden rounded-[2.8rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-2xl">
+            <div class="absolute -bottom-24 -right-20 h-80 w-80 rounded-[4rem] bg-brand-emerald/[0.14] blur-3xl"></div>
+
+            <div class="relative">
+              <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-emerald">
+                <TrendingUp :size="14" />
+                Media pulse
+              </div>
+
+              <div class="mt-6 overflow-hidden rounded-[2rem] border border-white/10 bg-black/[0.35] p-5">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="text-[10px] font-black uppercase tracking-[0.18em] text-white/[0.38]">
+                      Retombées
+                    </div>
+                    <div class="mt-2 text-4xl font-black tracking-[-0.08em] text-white">
+                      360°
+                    </div>
+                  </div>
+
+                  <MessageCircle :size="32" class="text-brand-orange" />
+                </div>
+
+                <div class="mt-7 space-y-4">
+                  <div>
+                    <div class="flex justify-between text-xs font-black uppercase tracking-[0.14em] text-white/[0.38]">
+                      <span>Presse</span>
+                      <span>82%</span>
+                    </div>
+                    <div class="mt-2 h-2 rounded-[999px] bg-white/[0.08]">
+                      <div class="event-meter h-full rounded-[999px] bg-brand-orange"></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="flex justify-between text-xs font-black uppercase tracking-[0.14em] text-white/[0.38]">
+                      <span>Social</span>
+                      <span>91%</span>
+                    </div>
+                    <div class="mt-2 h-2 rounded-[999px] bg-white/[0.08]">
+                      <div class="event-meter-alt h-full rounded-[999px] bg-brand-emerald"></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="flex justify-between text-xs font-black uppercase tracking-[0.14em] text-white/[0.38]">
+                      <span>Invités</span>
+                      <span>76%</span>
+                    </div>
+                    <div class="mt-2 h-2 rounded-[999px] bg-white/[0.08]">
+                      <div class="event-meter-third h-full rounded-[999px] bg-brand-blue"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4 grid grid-cols-2 gap-3">
+                <div class="rounded-[1.4rem] bg-white p-4 text-slate-950">
+                  <Megaphone :size="22" class="text-brand-blue" />
+                  <div class="mt-10 text-sm font-black">Presse</div>
+                </div>
+
+                <div class="rounded-[1.4rem] bg-brand-orange/[0.30] p-4">
+                  <Zap :size="22" class="text-white" />
+                  <div class="mt-10 text-sm font-black text-white">Buzz</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Deliverables + CTA -->
+          <div class="relative overflow-hidden rounded-[2.8rem] border border-white/10 bg-white/[0.065] p-6 backdrop-blur-2xl lg:col-span-2 sm:p-8">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(249,115,22,0.16),transparent_30%),radial-gradient(circle_at_86%_80%,rgba(16,185,129,0.14),transparent_32%)]"></div>
+
+            <div class="relative grid gap-8 lg:grid-cols-[0.86fr_1.14fr] lg:items-center">
+              <div>
+                <div class="flex h-16 w-16 items-center justify-center rounded-[1.4rem] bg-brand-orange text-white shadow-orange">
+                  <Ticket :size="28" />
+                </div>
+
+                <h2 class="mt-6 text-4xl font-black leading-[0.95] tracking-[-0.06em] text-white sm:text-5xl">
+                  Votre événement devient
+                  <span class="block bg-gradient-to-r from-brand-orange via-white to-brand-emerald bg-clip-text text-transparent">
+                    un actif de communication.
+                  </span>
+                </h2>
+
+                <p class="mt-4 max-w-xl text-sm leading-7 text-white/[0.60]">
+                  On prépare le concept, l’expérience, les médias, les contenus et les livrables
+                  pour prolonger l’impact après l’événement.
+                </p>
+              </div>
+
+              <div>
+                <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <div
+                    v-for="item in deliverables"
+                    :key="item.title"
+                    class="rounded-[1.5rem] border border-white/10 bg-black/[0.35] p-4"
+                  >
+                    <BadgeCheck :size="19" class="text-brand-emerald" />
+
+                    <div class="mt-5 text-lg font-black text-white">
+                      {{ item.title }}
+                    </div>
+
+                    <div class="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-white/[0.40]">
+                      {{ item.label }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-5 grid gap-3 sm:grid-cols-3">
+                  <Link
+                    href="/contact"
+                    class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] bg-brand-orange px-5 py-4 text-sm font-black text-white shadow-orange transition hover:-translate-y-0.5 hover:bg-brand-orange/90 sm:col-span-3"
+                  >
+                    Planifier mon événement
+                    <ArrowRight :size="18" />
+                  </Link>
+
+                  <a
+                    :href="contactPhoneHref"
+                    class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] border border-white/10 bg-white/[0.08] px-5 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-white/[0.12] sm:col-span-3 lg:col-span-1"
+                  >
+                    <Phone :size="18" />
+                    Appeler
+                  </a>
+
+                  <a
+                    :href="`mailto:${contactEmail}`"
+                    class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] border border-white/10 bg-white/[0.08] px-5 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-white/[0.12] sm:col-span-3 lg:col-span-2"
+                  >
+                    <Mail :size="18" />
+                    {{ contactEmail }}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid gap-3 lg:col-span-2 sm:grid-cols-4">
+            <div
+              v-for="item in proof"
+              :key="item.title"
+              class="rounded-[1.5rem] border border-white/10 bg-white/[0.055] p-5 backdrop-blur"
+            >
+              <component :is="item.icon" :size="22" class="text-brand-orange" />
+              <div class="mt-3 text-sm font-black text-white">
+                {{ item.title }}
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
-      <div class="text-center mt-8">
-        <a href="/portfolio"
-           class="group inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#22ae84] to-[#1c978a] text-white font-semibold rounded-xl hover:shadow-xl transition-all duration-300 hover:scale-105">
-          <span>Voir notre portfolio événementiel</span>
-          <ChevronRight :size="18" class="group-hover:translate-x-1 transition-transform" />
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA Final -->
-  <section class="py-20 bg-gradient-to-br from-[#22ae84] via-[#1c978a] to-[#178e8b] text-white animate-on-scroll">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <Sparkles :size="48" class="mx-auto mb-6 text-[#FFD166] animate-pulse" />
-
-      <h2 class="text-4xl md:text-5xl font-bold mb-6">
-        Prêt à créer un <span class="text-[#FFD166]">événement mémorable</span> ?
-      </h2>
-
-      <p class="text-xl opacity-90 mb-10 max-w-2xl mx-auto">
-        Discutons de votre projet événementiel et créons ensemble une expérience unique.
-      </p>
-
-      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-        <a href="/contact"
-           class="group relative px-8 py-4 bg-white text-[#22ae84] rounded-xl font-bold text-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <span class="relative z-10 flex items-center gap-3">
-            <Mail :size="20" /> Planifier mon événement
-          </span>
-          <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </a>
-
-        <a href="tel:+33612345678"
-           class="group px-6 py-4 bg-transparent border-2 border-white text-white rounded-xl font-semibold text-lg hover:bg-white/10 transition-all duration-300">
-          <span class="flex items-center gap-2">
-            <Phone :size="20" /> +33 6 12 34 56 78
-          </span>
-        </a>
-      </div>
-
-      <div class="mt-12 pt-8 border-t border-white/20">
-        <p class="text-white/80 mb-4">Ou contactez-nous directement :</p>
-        <div class="flex flex-wrap justify-center gap-6">
-          <a href="mailto:contact@kotava.com" class="flex items-center gap-2 hover:text-[#FFD166] transition-colors">
-            <Mail :size="18" /> contact@kotava.com
-          </a>
-          <a href="tel:+33612345678" class="flex items-center gap-2 hover:text-[#FFD166] transition-colors">
-            <Phone :size="18" /> +33 6 12 34 56 78
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
+    </section>
+  </main>
 </template>
 
 <style scoped>
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(180deg); }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
+@keyframes eventConfetti {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 0.25;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  50% {
+    transform: translate3d(20px, -26px, 0) rotate(22deg);
+    opacity: 0.85;
   }
 }
 
-@keyframes underline {
-  from { width: 0; opacity: 0; }
-  to { width: 100%; opacity: 1; }
-}
-
-@keyframes pulse-subtle {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-}
-
-@keyframes bounce-subtle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.animate-float {
-  animation: float linear infinite;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.8s ease-out forwards;
-}
-
-.animate-underline {
-  animation: underline 1s ease-out forwards;
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s ease-in-out infinite;
-}
-
-.animate-bounce-subtle {
-  animation: bounce-subtle 2s ease-in-out infinite;
-}
-
-.animate-shimmer {
-  animation: shimmer 3s infinite;
-}
-
-.animation-delay-200 {
-  animation-delay: 200ms;
-}
-
-.animation-delay-400 {
-  animation-delay: 400ms;
-}
-
-.animation-delay-500 {
-  animation-delay: 500ms;
-}
-
-.animation-delay-1000 {
-  animation-delay: 1000ms;
-}
-
-.animation-delay-1500 {
-  animation-delay: 1500ms;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2000ms;
-}
-
-.animate-on-scroll {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.animate-on-scroll.animate-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .text-5xl {
-    font-size: 3rem;
+@keyframes eventPass {
+  0%, 100% {
+    transform: translate(-50%, -50%) rotate(-1deg);
   }
-  .text-7xl {
-    font-size: 4rem;
+
+  50% {
+    transform: translate(-50%, calc(-50% - 12px)) rotate(1deg);
   }
+}
+
+@keyframes guestFloat {
+  0%, 100% {
+    transform: translateY(0) rotate(-8deg);
+  }
+
+  50% {
+    transform: translateY(-14px) rotate(-4deg);
+  }
+}
+
+@keyframes guestFloatDelay {
+  0%, 100% {
+    transform: translateY(0) rotate(7deg);
+  }
+
+  50% {
+    transform: translateY(14px) rotate(3deg);
+  }
+}
+
+@keyframes eventLine {
+  0% {
+    transform: translateX(-30%);
+    opacity: 0.35;
+  }
+
+  50% {
+    transform: translateX(0%);
+    opacity: 0.85;
+  }
+
+  100% {
+    transform: translateX(30%);
+    opacity: 0.35;
+  }
+}
+
+@keyframes eventMeter {
+  0% {
+    width: 26%;
+  }
+
+  50% {
+    width: 82%;
+  }
+
+  100% {
+    width: 58%;
+  }
+}
+
+@keyframes eventMeterAlt {
+  0% {
+    width: 30%;
+  }
+
+  50% {
+    width: 91%;
+  }
+
+  100% {
+    width: 64%;
+  }
+}
+
+@keyframes eventMeterThird {
+  0% {
+    width: 22%;
+  }
+
+  50% {
+    width: 76%;
+  }
+
+  100% {
+    width: 52%;
+  }
+}
+
+.event-confetti {
+  animation: eventConfetti 7s ease-in-out infinite;
+}
+
+.event-pass {
+  animation: eventPass 7s ease-in-out infinite;
+}
+
+.guest-float {
+  animation: guestFloat 6s ease-in-out infinite;
+}
+
+.guest-float-delay {
+  animation: guestFloatDelay 6.5s ease-in-out infinite;
+}
+
+.event-line {
+  animation: eventLine 5s ease-in-out infinite;
+}
+
+.event-meter {
+  animation: eventMeter 3.4s ease-in-out infinite;
+}
+
+.event-meter-alt {
+  animation: eventMeterAlt 3.6s ease-in-out infinite;
+}
+
+.event-meter-third {
+  animation: eventMeterThird 3.8s ease-in-out infinite;
 }
 </style>

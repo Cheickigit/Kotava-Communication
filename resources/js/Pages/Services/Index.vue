@@ -1,581 +1,614 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/GuestLayout.vue';
-import { Target, Palette, Globe, Video, Calendar, MessageSquare, ArrowRight, Check, Sparkles, Rocket, Star, Users, Zap, ChevronRight, Mail, Phone, Award, TrendingUp, Heart, BarChart, Shield, Clock } from 'lucide-vue-next';
-import { ref, onMounted } from 'vue';
+import {
+  ArrowRight,
+  ArrowUpRight,
+  Award,
+  BadgeCheck,
+  CalendarDays,
+  CheckCircle2,
+  Clock3,
+  Globe2,
+  Layers3,
+  Mail,
+  MessageCircle,
+  Palette,
+  Phone,
+  Rocket,
+  Send,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Target,
+  TrendingUp,
+  UsersRound,
+  Video,
+  Wand2,
+  Zap,
+} from 'lucide-vue-next';
 
 defineOptions({ layout: MainLayout });
 
+const contactEmail = 'Contact@kotavacom.com';
+const contactPhoneDisplay = '+229 93 37 49 63';
+const contactPhoneHref = 'tel:+22993374963';
+
 const services = [
   {
-    id: 'strategie',
-    icon: Target,
+    number: '01',
     title: 'Stratégie & Conseil',
-    description: 'Audit de marque complet, stratégie marketing digitale et positionnement de marque optimal pour dominer votre marché.',
-    color: 'from-[#0e437d] to-[#22ae84]',
-    route: 'services.strategie',
-    features: [
-      'Audit de marque complet',
-      'Stratégie marketing digitale',
-      'Positionnement de marque',
-      'Analyse concurrentielle',
-      'Plan d\'action sur mesure'
-    ],
-    stats: ['+40% ROI moyen', 'Analyse 360°', 'Suivi mensuel']
+    subtitle: 'Clarifier, positionner, structurer.',
+    text: 'Audit, positionnement, stratégie de communication et plan d’action pour guider votre marque avec précision.',
+    href: '/services/strategie-conseil',
+    icon: Target,
+    color: 'text-brand-emerald',
+    bg: 'bg-brand-emerald',
+    glow: 'bg-brand-emerald/20',
+    visual: 'strategy',
+    features: ['Audit de marque', 'Positionnement', 'Plan de communication'],
   },
   {
-    id: 'branding',
-    icon: Palette,
+    number: '02',
     title: 'Branding & Design',
-    description: 'Création d\'identité visuelle complète, logo premium et charte graphique qui marquent les esprits.',
-    color: 'from-[#22ae84] to-[#1c978a]',
-    route: 'services.branding',
-    features: [
-      'Création de logo unique',
-      'Charte graphique complète',
-      'Identité visuelle cohérente',
-      'Design print et digital',
-      'Brand guidelines'
-    ],
-    stats: ['Logo unique', 'Charte complète', 'Support multi-format']
+    subtitle: 'Créer une identité qui marque.',
+    text: 'Logo, identité visuelle, charte graphique, supports print et digitaux pour rendre votre marque reconnaissable.',
+    href: '/services/branding-design',
+    icon: Palette,
+    color: 'text-brand-orange',
+    bg: 'bg-brand-orange',
+    glow: 'bg-brand-orange/20',
+    visual: 'branding',
+    features: ['Logo', 'Charte graphique', 'Supports visuels'],
   },
   {
-    id: 'digital',
-    icon: Globe,
+    number: '03',
     title: 'Digital & Web',
-    description: 'Sites web vitrine et e-commerce sur mesure, avec UX/UI design optimisé pour convertir vos visiteurs.',
-    color: 'from-[#1c978a] to-[#178e8b]',
-    route: 'services.digital',
-    features: [
-      'Sites web sur mesure',
-      'E-commerce performant',
-      'UX/UI Design premium',
-      'Applications web',
-      'SEO et performance'
-    ],
-    stats: ['+40% conversion', '99.9% uptime', 'Mobile-first']
+    subtitle: 'Construire une présence digitale solide.',
+    text: 'Sites web, interfaces, plateformes et optimisation SEO pour rendre votre marque visible, crédible et accessible.',
+    href: '/services/digital-web',
+    icon: Globe2,
+    color: 'text-brand-blue',
+    bg: 'bg-brand-blue',
+    glow: 'bg-brand-blue/20',
+    visual: 'digital',
+    features: ['Site vitrine', 'UX/UI Design', 'SEO'],
   },
   {
-    id: 'audiovisuel',
+    number: '04',
+    title: 'Production Audiovisuelle',
+    subtitle: 'Produire du contenu qui capte.',
+    text: 'Photo, vidéo, motion design et formats courts pour raconter votre marque avec un rendu professionnel.',
+    href: '/services/audiovisuel',
     icon: Video,
-    title: 'Production Audiovisuel',
-    description: 'Tournage vidéo professionnel, photographie corporate et motion design qui captent l\'attention.',
-    color: 'from-[#178e8b] to-[#0e437d]',
-    route: 'services.audiovisuel',
-    features: [
-      'Vidéos corporate',
-      'Photographie professionnelle',
-      'Motion design & animation',
-      'Montage vidéo avancé',
-      'Drone et production 4K'
-    ],
-    stats: ['Production 4K', 'Équipement pro', 'Montage créatif']
+    color: 'text-brand-orange',
+    bg: 'bg-brand-orange',
+    glow: 'bg-brand-orange/20',
+    visual: 'video',
+    features: ['Photo', 'Vidéo', 'Motion design'],
   },
   {
-    id: 'evenementiel',
-    icon: Calendar,
+    number: '05',
     title: 'Événementiel & RP',
-    description: 'Organisation d\'événements mémorables et stratégie d\'influence pour maximiser votre visibilité.',
-    color: 'from-[#22ae84] to-[#1c978a]',
-    route: 'services.evenementiel',
-    features: [
-      'Organisation d\'événements',
-      'Relations publiques',
-      'Stratégie d\'influence',
-      'Gestion de crise',
-      'Relations presse'
-    ],
-    stats: ['Événements clés', 'Médias couverts', 'Ambassadeurs']
+    subtitle: 'Créer des expériences visibles.',
+    text: 'Événements, relations publiques, relations presse et activations terrain pour renforcer votre impact.',
+    href: '/services/evenementiel',
+    icon: CalendarDays,
+    color: 'text-brand-emerald',
+    bg: 'bg-brand-emerald',
+    glow: 'bg-brand-emerald/20',
+    visual: 'event',
+    features: ['Événements', 'RP', 'Influence'],
   },
   {
-    id: 'social',
-    icon: MessageSquare,
+    number: '06',
     title: 'Social Media & Contenu',
-    description: 'Gestion complète de vos réseaux sociaux et création de campagnes publicitaires ciblées qui génèrent de l\'engagement.',
-    color: 'from-[#0e437d] to-[#22ae84]',
-    route: 'services.social',
-    features: [
-      'Gestion des réseaux sociaux',
-      'Création de contenu viral',
-      'Campagnes publicitaires',
-      'Community management',
-      'Stratégie d\'influence'
-    ],
-    stats: ['+300% engagement', 'Contenu viral', 'Communauté active']
-  }
+    subtitle: 'Publier, engager, convertir.',
+    text: 'Planning éditorial, création de contenu, community management et campagnes sponsorisées.',
+    href: '/services/social-media',
+    icon: MessageCircle,
+    color: 'text-brand-emerald',
+    bg: 'bg-brand-emerald',
+    glow: 'bg-brand-emerald/20',
+    visual: 'social',
+    features: ['Contenu', 'Community management', 'Ads'],
+  },
 ];
 
-const packs = ref([
+const stats = [
+  { value: '6', label: 'Expertises', icon: Layers3 },
+  { value: '100+', label: 'Projets réalisés', icon: Award },
+  { value: '1000+', label: 'Contenus produits', icon: TrendingUp },
+  { value: '360°', label: 'Vision de marque', icon: Target },
+];
+
+const process = [
+  { title: 'Diagnostic', text: 'On analyse votre marque et votre contexte.', icon: Target },
+  { title: 'Direction', text: 'On définit la stratégie et l’angle créatif.', icon: Wand2 },
+  { title: 'Production', text: 'On crée les supports, contenus et expériences.', icon: Rocket },
+  { title: 'Activation', text: 'On déploie, mesure et améliore.', icon: Zap },
+];
+
+const packs = [
   {
     title: 'Pack Branding',
-    subtitle: 'L\'identité qui marque',
-    color: 'from-[#0e437d] to-[#22ae84]',
-    price: 'À partir de 2 500€',
-    features: ['Logo professionnel + déclinaisons', 'Charte graphique complète', 'Supports de base (cartes, papeterie)', 'Guide d\'utilisation'],
-    icon: Palette
+    text: 'Identité visuelle professionnelle pour lancer ou repositionner votre marque.',
+    icon: Palette,
+    features: ['Logo + déclinaisons', 'Charte graphique', 'Supports essentiels'],
   },
   {
     title: 'Pack Digital',
-    subtitle: 'Une présence qui convertit',
-    color: 'from-[#22ae84] to-[#1c978a]',
-    price: 'À partir de 3 500€',
-    features: ['Site vitrine/e-commerce responsive', 'Référencement SEO de base', 'Optimisation Google Business', 'Kit visuel réseaux sociaux'],
-    icon: Globe
+    text: 'Présence web claire, moderne et optimisée pour votre activité.',
+    icon: Globe2,
+    features: ['Site responsive', 'UX/UI Design', 'SEO de base'],
   },
   {
     title: 'Pack Social Media',
-    subtitle: 'La visibilité qui engage',
-    color: 'from-[#1c978a] to-[#178e8b]',
-    price: 'À partir de 1 800€/mois',
-    features: ['Gestion 2-3 réseaux sociaux', 'Création de contenu premium', 'Planning éditorial mensuel', 'Campagnes sponsorisées + reporting'],
-    icon: MessageSquare
+    text: 'Réseaux sociaux structurés avec contenu régulier et reporting.',
+    icon: MessageCircle,
+    features: ['Planning éditorial', 'Création de contenus', 'Gestion réseaux sociaux'],
   },
   {
     title: 'Pack 360° Premium',
-    subtitle: 'Solution clé en main',
-    color: 'from-[#178e8b] to-[#0e437d]',
-    price: 'Sur devis personnalisé',
-    features: ['Branding complet + site web', 'SEO/SEA + réseaux sociaux premium', 'Production audiovisuelle', 'Conseil stratégique continu'],
-    icon: Star
-  }
-]);
-
-onMounted(() => {
-  // Animation au scroll
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('animate-in');
-      }
-    });
-  }, { threshold: 0.1 });
-
-  document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
-});
+    text: 'Accompagnement global pour une communication complète et cohérente.',
+    icon: Star,
+    features: ['Stratégie', 'Branding', 'Web', 'Contenu'],
+  },
+];
 </script>
 
 <template>
-  <Head title="Nos Services - KOTAVA Communication" />
+  <Head title="Services — KOTAVA Communication">
+    <meta
+      name="description"
+      content="Découvrez les services de KOTAVA Communication : stratégie, branding, design, digital, audiovisuel, événementiel, relations publiques et social media."
+    />
+  </Head>
 
-  <!-- Hero Section avec animation -->
-  <section class="relative bg-gradient-to-br from-[#0e437d] via-[#22ae84] to-[#1c978a] py-24 overflow-hidden min-h-[90vh] flex items-center">
-    <!-- Animation background -->
-    <div class="absolute inset-0 overflow-hidden">
-      <div class="absolute top-20 left-10 w-64 h-64 bg-[#FFD166] rounded-full opacity-20 animate-pulse animation-delay-1000"></div>
-      <div class="absolute bottom-20 right-10 w-80 h-80 bg-[#EF476F] rounded-full opacity-15 animate-pulse animation-delay-2000"></div>
-      <div class="absolute top-1/2 left-1/4 w-48 h-48 bg-[#06D6A0] rounded-full opacity-20 animate-pulse"></div>
+  <main class="relative overflow-hidden bg-brand-dark text-white">
+    <!-- HERO COMPACT -->
+    <section class="relative isolate overflow-hidden pb-14 pt-32 sm:pb-16 lg:pt-36">
+      <div class="absolute inset-0 bg-grid-dark opacity-30"></div>
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_8%_18%,rgba(16,185,129,0.18),transparent_28%),radial-gradient(circle_at_92%_70%,rgba(249,115,22,0.15),transparent_28%),radial-gradient(circle_at_50%_45%,rgba(30,58,138,0.34),transparent_34%)]"></div>
+      <div class="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-brand-dark via-brand-dark/90 to-transparent"></div>
 
-      <!-- Effet shimmer -->
-      <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer"></div>
+      <div class="site-container relative z-10">
+        <div class="grid gap-8 lg:grid-cols-[1fr_0.78fr] lg:items-end">
+          <div>
+            <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-emerald backdrop-blur">
+              <Sparkles :size="14" />
+              Services KOTAVA
+            </div>
 
-      <!-- Particules flottantes -->
-      <div v-for="i in 20" :key="i"
-           class="absolute w-2 h-2 bg-white rounded-full opacity-30 animate-float"
-           :style="{
-             left: `${Math.random() * 100}%`,
-             top: `${Math.random() * 100}%`,
-             animationDelay: `${Math.random() * 5}s`,
-             animationDuration: `${10 + Math.random() * 20}s`
-           }"></div>
-    </div>
+            <h1 class="mt-6 max-w-5xl text-5xl font-black leading-[0.9] tracking-[-0.065em] text-white sm:text-6xl lg:text-7xl">
+              Des expertises connectées
+              <span class="block bg-gradient-to-r from-brand-emerald via-white to-brand-orange bg-clip-text text-transparent">
+                pour construire une marque forte.
+              </span>
+            </h1>
 
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center animate-on-scroll">
-      <!-- Badge animé -->
-      <div class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/20 backdrop-blur-lg text-white mb-8 text-sm font-medium animate-bounce-subtle">
-        <Sparkles :size="16" />
-        <span>Solutions premium sur-mesure</span>
-      </div>
+            <p class="mt-6 max-w-2xl text-base leading-8 text-white/[0.64]">
+              Stratégie, identité, digital, audiovisuel, événementiel et social media :
+              nous structurons votre communication autour d’une seule direction claire.
+            </p>
+          </div>
 
-      <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 animate-slide-up">
-        Nos Services <span class="text-[#FFD166] relative">
-          Excellence
-          <span class="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-[#FFD166] to-transparent animate-underline"></span>
-        </span>
-      </h1>
+          <div class="rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 backdrop-blur-xl">
+            <div class="grid grid-cols-2 gap-3">
+              <div
+                v-for="item in stats"
+                :key="item.label"
+                class="rounded-[1.4rem] border border-white/10 bg-slate-950/35 p-4"
+              >
+                <component :is="item.icon" :size="20" class="text-brand-emerald" />
+                <div class="mt-4 text-3xl font-black tracking-[-0.05em] text-white">
+                  {{ item.value }}
+                </div>
+                <div class="mt-1 text-xs font-bold text-white/[0.48]">
+                  {{ item.label }}
+                </div>
+              </div>
+            </div>
 
-      <p class="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed mb-10 animate-slide-up animation-delay-200">
-        Une gamme complète de solutions <span class="text-[#FFD166] font-semibold">innovantes et performantes</span>
-        pour propulser votre marque vers l'excellence digitale.
-      </p>
+            <div class="mt-4 flex flex-col gap-3 sm:flex-row lg:flex-col">
+              <Link
+                href="/contact"
+                class="inline-flex flex-1 items-center justify-center gap-2 rounded-[1.15rem] bg-brand-orange px-5 py-3.5 text-sm font-black text-white shadow-orange transition hover:-translate-y-0.5 hover:bg-brand-orange/90"
+              >
+                Démarrer un projet
+                <ArrowRight :size="18" />
+              </Link>
 
-      <!-- CTA Hero -->
-      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center animate-slide-up animation-delay-400">
-        <a href="/contact"
-           class="group relative px-8 py-4 bg-gradient-to-r from-[#FFD166] to-[#FFB347] text-gray-900 rounded-xl font-bold text-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105 animate-pulse-subtle">
-          <span class="relative z-10 flex items-center gap-2">
-            Démarrer mon projet <ChevronRight :size="20" class="group-hover:translate-x-1 transition-transform" />
-          </span>
-          <div class="absolute inset-0 bg-gradient-to-r from-[#FFD166] to-[#FFB347] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </a>
-
-        <a href="tel:+33612345678"
-           class="group px-6 py-4 bg-white/10 backdrop-blur-lg text-white rounded-xl font-semibold text-lg border-2 border-white/20 hover:bg-white/20 hover:border-white/40 transition-all duration-300">
-          <span class="flex items-center gap-2">
-            <Phone :size="20" /> Consultation gratuite
-          </span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Statistiques animées -->
-  <section class="py-16 bg-gradient-to-r from-white via-gray-50 to-white stats-section animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-        <div v-for="(stat, index) in [
-          { value: '6', label: 'Pôles d\'expertise', icon: Target },
-          { value: '95%', label: 'Clients satisfaits', icon: Heart },
-          { value: '50+', label: 'Projets réussis', icon: Award },
-          { value: '24/7', label: 'Support disponible', icon: Shield }
-        ]" :key="index"
-        class="text-center p-6 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-          <div class="text-4xl font-bold text-[#0e437d] mb-2">{{ stat.value }}</div>
-          <div class="text-gray-600 font-medium">{{ stat.label }}</div>
-          <div class="w-12 h-1 bg-gradient-to-r from-[#0e437d] to-[#22ae84] mx-auto mt-3"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Services Grid avec animations -->
-  <section class="py-20 bg-gray-50 animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Nos Domaines d'Expertise</h2>
-        <p class="text-gray-600 text-lg max-w-2xl mx-auto">Des solutions complètes pour chaque aspect de votre communication</p>
-      </div>
-
-      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div
-          v-for="(service, index) in services"
-          :key="service.id"
-          class="group bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100 animate-on-scroll"
-          :style="{ animationDelay: `${index * 100}ms` }"
-        >
-          <!-- Icon avec animation -->
-          <div class="relative mb-6">
-            <div :class="['absolute inset-0 bg-gradient-to-br', service.color, 'rounded-2xl blur-xl opacity-40 group-hover:opacity-60 transition-opacity duration-500']"></div>
-            <div :class="['relative w-16 h-16 rounded-2xl bg-gradient-to-br flex items-center justify-center shadow-2xl group-hover:scale-110 group-hover:rotate-12 transition-all duration-500', service.color]">
-              <component :is="service.icon" :size="32" class="text-white" />
+              <a
+                :href="contactPhoneHref"
+                class="inline-flex flex-1 items-center justify-center gap-2 rounded-[1.15rem] border border-white/10 bg-white/[0.08] px-5 py-3.5 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-white/[0.12]"
+              >
+                <Phone :size="18" />
+                {{ contactPhoneDisplay }}
+              </a>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
 
-          <!-- Content -->
-          <h3 class="text-2xl font-bold text-gray-900 mb-3 group-hover:text-[#0e437d] transition-colors duration-300">
-            {{ service.title }}
-          </h3>
+    <!-- SERVICES STRUCTURÉS -->
+    <section class="relative isolate overflow-hidden py-14 sm:py-16 lg:py-20">
+      <div class="absolute inset-0 bg-grid-dark opacity-20"></div>
 
-          <p class="text-gray-600 mb-6 leading-relaxed">
-            {{ service.description }}
-          </p>
+      <div class="site-container relative z-10">
+        <div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div class="max-w-3xl">
+            <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-emerald">
+              <Layers3 :size="15" />
+              Nos pôles
+            </div>
 
-          <!-- Stats rapides -->
-          <div class="flex flex-wrap gap-2 mb-6">
-            <span v-for="stat in service.stats" :key="stat"
-                  class="inline-block px-3 py-1 bg-gradient-to-r from-gray-50 to-white text-gray-700 text-sm rounded-full border border-gray-200">
-              {{ stat }}
-            </span>
+            <h2 class="mt-4 text-4xl font-black leading-[0.95] tracking-[-0.055em] sm:text-5xl">
+              Une structure claire,
+              <span class="text-brand-orange"> pas une liste dispersée.</span>
+            </h2>
           </div>
 
-          <!-- Features List -->
-          <ul class="space-y-2 mb-6">
-            <li
-              v-for="(feature, fIndex) in service.features.slice(0, 3)"
-              :key="fIndex"
-              class="flex items-center gap-3 group-hover:translate-x-2 transition-transform duration-300"
-            >
-              <div class="w-2 h-2 bg-gradient-to-r from-green-500 to-emerald-400 rounded-full flex-shrink-0"></div>
-              <span class="text-gray-700 text-sm">{{ feature }}</span>
-            </li>
-          </ul>
+          <p class="max-w-md text-sm leading-7 text-white/[0.55]">
+            Chaque service est pensé comme un levier précis dans une stratégie globale.
+          </p>
+        </div>
 
-          <!-- CTA Button -->
+        <div class="grid gap-4 lg:grid-cols-12">
           <Link
-            :href="route(service.route)"
-            :class="['group/btn inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r hover:shadow-xl transition-all duration-300 hover:scale-105', service.color]"
+            v-for="(service, index) in services"
+            :key="service.title"
+            :href="service.href"
+            :class="[
+              'group relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:bg-white/[0.10] hover:shadow-[0_28px_80px_rgba(0,0,0,0.25)]',
+              index === 0 || index === 1 ? 'lg:col-span-6' : 'lg:col-span-3'
+            ]"
           >
-            Découvrir ce service
-            <ArrowRight :size="18" class="group-hover/btn:translate-x-1 transition-transform" />
+            <div :class="['absolute -right-16 -top-16 h-48 w-48 rounded-[3rem] blur-3xl transition duration-300 group-hover:scale-125', service.glow]"></div>
+
+            <div class="relative flex h-full flex-col">
+              <div class="flex items-start justify-between gap-4">
+                <div :class="['flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-lg', service.bg]">
+                  <component :is="service.icon" :size="25" />
+                </div>
+
+                <div class="rounded-xl bg-white/[0.08] px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-white/[0.42]">
+                  {{ service.number }}
+                </div>
+              </div>
+
+              <!-- Illustration personnalisée -->
+              <div class="mt-5 overflow-hidden rounded-[1.5rem] border border-white/10 bg-slate-950/45 p-4">
+                <div v-if="service.visual === 'strategy'" class="space-y-3">
+                  <div class="h-2 w-3/4 rounded-full bg-brand-emerald"></div>
+                  <div class="grid grid-cols-3 gap-2">
+                    <div class="h-16 rounded-2xl bg-white/[0.08]"></div>
+                    <div class="h-16 rounded-2xl bg-brand-emerald/30"></div>
+                    <div class="h-16 rounded-2xl bg-white/[0.08]"></div>
+                  </div>
+                  <div class="h-2 w-1/2 rounded-full bg-white/[0.18]"></div>
+                </div>
+
+                <div v-else-if="service.visual === 'branding'" class="grid grid-cols-[0.8fr_1.2fr] gap-3">
+                  <div class="rounded-2xl bg-white p-4">
+                    <div class="h-10 w-10 rounded-xl bg-brand-orange"></div>
+                    <div class="mt-4 h-2 w-full rounded-full bg-slate-200"></div>
+                    <div class="mt-2 h-2 w-2/3 rounded-full bg-slate-200"></div>
+                  </div>
+                  <div class="grid gap-2">
+                    <div class="rounded-xl bg-brand-emerald/40"></div>
+                    <div class="rounded-xl bg-brand-orange/40"></div>
+                  </div>
+                </div>
+
+                <div v-else-if="service.visual === 'digital'" class="rounded-2xl border border-white/10 bg-white/[0.08] p-3">
+                  <div class="flex gap-1.5">
+                    <span class="h-2 w-2 rounded-full bg-brand-orange"></span>
+                    <span class="h-2 w-2 rounded-full bg-brand-emerald"></span>
+                    <span class="h-2 w-2 rounded-full bg-white/30"></span>
+                  </div>
+                  <div class="mt-4 grid grid-cols-[0.7fr_1.3fr] gap-3">
+                    <div class="h-20 rounded-xl bg-brand-blue/50"></div>
+                    <div class="space-y-2">
+                      <div class="h-3 rounded-full bg-white/20"></div>
+                      <div class="h-3 w-4/5 rounded-full bg-white/12"></div>
+                      <div class="h-10 rounded-xl bg-brand-emerald/30"></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div v-else-if="service.visual === 'video'" class="relative flex h-32 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-orange/35 to-brand-blue/40">
+                  <div class="absolute left-4 top-4 h-7 w-20 rounded-full bg-white/15"></div>
+                  <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-brand-orange">
+                    <Video :size="28" />
+                  </div>
+                </div>
+
+                <div v-else-if="service.visual === 'event'" class="grid grid-cols-3 gap-2">
+                  <div class="h-28 rounded-2xl bg-brand-emerald/35"></div>
+                  <div class="h-28 rounded-2xl bg-white/[0.08]"></div>
+                  <div class="h-28 rounded-2xl bg-brand-orange/30"></div>
+                </div>
+
+                <div v-else class="space-y-3">
+                  <div class="flex gap-2">
+                    <div class="h-12 w-12 rounded-2xl bg-brand-emerald"></div>
+                    <div class="flex-1 rounded-2xl bg-white/[0.08]"></div>
+                  </div>
+                  <div class="grid grid-cols-4 gap-2">
+                    <div class="h-10 rounded-xl bg-brand-orange/40"></div>
+                    <div class="h-10 rounded-xl bg-white/[0.08]"></div>
+                    <div class="h-10 rounded-xl bg-brand-blue/40"></div>
+                    <div class="h-10 rounded-xl bg-brand-emerald/40"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-5">
+                <h3 class="text-xl font-black tracking-[-0.035em] text-white">
+                  {{ service.title }}
+                </h3>
+
+                <p :class="['mt-2 text-sm font-black', service.color]">
+                  {{ service.subtitle }}
+                </p>
+
+                <p class="mt-3 line-clamp-3 text-sm leading-7 text-white/[0.58]">
+                  {{ service.text }}
+                </p>
+              </div>
+
+              <div class="mt-5 flex flex-wrap gap-2">
+                <span
+                  v-for="feature in service.features"
+                  :key="feature"
+                  class="rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-[10px] font-black uppercase tracking-[0.13em] text-white/[0.50]"
+                >
+                  {{ feature }}
+                </span>
+              </div>
+
+              <div class="mt-auto pt-6">
+                <div class="inline-flex items-center gap-2 text-sm font-black text-brand-orange">
+                  Voir le service
+                  <ArrowUpRight
+                    :size="18"
+                    class="transition group-hover:translate-x-1 group-hover:-translate-y-1"
+                  />
+                </div>
+              </div>
+            </div>
           </Link>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Nos Packs Standards avec animations -->
-  <section class="py-20 bg-white animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Nos Packs Standards</h2>
-        <p class="text-gray-600 text-lg max-w-3xl mx-auto">
-          Des solutions <span class="font-semibold text-[#0e437d]">clés en main</span> adaptées à tous les besoins et budgets
-        </p>
-      </div>
+    <!-- MÉTHODE + PACKS EN UNE SECTION COMPACTE -->
+    <section class="relative isolate overflow-hidden py-14 sm:py-16 lg:py-20">
+      <div class="site-container relative z-10">
+        <div class="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+          <!-- Process -->
+          <div class="relative overflow-hidden rounded-[2.3rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-2xl">
+            <div class="absolute -right-20 -top-20 h-72 w-72 rounded-[4rem] bg-brand-emerald/15 blur-3xl"></div>
 
-      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div v-for="(pack, index) in packs" :key="pack.title"
-             class="group bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100">
-          <!-- Badge avec animation -->
-          <div class="inline-flex items-center gap-2 mb-6">
-            <div :class="['w-12 h-12 rounded-xl bg-gradient-to-br flex items-center justify-center group-hover:scale-110 transition-transform duration-300', pack.color]">
-              <component :is="pack.icon" :size="24" class="text-white" />
-            </div>
-            <div :class="['px-4 py-2 bg-gradient-to-r text-white text-sm font-semibold rounded-lg', pack.color]">
-              {{ pack.title }}
-            </div>
-          </div>
+            <div class="relative">
+              <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-emerald">
+                <Rocket :size="14" />
+                Méthode
+              </div>
 
-          <!-- Titre et prix -->
-          <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#0e437d] transition-colors duration-300">
-            {{ pack.subtitle }}
-          </h3>
-          <div class="text-2xl font-bold text-[#0e437d] mb-6">{{ pack.price }}</div>
+              <h2 class="mt-5 text-4xl font-black leading-[0.95] tracking-[-0.055em] text-white">
+                Une méthode simple,
+                <span class="block text-brand-orange">sans dispersion.</span>
+              </h2>
 
-          <!-- Features -->
-          <ul class="space-y-3 mb-8">
-            <li v-for="feature in pack.features" :key="feature"
-                class="flex items-start gap-3 group-hover:translate-x-2 transition-transform duration-300">
-              <Check :size="18" class="text-[#22ae84] mt-1 flex-shrink-0" />
-              <span class="text-gray-600 text-sm">{{ feature }}</span>
-            </li>
-          </ul>
+              <div class="mt-6 space-y-3">
+                <div
+                  v-for="(step, index) in process"
+                  :key="step.title"
+                  class="flex gap-4 rounded-[1.5rem] border border-white/10 bg-slate-950/35 p-4"
+                >
+                  <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-brand-blue">
+                    <component :is="step.icon" :size="21" />
+                  </div>
 
-          <!-- CTA -->
-          <a href="/contact"
-             class="group/btn block w-full text-center px-6 py-3 bg-gradient-to-r from-gray-50 to-white text-gray-800 font-semibold rounded-xl border-2 border-gray-200 hover:border-transparent hover:shadow-xl transition-all duration-300 hover:scale-105">
-            <span class="flex items-center justify-center gap-2">
-              Choisir ce pack
-              <ChevronRight :size="16" class="group-hover/btn:translate-x-1 transition-transform" />
-            </span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-[10px] font-black uppercase tracking-[0.18em] text-white/[0.32]">
+                        0{{ index + 1 }}
+                      </span>
+                      <h3 class="text-base font-black text-white">
+                        {{ step.title }}
+                      </h3>
+                    </div>
 
-  <!-- Cible marché avec animations -->
-  <section class="py-20 bg-gradient-to-br from-gray-50 via-white to-gray-50 animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Notre Public Cible</h2>
-        <p class="text-gray-600 text-lg max-w-2xl mx-auto">Nous accompagnons les entreprises à chaque étape de leur croissance</p>
-      </div>
-
-      <div class="grid lg:grid-cols-2 gap-12 mb-12">
-        <div class="group bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
-          <div class="flex items-center gap-6 mb-6">
-            <div class="text-6xl font-bold text-[#0e437d] group-hover:scale-110 transition-transform duration-300">70%</div>
-            <div>
-              <h3 class="text-xl font-semibold text-gray-900">Marché Africain</h3>
-              <p class="text-gray-600">Notre cible prioritaire</p>
+                    <p class="mt-1 text-sm leading-6 text-white/[0.55]">
+                      {{ step.text }}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <p class="text-gray-600 mb-4 leading-relaxed">
-            Nous apportons un appui considérable dans la <span class="font-semibold text-[#0e437d]">digitalisation des entreprises africaines</span>,
-            avec une compréhension approfondie des marchés locaux et des besoins spécifiques.
-          </p>
-          <div class="flex items-center text-sm text-[#0e437d] font-medium mt-4">
-            <span>En savoir plus sur notre expertise</span>
-            <ChevronRight :size="16" class="ml-1 group-hover:translate-x-1 transition-transform" />
-          </div>
-        </div>
 
-        <div class="group bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
-          <div class="flex items-center gap-6 mb-6">
-            <div class="text-6xl font-bold text-[#22ae84] group-hover:scale-110 transition-transform duration-300">30%</div>
-            <div>
-              <h3 class="text-xl font-semibold text-gray-900">International</h3>
-              <p class="text-gray-600">Expansion progressive</p>
+          <!-- Packs -->
+          <div class="relative overflow-hidden rounded-[2.3rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-2xl">
+            <div class="absolute -bottom-24 -right-20 h-80 w-80 rounded-[4rem] bg-brand-orange/15 blur-3xl"></div>
+
+            <div class="relative">
+              <div class="mb-5 flex items-end justify-between gap-4">
+                <div>
+                  <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-emerald">
+                    <BadgeCheck :size="14" />
+                    Packs
+                  </div>
+
+                  <h2 class="mt-4 text-3xl font-black tracking-[-0.05em] text-white">
+                    Offres structurées
+                  </h2>
+                </div>
+
+                <Link
+                  href="/contact"
+                  class="hidden rounded-[1rem] bg-brand-orange px-4 py-3 text-xs font-black text-white shadow-orange transition hover:-translate-y-0.5 sm:inline-flex"
+                >
+                  Devis
+                </Link>
+              </div>
+
+              <div class="grid gap-3 sm:grid-cols-2">
+                <div
+                  v-for="pack in packs"
+                  :key="pack.title"
+                  class="rounded-[1.5rem] border border-white/10 bg-slate-950/35 p-4"
+                >
+                  <div class="flex items-start gap-3">
+                    <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/[0.09] text-brand-emerald">
+                      <component :is="pack.icon" :size="20" />
+                    </div>
+
+                    <div>
+                      <h3 class="text-base font-black text-white">
+                        {{ pack.title }}
+                      </h3>
+
+                      <p class="mt-1 text-xs leading-5 text-white/[0.50]">
+                        {{ pack.text }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 space-y-2">
+                    <div
+                      v-for="feature in pack.features"
+                      :key="feature"
+                      class="flex items-center gap-2 text-xs font-semibold text-white/[0.62]"
+                    >
+                      <CheckCircle2 :size="14" class="text-brand-emerald" />
+                      {{ feature }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Link
+                href="/contact"
+                class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-[1.15rem] bg-white px-5 py-3 text-sm font-black text-brand-blue transition hover:-translate-y-0.5"
+              >
+                Construire mon pack
+                <ArrowRight :size="17" />
+              </Link>
             </div>
           </div>
-          <p class="text-gray-600 leading-relaxed">
-            Nous accompagnons également les <span class="font-semibold text-[#22ae84]">entreprises internationales</span> souhaitant développer
-            leur présence en Afrique ou bénéficier de notre expertise unique en digitalisation.
-          </p>
-          <div class="flex items-center text-sm text-[#22ae84] font-medium mt-4">
-            <span>Découvrir nos références</span>
-            <ChevronRight :size="16" class="ml-1 group-hover:translate-x-1 transition-transform" />
+        </div>
+      </div>
+    </section>
+
+    <!-- PUBLIC + CTA -->
+    <section class="relative isolate overflow-hidden py-14 pb-20 sm:py-16 lg:pb-24">
+      <div class="site-container relative z-10">
+        <div class="grid gap-5 lg:grid-cols-[0.85fr_1.15fr]">
+          <div class="relative overflow-hidden rounded-[2.3rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-2xl">
+            <div class="absolute -right-20 -top-20 h-72 w-72 rounded-[4rem] bg-brand-blue/20 blur-3xl"></div>
+
+            <div class="relative">
+              <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-emerald">
+                <UsersRound :size="14" />
+                Public cible
+              </div>
+
+              <h2 class="mt-5 text-4xl font-black leading-[0.95] tracking-[-0.055em] text-white">
+                Pour les marques qui veulent passer un cap.
+              </h2>
+
+              <p class="mt-4 text-sm leading-7 text-white/[0.58]">
+                Nous accompagnons startups, PME, institutions, entreprises en croissance
+                et porteurs de projets avec des solutions adaptées à leur niveau de maturité.
+              </p>
+
+              <div class="mt-6 grid grid-cols-2 gap-3">
+                <div class="rounded-[1.5rem] border border-white/10 bg-slate-950/35 p-5">
+                  <div class="text-5xl font-black tracking-[-0.08em] text-brand-emerald">70%</div>
+                  <div class="mt-2 text-sm font-bold text-white/[0.62]">Marché africain</div>
+                </div>
+
+                <div class="rounded-[1.5rem] border border-white/10 bg-slate-950/35 p-5">
+                  <div class="text-5xl font-black tracking-[-0.08em] text-brand-orange">30%</div>
+                  <div class="mt-2 text-sm font-bold text-white/[0.62]">International</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative overflow-hidden rounded-[2.3rem] border border-white/10 bg-white/[0.065] p-6 backdrop-blur-2xl sm:p-8">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(16,185,129,0.16),transparent_30%),radial-gradient(circle_at_86%_80%,rgba(249,115,22,0.14),transparent_32%)]"></div>
+
+            <div class="relative grid gap-6 lg:grid-cols-[1fr_0.8fr] lg:items-center">
+              <div>
+                <div class="flex h-16 w-16 items-center justify-center rounded-[1.4rem] bg-brand-orange text-white shadow-orange">
+                  <Send :size="28" />
+                </div>
+
+                <h2 class="mt-6 text-4xl font-black leading-[0.95] tracking-[-0.055em] text-white sm:text-5xl">
+                  Besoin d’une solution
+                  <span class="block bg-gradient-to-r from-brand-emerald via-white to-brand-orange bg-clip-text text-transparent">
+                    sur mesure ?
+                  </span>
+                </h2>
+
+                <p class="mt-4 max-w-xl text-sm leading-7 text-white/[0.60]">
+                  Parlons de votre projet et construisons l’offre la plus adaptée à vos objectifs,
+                  votre marché et votre budget.
+                </p>
+              </div>
+
+              <div class="grid gap-3">
+                <Link
+                  href="/contact"
+                  class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] bg-brand-orange px-6 py-4 text-sm font-black text-white shadow-orange transition hover:-translate-y-0.5 hover:bg-brand-orange/90"
+                >
+                  Obtenir un devis
+                  <ArrowRight :size="18" />
+                </Link>
+
+                <a
+                  :href="contactPhoneHref"
+                  class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] border border-white/10 bg-white/[0.08] px-6 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-white/[0.12]"
+                >
+                  <Phone :size="18" />
+                  {{ contactPhoneDisplay }}
+                </a>
+
+                <a
+                  :href="`mailto:${contactEmail}`"
+                  class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] border border-white/10 bg-white/[0.08] px-6 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-white/[0.12]"
+                >
+                  <Mail :size="18" />
+                  {{ contactEmail }}
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 grid gap-3 sm:grid-cols-3">
+          <div class="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 backdrop-blur">
+            <BadgeCheck :size="22" class="text-brand-emerald" />
+            <div class="mt-3 text-sm font-black text-white">Conseil clair</div>
+          </div>
+
+          <div class="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 backdrop-blur">
+            <Clock3 :size="22" class="text-brand-orange" />
+            <div class="mt-3 text-sm font-black text-white">Exécution structurée</div>
+          </div>
+
+          <div class="rounded-[1.5rem] border border-white/10 bg-white/[0.06] p-5 backdrop-blur">
+            <ShieldCheck :size="22" class="text-brand-emerald" />
+            <div class="mt-3 text-sm font-black text-white">Qualité maîtrisée</div>
           </div>
         </div>
       </div>
-
-      <!-- Segmentation client -->
-      <div class="bg-gradient-to-br from-[#0e437d]/5 to-[#22ae84]/5 rounded-3xl p-8 border border-[#0e437d]/10">
-        <div class="flex items-start gap-6 mb-6">
-          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#0e437d] to-[#22ae84] flex items-center justify-center flex-shrink-0">
-            <Users :size="28" class="text-white" />
-          </div>
-          <div>
-            <h4 class="text-2xl font-bold text-gray-900 mb-3">Segmentation client :</h4>
-            <p class="text-gray-600">Nous adaptons nos solutions à chaque type de client</p>
-          </div>
-        </div>
-
-        <div class="grid md:grid-cols-2 gap-8">
-          <div class="group">
-            <h5 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <Target :size="20" class="text-[#0e437d]" /> PME et Institutions
-            </h5>
-            <p class="text-gray-600">
-              Accompagnement stratégique complet pour entreprises établies avec des besoins de croissance et d'optimisation.
-            </p>
-            <div class="w-12 h-1 bg-gradient-to-r from-[#0e437d] to-[#22ae84] mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </div>
-
-          <div class="group">
-            <h5 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <Rocket :size="20" class="text-[#22ae84]" /> Start-ups et Particuliers
-            </h5>
-            <p class="text-gray-600">
-              Solutions adaptées aux besoins spécifiques et budgets, idéales pour les projets en lancement ou développement.
-            </p>
-            <div class="w-12 h-1 bg-gradient-to-r from-[#22ae84] to-[#1c978a] mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA Section finale -->
-  <section class="py-20 bg-gradient-to-br from-[#0e437d] via-[#1a6ca3] to-[#22ae84] text-white animate-on-scroll">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <Sparkles :size="48" class="mx-auto mb-6 text-[#FFD166] animate-pulse" />
-
-      <h2 class="text-4xl md:text-5xl font-bold mb-6">
-        Besoin d'un Service <span class="text-[#FFD166]">Personnalisé</span> ?
-      </h2>
-
-      <p class="text-xl opacity-90 mb-10 max-w-2xl mx-auto">
-        Discutons de votre projet et créons ensemble la solution parfaite pour vos objectifs.
-      </p>
-
-      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-        <a href="/contact"
-           class="group relative px-8 py-4 bg-white text-[#0e437d] rounded-xl font-bold text-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <span class="relative z-10 flex items-center gap-3">
-            <Mail :size="20" /> Obtenir un devis personnalisé
-          </span>
-          <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </a>
-
-        <a href="tel:+33612345678"
-           class="group px-6 py-4 bg-transparent border-2 border-white text-white rounded-xl font-semibold text-lg hover:bg-white/10 transition-all duration-300">
-          <span class="flex items-center gap-2">
-            <Phone :size="20" /> +33 6 12 34 56 78
-          </span>
-        </a>
-      </div>
-
-      <div class="mt-12 pt-8 border-t border-white/20">
-        <p class="text-white/80 mb-4">Ou contactez-nous directement :</p>
-        <div class="flex flex-wrap justify-center gap-6">
-          <a href="mailto:contact@kotava.com" class="flex items-center gap-2 hover:text-[#FFD166] transition-colors">
-            <Mail :size="18" /> contact@kotava.com
-          </a>
-          <a href="tel:+33612345678" class="flex items-center gap-2 hover:text-[#FFD166] transition-colors">
-            <Phone :size="18" /> +33 6 12 34 56 78
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
+    </section>
+  </main>
 </template>
-
-<style scoped>
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(180deg); }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes underline {
-  from { width: 0; opacity: 0; }
-  to { width: 100%; opacity: 1; }
-}
-
-@keyframes pulse-subtle {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-}
-
-@keyframes bounce-subtle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.animate-float {
-  animation: float linear infinite;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.8s ease-out forwards;
-}
-
-.animate-underline {
-  animation: underline 1s ease-out forwards;
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s ease-in-out infinite;
-}
-
-.animate-bounce-subtle {
-  animation: bounce-subtle 2s ease-in-out infinite;
-}
-
-.animate-shimmer {
-  animation: shimmer 3s infinite;
-}
-
-.animation-delay-200 {
-  animation-delay: 200ms;
-}
-
-.animation-delay-400 {
-  animation-delay: 400ms;
-}
-
-.animation-delay-1000 {
-  animation-delay: 1000ms;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2000ms;
-}
-
-.animate-on-scroll {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.animate-on-scroll.animate-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .text-5xl {
-    font-size: 3rem;
-  }
-  .text-7xl {
-    font-size: 4rem;
-  }
-}
-</style>

@@ -1,653 +1,665 @@
 <script setup>
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/GuestLayout.vue';
 import {
   ArrowLeft,
-  Target,
-  Check,
-  BarChart,
-  Users,
-  TrendingUp,
-  Globe,
-  Shield,
-  Award,
-  Clock,
-  Zap,
+  ArrowRight,
+  ArrowUpRight,
+  BarChart3,
+  CheckCircle2,
+  ClipboardList,
+  Compass,
   FileText,
-  Search,
-  PieChart,
-  ChevronRight,
-  Sparkles,
-  Rocket,
-  Star,
-  MessageCircle,
+  Flag,
+  Lightbulb,
   Mail,
+  Map,
+  MessageCircle,
   Phone,
-  Heart
+  PieChart,
+  Search,
+  Sparkles,
+  Target,
+  TrendingUp,
+  UsersRound,
 } from 'lucide-vue-next';
-import { ref, onMounted } from 'vue';
 
 defineOptions({ layout: MainLayout });
 
-const stats = ref([
-  { value: '95%', label: 'Taux de réussite' },
-  { value: '150+', label: 'Stratégies réussies' },
-  { value: '360°', label: 'Analyse complète' },
-  { value: '24/7', label: 'Accompagnement' }
-]);
+const contactEmail = 'Contact@kotavacom.com';
+const contactPhoneDisplay = '+229 93 37 49 63';
+const contactPhoneHref = 'tel:+22993374963';
+
+const activeZone = ref(0);
+let intervalId = null;
+
+const zones = [
+  {
+    title: 'Marché',
+    label: 'Comprendre le terrain',
+    icon: Search,
+    x: 'left-[12%]',
+    y: 'top-[20%]',
+    color: 'text-brand-emerald',
+    bg: 'bg-brand-emerald',
+  },
+  {
+    title: 'Marque',
+    label: 'Clarifier l’identité',
+    icon: Target,
+    x: 'right-[14%]',
+    y: 'top-[24%]',
+    color: 'text-brand-orange',
+    bg: 'bg-brand-orange',
+  },
+  {
+    title: 'Audience',
+    label: 'Identifier les bonnes cibles',
+    icon: UsersRound,
+    x: 'left-[10%]',
+    y: 'bottom-[22%]',
+    color: 'text-brand-blue',
+    bg: 'bg-brand-blue',
+  },
+  {
+    title: 'Message',
+    label: 'Structurer le discours',
+    icon: MessageCircle,
+    x: 'right-[12%]',
+    y: 'bottom-[20%]',
+    color: 'text-brand-emerald',
+    bg: 'bg-brand-emerald',
+  },
+];
+
+const activeItem = computed(() => zones[activeZone.value] || zones[0]);
+
+const modules = [
+  {
+    title: 'Audit stratégique',
+    label: 'État des lieux',
+    icon: Search,
+    visual: 'audit',
+    items: ['SWOT', 'Benchmark', 'Diagnostic'],
+  },
+  {
+    title: 'Positionnement',
+    label: 'Territoire de marque',
+    icon: Target,
+    visual: 'position',
+    items: ['Promesse', 'Différence', 'Cibles'],
+  },
+  {
+    title: 'Plan d’action',
+    label: 'Roadmap claire',
+    icon: ClipboardList,
+    visual: 'roadmap',
+    items: ['Priorités', 'Canaux', 'Actions'],
+  },
+  {
+    title: 'Stratégie digitale',
+    label: 'Présence cohérente',
+    icon: PieChart,
+    visual: 'digital',
+    items: ['Contenus', 'Réseaux', 'Campagnes'],
+  },
+  {
+    title: 'Conseil croissance',
+    label: 'Leviers business',
+    icon: TrendingUp,
+    visual: 'growth',
+    items: ['Acquisition', 'Conversion', 'Fidélisation'],
+  },
+  {
+    title: 'Pilotage KPI',
+    label: 'Mesure & décision',
+    icon: BarChart3,
+    visual: 'kpi',
+    items: ['Indicateurs', 'Reporting', 'Optimisation'],
+  },
+];
+
+const roadmap = [
+  {
+    step: '01',
+    title: 'Observer',
+    text: 'Marché, concurrence, marque, publics.',
+    icon: Search,
+  },
+  {
+    step: '02',
+    title: 'Décider',
+    text: 'Positionnement, message, angle.',
+    icon: Compass,
+  },
+  {
+    step: '03',
+    title: 'Planifier',
+    text: 'Actions, priorités, calendrier.',
+    icon: Map,
+  },
+  {
+    step: '04',
+    title: 'Piloter',
+    text: 'KPI, ajustements, résultats.',
+    icon: BarChart3,
+  },
+];
+
+const deliverables = [
+  {
+    title: 'Diagnostic',
+    text: 'Une lecture claire de votre situation actuelle.',
+    icon: FileText,
+  },
+  {
+    title: 'Plateforme stratégique',
+    text: 'Positionnement, promesse, cibles et messages.',
+    icon: Target,
+  },
+  {
+    title: 'Roadmap 90 jours',
+    text: 'Un plan d’action court, lisible et exploitable.',
+    icon: Flag,
+  },
+  {
+    title: 'Tableau KPI',
+    text: 'Les bons indicateurs pour piloter les décisions.',
+    icon: BarChart3,
+  },
+];
+
+const stats = [
+  { value: '360°', label: 'lecture complète' },
+  { value: '90j', label: 'plan exploitable' },
+  { value: '4', label: 'axes de décision' },
+  { value: 'KPI', label: 'pilotage clair' },
+];
+
+const setActive = (index) => {
+  activeZone.value = index;
+};
 
 onMounted(() => {
-  // Animation des statistiques
-  const animateStats = () => {
-    const statElements = document.querySelectorAll('.stat-value');
-    statElements.forEach((el, index) => {
-      const stat = stats.value[index];
-      if (stat.value === '24/7' || stat.value === '360°') {
-        el.textContent = stat.value;
-        return;
-      }
+  intervalId = window.setInterval(() => {
+    activeZone.value = (activeZone.value + 1) % zones.length;
+  }, 2800);
+});
 
-      const numericValue = parseInt(stat.value);
-      if (!isNaN(numericValue)) {
-        let current = 0;
-        const target = numericValue;
-        const increment = target / 30;
-        const timer = setInterval(() => {
-          current += increment;
-          if (current >= target) {
-            current = target;
-            clearInterval(timer);
-          }
-          el.textContent = Math.floor(current) + (stat.value.includes('%') ? '%' : '+');
-        }, 50);
-      }
-    });
-  };
-
-  // Animation au scroll
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('animate-in');
-        if (entry.target.classList.contains('stats-section')) {
-          setTimeout(animateStats, 500);
-        }
-      }
-    });
-  }, { threshold: 0.1 });
-
-  document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+onUnmounted(() => {
+  if (intervalId) {
+    window.clearInterval(intervalId);
+  }
 });
 </script>
 
 <template>
-  <Head title="Stratégie & Conseil - KOTAVA Communication" />
+  <Head title="Stratégie & Conseil — KOTAVA Communication">
+    <meta
+      name="description"
+      content="KOTAVA Communication accompagne les marques dans leur audit stratégique, positionnement, plan de communication, stratégie digitale et pilotage KPI."
+    />
+  </Head>
 
-  <!-- HERO SECTION avec animations -->
-  <section class="relative bg-gradient-to-br from-[#0e437d] via-[#1a6ca3] to-[#22ae84] py-24 overflow-hidden min-h-[90vh] flex items-center animate-on-scroll">
-    <!-- Animation background -->
-    <div class="absolute inset-0 overflow-hidden">
-      <div class="absolute top-20 left-10 w-64 h-64 bg-[#FFD166] rounded-full opacity-20 animate-pulse animation-delay-1000"></div>
-      <div class="absolute bottom-20 right-10 w-80 h-80 bg-[#EF476F] rounded-full opacity-15 animate-pulse animation-delay-2000"></div>
-      <div class="absolute top-1/2 left-1/4 w-48 h-48 bg-[#06D6A0] rounded-full opacity-20 animate-pulse"></div>
+  <main class="relative overflow-hidden bg-brand-dark text-white">
+    <!-- HERO / STRATEGIC MAP -->
+    <section class="relative isolate overflow-hidden pb-12 pt-32 sm:pb-16 lg:pt-36">
+      <div class="absolute inset-0 bg-grid-dark opacity-25"></div>
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(16,185,129,0.16),transparent_28%),radial-gradient(circle_at_88%_72%,rgba(249,115,22,0.14),transparent_30%),radial-gradient(circle_at_50%_42%,rgba(30,58,138,0.38),transparent_36%)]"></div>
+      <div class="absolute inset-x-0 top-0 h-52 bg-gradient-to-b from-brand-dark via-brand-dark/90 to-transparent"></div>
 
-      <!-- Particules flottantes -->
-      <div v-for="i in 15" :key="i"
-           class="absolute w-2 h-2 bg-white rounded-full opacity-30 animate-float"
-           :style="{
-             left: `${Math.random() * 100}%`,
-             top: `${Math.random() * 100}%`,
-             animationDelay: `${Math.random() * 5}s`,
-             animationDuration: `${10 + Math.random() * 20}s`
-           }"></div>
-    </div>
-
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <Link :href="route('services')" class="inline-flex items-center gap-2 text-white hover:text-white/80 mb-6 transition-colors group animate-slide-up">
-        <ArrowLeft :size="20" class="group-hover:-translate-x-1 transition-transform" /> Retour aux services
-      </Link>
-
-      <div class="flex items-center gap-4 mb-6 animate-slide-up animation-delay-200">
-        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#0e437d] to-[#22ae84] flex items-center justify-center shadow-xl hover:scale-105 transition-transform duration-300">
-          <Target :size="32" class="text-white" />
-        </div>
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white text-sm font-medium border border-white/30 animate-bounce-subtle">
-          <Sparkles :size="14" /> Expertise stratégique certifiée
+      <div class="pointer-events-none absolute inset-0 overflow-hidden">
+        <div class="absolute left-1/2 top-[18%] hidden -translate-x-1/2 select-none text-[10vw] font-black uppercase leading-none tracking-[-0.1em] text-white/[0.025] lg:block">
+          STRATEGY MAP
         </div>
       </div>
 
-      <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 animate-slide-up animation-delay-400">
-        Stratégie & <span class="text-white/80 relative">
-          Conseil
-          <span class="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-[#FFD166] to-transparent animate-underline"></span>
-        </span>
-      </h1>
-
-      <p class="text-xl md:text-2xl text-white/90 max-w-3xl leading-relaxed mb-10 animate-slide-up animation-delay-600">
-        Transformez votre vision en <span class="text-[#FFD166] font-semibold">stratégie gagnante</span> avec notre accompagnement expert en conseil et analyse de marché.
-      </p>
-
-      <!-- CTA Hero -->
-      <div class="flex flex-col sm:flex-row gap-4 justify-start items-center animate-slide-up animation-delay-800">
+      <div class="site-container relative z-10">
         <Link
-          :href="route('contact')"
-          class="group relative px-8 py-4 bg-gradient-to-r from-[#FFD166] to-[#FFB347] text-gray-900 rounded-xl font-bold text-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105 animate-pulse-subtle"
+          href="/services"
+          class="mb-7 inline-flex items-center gap-2 text-sm font-black text-white/[0.62] transition hover:-translate-x-1 hover:text-brand-emerald"
         >
-          <span class="relative z-10 flex items-center gap-2">
-            Demander un audit gratuit <ChevronRight :size="20" class="group-hover:translate-x-1 transition-transform" />
-          </span>
+          <ArrowLeft :size="18" />
+          Retour aux services
         </Link>
 
-        <a
-          href="tel:+33708999900"
-          class="group px-6 py-4 bg-white/10 backdrop-blur-lg text-white rounded-xl font-semibold text-lg border-2 border-white/20 hover:bg-white/20 hover:border-white/40 transition-all duration-300"
-        >
-          <span class="flex items-center gap-2">
-            <Phone :size="20" /> +33 70 89 99 00
-          </span>
-        </a>
-      </div>
-    </div>
-  </section>
+        <div class="mx-auto max-w-5xl text-center">
+          <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-emerald backdrop-blur">
+            <Compass :size="14" />
+            Cabinet de décision stratégique
+          </div>
 
-  <!-- Statistiques animées -->
-  <section class="py-16 bg-gradient-to-r from-white via-gray-50 to-white stats-section animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-        <div v-for="(stat, index) in stats" :key="index"
-             class="text-center p-6 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group">
-          <div class="text-4xl font-bold text-[#0e437d] mb-2 stat-value">{{ stat.value }}</div>
-          <div class="text-gray-600 font-medium">{{ stat.label }}</div>
-          <div class="w-12 h-1 bg-gradient-to-r from-[#0e437d] to-[#22ae84] mx-auto mt-3 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-        </div>
-      </div>
-    </div>
-  </section>
+          <h1 class="mt-6 text-5xl font-black leading-[0.9] tracking-[-0.065em] text-white sm:text-6xl lg:text-7xl">
+            Transformer les idées floues
+            <span class="block bg-gradient-to-r from-brand-emerald via-white to-brand-orange bg-clip-text text-transparent">
+              en décisions claires.
+            </span>
+          </h1>
 
-  <!-- INTRODUCTION -->
-  <section class="py-20 bg-white animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid lg:grid-cols-2 gap-12 items-center">
-        <div class="stagger-children">
-          <h2 class="text-3xl font-bold text-gray-900 mb-6">
-            L'art de la stratégie pour <span class="text-[#0e437d]">dominer votre marché</span>
-          </h2>
-          <p class="text-gray-600 mb-4 leading-relaxed">
-            Chez KOTAVA Communication, nous croyons qu'une stratégie bien définie est le fondement de toute réussite.
-            Notre équipe d'experts vous accompagne dans l'analyse approfondie de votre environnement concurrentiel,
-            l'identification des opportunités de croissance et la définition d'un plan d'action sur mesure.
-          </p>
-          <p class="text-gray-600 mb-6 leading-relaxed">
-            Nous combinons données analytiques, intelligence marché et vision créative pour développer des
-            stratégies qui non seulement répondent à vos objectifs, mais anticipent les tendances futures.
+          <p class="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/[0.64]">
+            Audit, positionnement, feuille de route, messages, canaux et KPI :
+            nous construisons une stratégie simple à comprendre et facile à exécuter.
           </p>
 
-          <div class="grid grid-cols-3 gap-6 mt-8">
-            <div class="text-center p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:border-[#22ae84]/30 transition-all duration-300 hover:-translate-y-1 group">
-              <div class="text-3xl font-bold text-[#0e437d] mb-2">95%</div>
-              <div class="text-sm text-gray-600 group-hover:text-[#0e437d] transition-colors">Taux de réussite</div>
-            </div>
-            <div class="text-center p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:border-[#22ae84]/30 transition-all duration-300 hover:-translate-y-1 group">
-              <div class="text-3xl font-bold text-[#0e437d] mb-2">150+</div>
-              <div class="text-sm text-gray-600 group-hover:text-[#0e437d] transition-colors">Stratégies réussies</div>
-            </div>
-            <div class="text-center p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl border border-gray-100 hover:border-[#22ae84]/30 transition-all duration-300 hover:-translate-y-1 group">
-              <div class="text-3xl font-bold text-[#0e437d] mb-2">360°</div>
-              <div class="text-sm text-gray-600 group-hover:text-[#0e437d] transition-colors">Analyse complète</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="relative">
-          <div class="absolute inset-0 bg-gradient-to-br from-[#0e437d]/10 to-[#22ae84]/10 rounded-3xl blur-xl"></div>
-          <div class="relative bg-white rounded-3xl p-8 shadow-2xl border border-gray-100 hover:shadow-3xl transition-all duration-500 group">
-            <div class="flex items-center gap-3 mb-6">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#0e437d] to-[#22ae84] flex items-center justify-center">
-                <Award :size="20" class="text-white" />
-              </div>
-              <h3 class="text-xl font-bold text-gray-900">Pourquoi nous choisir ?</h3>
-            </div>
-            <ul class="space-y-4">
-              <li class="flex items-start gap-3 group/item hover:translate-x-2 transition-transform duration-300">
-                <Check :size="20" class="text-[#22ae84] mt-1 flex-shrink-0" />
-                <span class="text-gray-700 group-hover/item:text-[#0e437d] transition-colors">Expertise certifiée en stratégie d'entreprise</span>
-              </li>
-              <li class="flex items-start gap-3 group/item hover:translate-x-2 transition-transform duration-300">
-                <Check :size="20" class="text-[#22ae84] mt-1 flex-shrink-0" />
-                <span class="text-gray-700 group-hover/item:text-[#0e437d] transition-colors">Méthodologie éprouvée sur 150+ projets</span>
-              </li>
-              <li class="flex items-start gap-3 group/item hover:translate-x-2 transition-transform duration-300">
-                <Check :size="20" class="text-[#22ae84] mt-1 flex-shrink-0" />
-                <span class="text-gray-700 group-hover/item:text-[#0e437d] transition-colors">Approche data-driven basée sur l'analyse</span>
-              </li>
-              <li class="flex items-start gap-3 group/item hover:translate-x-2 transition-transform duration-300">
-                <Check :size="20" class="text-[#22ae84] mt-1 flex-shrink-0" />
-                <span class="text-gray-700 group-hover/item:text-[#0e437d] transition-colors">Accompagnement personnalisé et continu</span>
-              </li>
-              <li class="flex items-start gap-3 group/item hover:translate-x-2 transition-transform duration-300">
-                <Check :size="20" class="text-[#22ae84] mt-1 flex-shrink-0" />
-                <span class="text-gray-700 group-hover/item:text-[#0e437d] transition-colors">Résultats mesurables et ROI garanti</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- NOS PRESTATIONS -->
-  <section class="py-20 bg-gray-50 animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-12">
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0e437d]/10 text-[#0e437d] mb-4 text-sm font-semibold animate-fade-in">
-          <Rocket :size="14" />
-          Nos offres
-        </div>
-        <h2 class="text-3xl font-bold text-gray-900 mb-4 animate-fade-in animation-delay-200">Nos Prestations Stratégiques</h2>
-        <p class="text-xl text-gray-600 max-w-3xl mx-auto animate-fade-in animation-delay-400">
-          Une gamme complète de services pour couvrir tous vos besoins en stratégie
-        </p>
-      </div>
-
-      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 stagger-children">
-        <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group border border-gray-100">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0e437d]/10 to-[#22ae84]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-            <Search :size="24" class="text-[#0e437d]" />
-          </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-[#0e437d] transition-colors">Audit Stratégique</h3>
-          <p class="text-gray-600">Analyse complète de votre positionnement et opportunités</p>
-          <ul class="mt-4 space-y-2">
-            <li class="flex items-center text-sm text-gray-600 hover:text-[#0e437d] transition-colors">
-              <div class="w-1.5 h-1.5 bg-[#22ae84] rounded-full mr-2"></div>
-              Analyse SWOT
-            </li>
-            <li class="flex items-center text-sm text-gray-600 hover:text-[#0e437d] transition-colors">
-              <div class="w-1.5 h-1.5 bg-[#22ae84] rounded-full mr-2"></div>
-              Benchmark concurrentiel
-            </li>
-          </ul>
-          <div class="mt-6 pt-4 border-t border-gray-100">
-            <Link :href="route('contact')" class="text-sm text-[#0e437d] font-medium hover:text-[#22ae84] transition-colors inline-flex items-center gap-1 group/link">
-              En savoir plus <ChevronRight :size="14" class="group-hover/link:translate-x-1 transition-transform" />
+          <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link
+              href="/contact"
+              class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] bg-brand-orange px-6 py-4 text-sm font-black text-white shadow-orange transition hover:-translate-y-0.5 hover:bg-brand-orange/90"
+            >
+              Demander un diagnostic
+              <ArrowRight :size="18" />
             </Link>
+
+            <a
+              :href="contactPhoneHref"
+              class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] border border-white/10 bg-white/[0.08] px-6 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-white/[0.12]"
+            >
+              <Phone :size="18" />
+              Consultation directe
+            </a>
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group border border-gray-100">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0e437d]/10 to-[#22ae84]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-            <PieChart :size="24" class="text-[#0e437d]" />
-          </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-[#0e437d] transition-colors">Plan Stratégique</h3>
-          <p class="text-gray-600">Développement d'une roadmap stratégique sur mesure</p>
-          <ul class="mt-4 space-y-2">
-            <li class="flex items-center text-sm text-gray-600 hover:text-[#0e437d] transition-colors">
-              <div class="w-1.5 h-1.5 bg-[#22ae84] rounded-full mr-2"></div>
-              Définition d'objectifs SMART
-            </li>
-            <li class="flex items-center text-sm text-gray-600 hover:text-[#0e437d] transition-colors">
-              <div class="w-1.5 h-1.5 bg-[#22ae84] rounded-full mr-2"></div>
-              Plan d'action détaillé
-            </li>
-          </ul>
-          <div class="mt-6 pt-4 border-t border-gray-100">
-            <Link :href="route('contact')" class="text-sm text-[#0e437d] font-medium hover:text-[#22ae84] transition-colors inline-flex items-center gap-1 group/link">
-              En savoir plus <ChevronRight :size="14" class="group-hover/link:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-        </div>
+        <!-- Carte stratégique centrale -->
+        <div class="strategy-board relative mx-auto mt-12 max-w-6xl overflow-hidden rounded-[2.8rem] border border-white/10 bg-white/[0.055] p-5 shadow-[0_35px_120px_rgba(0,0,0,0.34)] backdrop-blur-2xl sm:p-6">
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.11),transparent_38%)]"></div>
 
-        <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group border border-gray-100">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0e437d]/10 to-[#22ae84]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-            <BarChart :size="24" class="text-[#0e437d]" />
-          </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-[#0e437d] transition-colors">Stratégie Digitale</h3>
-          <p class="text-gray-600">Développement d'une présence digitale optimisée</p>
-          <ul class="mt-4 space-y-2">
-            <li class="flex items-center text-sm text-gray-600 hover:text-[#0e437d] transition-colors">
-              <div class="w-1.5 h-1.5 bg-[#22ae84] rounded-full mr-2"></div>
-              Stratégie réseaux sociaux
-            </li>
-            <li class="flex items-center text-sm text-gray-600 hover:text-[#0e437d] transition-colors">
-              <div class="w-1.5 h-1.5 bg-[#22ae84] rounded-full mr-2"></div>
-              Plan marketing digital
-            </li>
-          </ul>
-          <div class="mt-6 pt-4 border-t border-gray-100">
-            <Link :href="route('contact')" class="text-sm text-[#0e437d] font-medium hover:text-[#22ae84] transition-colors inline-flex items-center gap-1 group/link">
-              En savoir plus <ChevronRight :size="14" class="group-hover/link:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-        </div>
+          <div class="relative grid gap-5 lg:grid-cols-[0.85fr_1.15fr] lg:items-stretch">
+            <!-- Decision card -->
+            <div class="rounded-[2.1rem] border border-white/10 bg-slate-950/65 p-5">
+              <div class="flex items-center justify-between gap-4">
+                <div>
+                  <div class="text-[10px] font-black uppercase tracking-[0.2em] text-white/[0.36]">
+                    Zone active
+                  </div>
 
-        <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 group border border-gray-100">
-          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0e437d]/10 to-[#22ae84]/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-            <TrendingUp :size="24" class="text-[#0e437d]" />
-          </div>
-          <h3 class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-[#0e437d] transition-colors">Conseil en Croissance</h3>
-          <p class="text-gray-600">Accompagnement pour accélérer votre développement</p>
-          <ul class="mt-4 space-y-2">
-            <li class="flex items-center text-sm text-gray-600 hover:text-[#0e437d] transition-colors">
-              <div class="w-1.5 h-1.5 bg-[#22ae84] rounded-full mr-2"></div>
-              Identification de leviers
-            </li>
-            <li class="flex items-center text-sm text-gray-600 hover:text-[#0e437d] transition-colors">
-              <div class="w-1.5 h-1.5 bg-[#22ae84] rounded-full mr-2"></div>
-              Optimisation de la croissance
-            </li>
-          </ul>
-          <div class="mt-6 pt-4 border-t border-gray-100">
-            <Link :href="route('contact')" class="text-sm text-[#0e437d] font-medium hover:text-[#22ae84] transition-colors inline-flex items-center gap-1 group/link">
-              En savoir plus <ChevronRight :size="14" class="group-hover/link:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+                  <div class="mt-3 flex items-center gap-3">
+                    <div :class="['flex h-14 w-14 items-center justify-center rounded-2xl text-white', activeItem.bg]">
+                      <component :is="activeItem.icon" :size="25" />
+                    </div>
 
-  <!-- PROCESSUS -->
-  <section class="py-20 bg-white animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-12">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4 animate-fade-in">
-          Notre Processus en <span class="text-[#0e437d]">4 Étapes</span>
-        </h2>
-        <p class="text-gray-600 max-w-2xl mx-auto animate-fade-in animation-delay-200">
-          Une méthodologie éprouvée pour garantir le succès de votre stratégie
-        </p>
-      </div>
+                    <div>
+                      <div class="text-2xl font-black tracking-[-0.04em] text-white">
+                        {{ activeItem.title }}
+                      </div>
+                      <div class="text-sm font-semibold text-white/[0.50]">
+                        {{ activeItem.label }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-      <div class="relative">
-        <!-- Ligne de connexion -->
-        <div class="hidden md:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-[#0e437d] via-[#22ae84] to-[#FFD166] transform -translate-y-1/2"></div>
+                <Sparkles :size="22" class="text-brand-orange" />
+              </div>
 
-        <div class="grid md:grid-cols-4 gap-8 relative">
-          <div class="text-center group">
-            <div class="relative mb-6">
-              <div class="absolute inset-0 bg-gradient-to-br from-[#0e437d]/10 to-[#22ae84]/10 rounded-full blur-lg group-hover:blur-xl transition-all duration-500"></div>
-              <div class="relative w-20 h-20 rounded-full bg-gradient-to-br from-[#0e437d] to-[#22ae84] flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-500 border-4 border-white shadow-lg">
-                <span class="text-white text-2xl font-bold">1</span>
+              <div class="mt-6 grid grid-cols-2 gap-3">
+                <div
+                  v-for="item in stats"
+                  :key="item.label"
+                  class="rounded-[1.35rem] border border-white/10 bg-white/[0.06] p-4"
+                >
+                  <div class="text-3xl font-black tracking-[-0.06em] text-white">
+                    {{ item.value }}
+                  </div>
+                  <div class="mt-1 text-xs font-bold uppercase tracking-[0.11em] text-white/[0.42]">
+                    {{ item.label }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-5 overflow-hidden rounded-[1.5rem] border border-white/10 bg-brand-dark/70 p-4">
+                <div class="flex items-center justify-between text-xs font-black uppercase tracking-[0.16em] text-white/[0.38]">
+                  <span>Clarté stratégique</span>
+                  <span>92%</span>
+                </div>
+
+                <div class="mt-3 h-2 rounded-full bg-white/[0.08]">
+                  <div class="strategy-meter h-full rounded-full bg-brand-emerald"></div>
+                </div>
               </div>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-[#0e437d] transition-colors">Diagnostic</h3>
-            <p class="text-gray-600">Analyse approfondie de votre situation actuelle</p>
+
+            <!-- Visual map -->
+            <div class="relative min-h-[420px] overflow-hidden rounded-[2.1rem] border border-white/10 bg-slate-950/55 p-5">
+              <div class="absolute left-1/2 top-1/2 h-[78%] w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-white/10"></div>
+              <div class="absolute left-1/2 top-1/2 h-[52%] w-[52%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10"></div>
+              <div class="absolute left-1/2 top-1/2 h-[26%] w-[26%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10"></div>
+
+              <div class="absolute left-1/2 top-1/2 h-[1px] w-[86%] -translate-x-1/2 bg-white/10"></div>
+              <div class="absolute left-1/2 top-1/2 h-[86%] w-[1px] -translate-y-1/2 bg-white/10"></div>
+
+              <div class="strategy-pulse absolute left-1/2 top-1/2 h-36 w-36 -translate-x-1/2 -translate-y-1/2 rounded-[2.2rem] border border-brand-emerald/30"></div>
+
+              <div class="absolute left-1/2 top-1/2 z-10 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[1.7rem] bg-brand-orange text-white shadow-orange">
+                <Compass :size="38" />
+              </div>
+
+              <button
+                v-for="(zone, index) in zones"
+                :key="zone.title"
+                type="button"
+                :class="[
+                  'absolute z-20 rounded-[1.35rem] border p-4 text-left transition',
+                  zone.x,
+                  zone.y,
+                  activeZone === index
+                    ? 'border-brand-emerald/50 bg-brand-emerald/15 shadow-[0_0_35px_rgba(16,185,129,0.18)]'
+                    : 'border-white/10 bg-brand-dark/85 hover:bg-white/[0.08]'
+                ]"
+                @click="setActive(index)"
+              >
+                <component
+                  :is="zone.icon"
+                  :size="20"
+                  :class="activeZone === index ? zone.color : 'text-white/[0.45]'"
+                />
+
+                <div
+                  :class="[
+                    'mt-3 text-sm font-black',
+                    activeZone === index ? 'text-white' : 'text-white/[0.60]'
+                  ]"
+                >
+                  {{ zone.title }}
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODULES / PRESTATIONS -->
+    <section class="relative isolate overflow-hidden py-12 sm:py-14 lg:py-16">
+      <div class="absolute inset-0 bg-grid-dark opacity-20"></div>
+
+      <div class="site-container relative z-10">
+        <div class="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-emerald">
+              <ClipboardList :size="15" />
+              Modules de conseil
+            </div>
+
+            <h2 class="mt-4 max-w-3xl text-4xl font-black leading-[0.95] tracking-[-0.055em] sm:text-5xl">
+              Moins de discours.
+              <span class="text-brand-orange"> Plus de décisions.</span>
+            </h2>
           </div>
 
-          <div class="text-center group">
-            <div class="relative mb-6">
-              <div class="absolute inset-0 bg-gradient-to-br from-[#0e437d]/10 to-[#22ae84]/10 rounded-full blur-lg group-hover:blur-xl transition-all duration-500"></div>
-              <div class="relative w-20 h-20 rounded-full bg-gradient-to-br from-[#0e437d] to-[#22ae84] flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-500 border-4 border-white shadow-lg">
-                <span class="text-white text-2xl font-bold">2</span>
+          <p class="max-w-sm text-sm leading-7 text-white/[0.55]">
+            Chaque module livre une réponse concrète à un problème stratégique.
+          </p>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div
+            v-for="module in modules"
+            :key="module.title"
+            class="group relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.055] p-5 backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:bg-white/[0.09]"
+          >
+            <div class="absolute -right-14 -top-14 h-44 w-44 rounded-[3rem] bg-brand-emerald/15 blur-3xl transition group-hover:scale-125"></div>
+
+            <div class="relative">
+              <div class="flex items-center justify-between">
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-emerald text-white">
+                  <component :is="module.icon" :size="24" />
+                </div>
+
+                <ArrowUpRight :size="18" class="text-white/[0.28] transition group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-brand-orange" />
+              </div>
+
+              <div class="mt-5 overflow-hidden rounded-[1.45rem] border border-white/10 bg-slate-950/45 p-4">
+                <div v-if="module.visual === 'audit'" class="relative flex h-28 items-center justify-center">
+                  <div class="h-24 w-24 rounded-full border border-brand-emerald/30"></div>
+                  <div class="absolute h-16 w-16 rounded-full border border-white/10"></div>
+                  <Search :size="26" class="absolute text-brand-orange" />
+                </div>
+
+                <div v-else-if="module.visual === 'position'" class="relative h-28 rounded-2xl bg-white/[0.04]">
+                  <div class="absolute left-1/2 top-0 h-full w-[1px] -translate-x-1/2 bg-white/10"></div>
+                  <div class="absolute left-0 top-1/2 h-[1px] w-full -translate-y-1/2 bg-white/10"></div>
+                  <div class="absolute left-[62%] top-[28%] h-10 w-10 rounded-2xl bg-brand-orange"></div>
+                  <div class="absolute left-[18%] top-[58%] h-8 w-8 rounded-xl bg-brand-emerald/50"></div>
+                </div>
+
+                <div v-else-if="module.visual === 'roadmap'" class="grid h-28 grid-cols-4 gap-2">
+                  <div class="rounded-xl bg-brand-blue/35"></div>
+                  <div class="rounded-xl bg-brand-emerald/40"></div>
+                  <div class="rounded-xl bg-brand-orange/35"></div>
+                  <div class="rounded-xl bg-white/[0.10]"></div>
+                </div>
+
+                <div v-else-if="module.visual === 'digital'" class="space-y-3">
+                  <div class="grid grid-cols-3 gap-2">
+                    <div class="h-16 rounded-xl bg-brand-blue/35"></div>
+                    <div class="h-16 rounded-xl bg-brand-emerald/40"></div>
+                    <div class="h-16 rounded-xl bg-brand-orange/35"></div>
+                  </div>
+                  <div class="h-2 rounded-full bg-white/[0.12]">
+                    <div class="h-full w-4/5 rounded-full bg-brand-emerald"></div>
+                  </div>
+                </div>
+
+                <div v-else-if="module.visual === 'growth'" class="flex h-28 items-end gap-3">
+                  <div class="h-10 flex-1 rounded-xl bg-brand-blue/35"></div>
+                  <div class="h-16 flex-1 rounded-xl bg-brand-emerald/40"></div>
+                  <div class="h-24 flex-1 rounded-xl bg-brand-orange/40"></div>
+                </div>
+
+                <div v-else class="grid h-28 grid-cols-[1fr_0.8fr] gap-3">
+                  <div class="rounded-2xl bg-white p-4 text-slate-950">
+                    <BarChart3 :size="22" class="text-brand-blue" />
+                    <div class="mt-8 h-2 rounded-full bg-slate-200"></div>
+                    <div class="mt-2 h-2 w-2/3 rounded-full bg-slate-200"></div>
+                  </div>
+                  <div class="grid gap-2">
+                    <div class="rounded-xl bg-brand-emerald/35"></div>
+                    <div class="rounded-xl bg-brand-orange/30"></div>
+                  </div>
+                </div>
+              </div>
+
+              <h3 class="mt-5 text-xl font-black tracking-[-0.035em] text-white">
+                {{ module.title }}
+              </h3>
+
+              <p class="mt-1 text-sm font-bold text-brand-emerald">
+                {{ module.label }}
+              </p>
+
+              <div class="mt-4 flex flex-wrap gap-2">
+                <span
+                  v-for="item in module.items"
+                  :key="item"
+                  class="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/[0.07] px-3 py-2 text-[10px] font-black uppercase tracking-[0.12em] text-white/[0.52]"
+                >
+                  <CheckCircle2 :size="13" class="text-brand-emerald" />
+                  {{ item }}
+                </span>
               </div>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-[#0e437d] transition-colors">Stratégie</h3>
-            <p class="text-gray-600">Définition de la stratégie et des objectifs</p>
           </div>
+        </div>
+      </div>
+    </section>
 
-          <div class="text-center group">
-            <div class="relative mb-6">
-              <div class="absolute inset-0 bg-gradient-to-br from-[#0e437d]/10 to-[#22ae84]/10 rounded-full blur-lg group-hover:blur-xl transition-all duration-500"></div>
-              <div class="relative w-20 h-20 rounded-full bg-gradient-to-br from-[#0e437d] to-[#22ae84] flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-500 border-4 border-white shadow-lg">
-                <span class="text-white text-2xl font-bold">3</span>
+    <!-- ROADMAP + LIVRABLES -->
+    <section class="relative isolate overflow-hidden py-12 sm:py-14 lg:py-16">
+      <div class="site-container relative z-10">
+        <div class="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+          <div class="relative overflow-hidden rounded-[2.4rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-2xl">
+            <div class="absolute -right-24 -top-24 h-80 w-80 rounded-[5rem] bg-brand-emerald/15 blur-3xl"></div>
+
+            <div class="relative">
+              <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-emerald">
+                <Map :size="14" />
+                Roadmap
+              </div>
+
+              <h2 class="mt-5 text-4xl font-black leading-[0.95] tracking-[-0.055em] text-white">
+                Une méthode courte,
+                <span class="block text-brand-orange">orientée décision.</span>
+              </h2>
+
+              <div class="mt-7 grid gap-3 sm:grid-cols-4">
+                <div
+                  v-for="item in roadmap"
+                  :key="item.title"
+                  class="rounded-[1.5rem] border border-white/10 bg-slate-950/40 p-4"
+                >
+                  <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-brand-blue">
+                    <component :is="item.icon" :size="21" />
+                  </div>
+
+                  <div class="mt-5 text-[10px] font-black uppercase tracking-[0.18em] text-white/[0.32]">
+                    {{ item.step }}
+                  </div>
+
+                  <h3 class="mt-1 text-base font-black text-white">
+                    {{ item.title }}
+                  </h3>
+
+                  <p class="mt-2 text-xs leading-5 text-white/[0.52]">
+                    {{ item.text }}
+                  </p>
+                </div>
               </div>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-[#0e437d] transition-colors">Mise en œuvre</h3>
-            <p class="text-gray-600">Implémentation du plan d'action</p>
           </div>
 
-          <div class="text-center group">
-            <div class="relative mb-6">
-              <div class="absolute inset-0 bg-gradient-to-br from-[#0e437d]/10 to-[#22ae84]/10 rounded-full blur-lg group-hover:blur-xl transition-all duration-500"></div>
-              <div class="relative w-20 h-20 rounded-full bg-gradient-to-br from-[#0e437d] to-[#22ae84] flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-500 border-4 border-white shadow-lg">
-                <span class="text-white text-2xl font-bold">4</span>
+          <div class="relative overflow-hidden rounded-[2.4rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-2xl">
+            <div class="absolute -bottom-24 -right-20 h-80 w-80 rounded-[4rem] bg-brand-orange/15 blur-3xl"></div>
+
+            <div class="relative">
+              <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-emerald">
+                <FileText :size="14" />
+                Livrables
+              </div>
+
+              <div class="mt-6 grid gap-3 sm:grid-cols-2">
+                <div
+                  v-for="item in deliverables"
+                  :key="item.title"
+                  class="rounded-[1.5rem] border border-white/10 bg-slate-950/35 p-5"
+                >
+                  <component :is="item.icon" :size="23" class="text-brand-emerald" />
+
+                  <h3 class="mt-5 text-lg font-black text-white">
+                    {{ item.title }}
+                  </h3>
+
+                  <p class="mt-2 text-xs leading-5 text-white/[0.52]">
+                    {{ item.text }}
+                  </p>
+                </div>
               </div>
             </div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-3 group-hover:text-[#0e437d] transition-colors">Suivi</h3>
-            <p class="text-gray-600">Mesure des résultats et optimisation</p>
+          </div>
+
+          <!-- CTA -->
+          <div class="relative overflow-hidden rounded-[2.4rem] border border-white/10 bg-white/[0.065] p-6 backdrop-blur-2xl lg:col-span-2 sm:p-8">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(16,185,129,0.16),transparent_30%),radial-gradient(circle_at_86%_80%,rgba(249,115,22,0.14),transparent_32%)]"></div>
+
+            <div class="relative grid gap-6 lg:grid-cols-[1fr_0.8fr] lg:items-center">
+              <div>
+                <div class="flex h-16 w-16 items-center justify-center rounded-[1.4rem] bg-brand-orange text-white shadow-orange">
+                  <Lightbulb :size="28" />
+                </div>
+
+                <h2 class="mt-6 text-4xl font-black leading-[0.95] tracking-[-0.055em] text-white sm:text-5xl">
+                  Votre marque a besoin
+                  <span class="block bg-gradient-to-r from-brand-emerald via-white to-brand-orange bg-clip-text text-transparent">
+                    d’un cap plus clair ?
+                  </span>
+                </h2>
+
+                <p class="mt-4 max-w-xl text-sm leading-7 text-white/[0.60]">
+                  On analyse votre situation et on transforme vos objectifs en décisions,
+                  priorités et actions concrètes.
+                </p>
+              </div>
+
+              <div class="grid gap-3">
+                <Link
+                  href="/contact"
+                  class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] bg-brand-orange px-6 py-4 text-sm font-black text-white shadow-orange transition hover:-translate-y-0.5 hover:bg-brand-orange/90"
+                >
+                  Demander un diagnostic
+                  <ArrowRight :size="18" />
+                </Link>
+
+                <a
+                  :href="contactPhoneHref"
+                  class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] border border-white/10 bg-white/[0.08] px-6 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-white/[0.12]"
+                >
+                  <Phone :size="18" />
+                  {{ contactPhoneDisplay }}
+                </a>
+
+                <a
+                  :href="`mailto:${contactEmail}`"
+                  class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] border border-white/10 bg-white/[0.08] px-6 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-white/[0.12]"
+                >
+                  <Mail :size="18" />
+                  {{ contactEmail }}
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- TÉMOIGNAGES -->
-  <section class="py-20 bg-gradient-to-br from-gray-50 to-white animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-12">
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#22ae84]/10 text-[#22ae84] mb-4 text-sm font-semibold animate-fade-in">
-          <MessageCircle :size="14" />
-          Ils nous font confiance
-        </div>
-        <h2 class="text-3xl font-bold text-gray-900 mb-4 animate-fade-in animation-delay-200">Retours d'expérience</h2>
-        <p class="text-gray-600 max-w-2xl mx-auto animate-fade-in animation-delay-400">Découvrez ce que nos clients disent de notre accompagnement stratégique</p>
-      </div>
-
-      <div class="grid md:grid-cols-3 gap-8 stagger-children">
-        <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-          <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#0e437d] to-[#22ae84] flex items-center justify-center">
-              <span class="text-white font-bold">JD</span>
-            </div>
-            <div>
-              <h4 class="font-semibold text-gray-900">Jean Dupont</h4>
-              <p class="text-sm text-gray-600">CEO - TechStartup</p>
-            </div>
-          </div>
-          <p class="text-gray-600 italic mb-4">"La stratégie développée par KOTAVA a transformé notre approche marché. Résultat : +40% de croissance en 6 mois."</p>
-          <div class="flex text-[#FFD166]">
-            <Star :size="16" fill="currentColor" />
-            <Star :size="16" fill="currentColor" />
-            <Star :size="16" fill="currentColor" />
-            <Star :size="16" fill="currentColor" />
-            <Star :size="16" fill="currentColor" />
-          </div>
-        </div>
-
-        <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-          <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#0e437d] to-[#22ae84] flex items-center justify-center">
-              <span class="text-white font-bold">MS</span>
-            </div>
-            <div>
-              <h4 class="font-semibold text-gray-900">Marie Sanchez</h4>
-              <p class="text-sm text-gray-600">Directrice Marketing - LuxeBrand</p>
-            </div>
-          </div>
-          <p class="text-gray-600 italic mb-4">"L'audit stratégique a mis en lumière des opportunités que nous n'avions pas identifiées. Un travail remarquable."</p>
-          <div class="flex text-[#FFD166]">
-            <Star :size="16" fill="currentColor" />
-            <Star :size="16" fill="currentColor" />
-            <Star :size="16" fill="currentColor" />
-            <Star :size="16" fill="currentColor" />
-            <Star :size="16" fill="currentColor" />
-          </div>
-        </div>
-
-        <div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-          <div class="flex items-center gap-4 mb-4">
-            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#0e437d] to-[#22ae84] flex items-center justify-center">
-              <span class="text-white font-bold">TM</span>
-            </div>
-            <div>
-              <h4 class="font-semibold text-gray-900">Thomas Martin</h4>
-              <p class="text-sm text-gray-600">Fondateur - EcoSolutions</p>
-            </div>
-          </div>
-          <p class="text-gray-600 italic mb-4">"L'accompagnement en conseil de croissance a été déterminant pour notre expansion internationale."</p>
-          <div class="flex text-[#FFD166]">
-            <Star :size="16" fill="currentColor" />
-            <Star :size="16" fill="currentColor" />
-            <Star :size="16" fill="currentColor" />
-            <Star :size="16" fill="currentColor" />
-            <Star :size="16" fill="currentColor" />
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA FINAL -->
-  <section class="py-20 bg-gradient-to-br from-[#0e437d] to-[#22ae84] text-white animate-on-scroll">
-    <div class="absolute inset-0 overflow-hidden">
-      <div class="absolute -top-20 -left-20 w-64 h-64 bg-white rounded-full opacity-10 blur-3xl"></div>
-      <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-white rounded-full opacity-10 blur-3xl"></div>
-    </div>
-
-    <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white mb-6 text-sm font-medium animate-bounce-subtle">
-        <Sparkles :size="14" /> Offre limitée
-      </div>
-
-      <h2 class="text-4xl md:text-5xl font-bold mb-6">
-        Prêt à définir votre <span class="text-[#FFD166]">stratégie gagnante</span> ?
-      </h2>
-
-      <p class="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-        Contactez-nous pour un <span class="font-semibold">diagnostic stratégique gratuit</span> et découvrez comment nous pouvons transformer votre vision en succès concret.
-      </p>
-
-      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-        <Link
-          :href="route('contact')"
-          class="group relative px-8 py-4 bg-white text-[#0e437d] rounded-xl font-bold text-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105"
-        >
-          <span class="relative z-10 flex items-center gap-3">
-            <Mail :size="20" /> Demander un audit gratuit
-          </span>
-        </Link>
-
-        <a
-          href="tel:+33708999900"
-          class="px-6 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white/10 transition-all duration-300 inline-flex items-center gap-3 group"
-        >
-          <Phone :size="18" class="group-hover:scale-110 transition-transform" /> +33 70 89 99 00
-        </a>
-      </div>
-    </div>
-  </section>
+    </section>
+  </main>
 </template>
 
 <style scoped>
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(180deg); }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
+@keyframes strategyBoard {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  50% {
+    transform: translateY(-8px) rotate(-0.25deg);
   }
 }
 
-@keyframes pulse-subtle {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-}
-
-@keyframes bounce-subtle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-
-@keyframes underline {
-  from { width: 0; opacity: 0; }
-  to { width: 100%; opacity: 1; }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+@keyframes strategyPulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(0.82);
+    opacity: 0.35;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.15);
+    opacity: 0.8;
   }
 }
 
-.animate-float {
-  animation: float linear infinite;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.8s ease-out forwards;
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s ease-in-out infinite;
-}
-
-.animate-bounce-subtle {
-  animation: bounce-subtle 2s ease-in-out infinite;
-}
-
-.animate-underline {
-  animation: underline 1s ease-out forwards;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.8s ease-out forwards;
-}
-
-.animation-delay-200 {
-  animation-delay: 200ms;
-}
-
-.animation-delay-400 {
-  animation-delay: 400ms;
-}
-
-.animation-delay-600 {
-  animation-delay: 600ms;
-}
-
-.animation-delay-800 {
-  animation-delay: 800ms;
-}
-
-.animation-delay-1000 {
-  animation-delay: 1000ms;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2000ms;
-}
-
-.stagger-children > * {
-  opacity: 0;
-  animation: slideUp 0.8s ease-out forwards;
-}
-
-.stagger-children > *:nth-child(1) { animation-delay: 100ms; }
-.stagger-children > *:nth-child(2) { animation-delay: 200ms; }
-.stagger-children > *:nth-child(3) { animation-delay: 300ms; }
-.stagger-children > *:nth-child(4) { animation-delay: 400ms; }
-.stagger-children > *:nth-child(5) { animation-delay: 500ms; }
-.stagger-children > *:nth-child(6) { animation-delay: 600ms; }
-
-.animate-on-scroll {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.animate-on-scroll.animate-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .text-5xl {
-    font-size: 3rem;
+@keyframes strategyMeter {
+  0% {
+    width: 32%;
   }
-  .text-7xl {
-    font-size: 4rem;
+
+  50% {
+    width: 92%;
   }
+
+  100% {
+    width: 68%;
+  }
+}
+
+.strategy-board {
+  animation: strategyBoard 6s ease-in-out infinite;
+}
+
+.strategy-pulse {
+  animation: strategyPulse 2.8s ease-in-out infinite;
+}
+
+.strategy-meter {
+  animation: strategyMeter 3.4s ease-in-out infinite;
 }
 </style>
