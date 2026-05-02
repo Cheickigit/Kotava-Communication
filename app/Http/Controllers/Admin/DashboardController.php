@@ -3,15 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Realisation;
 use App\Models\Actualite;
+use App\Models\Realisation;
 use App\Models\User;
-// use App\Models\Lead; // Commenté car le modèle n'existe pas encore
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Inertia\Inertia;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
+use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
@@ -22,22 +20,29 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Statistiques principales (sans team_id)
+        // Comptage des rôles (Spatie si dispo, sinon colonne users.role si elle existe)
+        $roleCounts = $this->getRoleCounts();
+        $userRole   = $this->getUserRole($user);
+
+        // Statistiques principales
         $stats = [
-            'total_realisations' => Realisation::count(),
-            'total_actualites' => Actualite::count(),
-            'total_users' => User::count(),
-            'total_leads' => 0,
-            'realisations_publiees' => Realisation::where('published', true)->count(),
-            'actualites_publiees' => Actualite::where('statut', 'publié')->count(),
-            'realisations_en_cours' => 0,
-            'leads_nouveaux' => 0,
+            'total_realisations'      => Realisation::count(),
+            'total_actualites'        => Actualite::count(),
+            'total_users'             => User::count(),
+            'total_leads'             => 0,
+
+            'realisations_publiees'   => Realisation::where('published', true)->count(),
+            'actualites_publiees'     => Actualite::where('statut', 'publié')->count(),
+
+            'realisations_en_cours'   => 0,
+            'leads_nouveaux'          => 0,
+
             // Données pour le Dashboard.vue existant
-            'totalUsers' => User::count(),
-            'adminCount' => User::where('role', 'admin')->count(),
-            'managerCount' => User::where('role', 'manager')->count(),
-            'employeeCount' => User::where('role', 'employee')->count(),
-            'userRole' => $user->role ?? 'admin',
+            'totalUsers'              => User::count(),
+            'adminCount'              => $roleCounts['admin'],
+            'managerCount'            => $roleCounts['manager'],
+            'employeeCount'           => $roleCounts['employee'],
+            'userRole'                => $userRole,
         ];
 
         // Réalisations récentes
@@ -47,13 +52,12 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($realisation) {
                 return [
-                    'id' => $realisation->id,
-                    'titre' => $realisation->titre ?? $realisation->title ?? 'Sans titre',
-                    'client' => $realisation->client ?? 'N/A',
-                    // 'status' => $realisation->status ?? 'N/A', // Colonne n'existe pas
-                    'published' => $realisation->published ?? false,
-                    'created_at' => $realisation->created_at->format('d/m/Y'),
-                    'user' => $realisation->user ? [
+                    'id'         => $realisation->id,
+                    'titre'      => $realisation->titre ?? $realisation->title ?? 'Sans titre',
+                    'client'     => $realisation->client ?? 'N/A',
+                    'published'  => (bool) ($realisation->published ?? false),
+                    'created_at' => optional($realisation->created_at)->format('d/m/Y'),
+                    'user'       => $realisation->user ? [
                         'name' => $realisation->user->name,
                     ] : null,
                 ];
@@ -66,31 +70,31 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($actualite) {
                 return [
-                    'id' => $actualite->id,
-                    'titre' => $actualite->titre ?? $actualite->title ?? 'Sans titre',
-                    'statut' => $actualite->statut ?? 'brouillon',
-                    'created_at' => $actualite->created_at->format('d/m/Y'),
-                    'user' => $actualite->user ? [
+                    'id'         => $actualite->id,
+                    'titre'      => $actualite->titre ?? $actualite->title ?? 'Sans titre',
+                    'statut'     => $actualite->statut ?? 'brouillon',
+                    'created_at' => optional($actualite->created_at)->format('d/m/Y'),
+                    'user'       => $actualite->user ? [
                         'name' => $actualite->user->name,
                     ] : null,
                 ];
             });
 
-        // Utilisateurs récents (pour le Dashboard.vue)
+        // Utilisateurs récents
         $recentUsers = User::latest()
             ->take(5)
             ->get()
             ->map(function ($u) {
                 return [
-                    'id' => $u->id,
-                    'name' => $u->name,
-                    'email' => $u->email,
-                    'role' => $u->role ?? 'employee',
-                    'created_at' => $u->created_at->format('d/m/Y'),
+                    'id'         => $u->id,
+                    'name'       => $u->name,
+                    'email'      => $u->email,
+                    'role'       => $this->getUserRole($u),
+                    'created_at' => optional($u->created_at)->format('d/m/Y'),
                 ];
             });
 
-        // Permissions (pour le Dashboard.vue)
+        // Permissions (placeholder)
         $permissions = [
             'Gérer les utilisateurs',
             'Gérer les réalisations',
@@ -99,16 +103,16 @@ class DashboardController extends Controller
             'Gérer les paramètres',
         ];
 
-        // Statistiques mensuelles pour les graphiques
+        // Statistiques mensuelles
         $monthlyStats = $this->getMonthlyStats();
 
         return Inertia::render('Admin/Dashboard/Index', [
-            'stats' => $stats,
-            'recentRealisations' => $recentRealisations,
-            'recentActualites' => $recentActualites,
-            'recentUsers' => $recentUsers,
-            'permissions' => $permissions,
-            'monthlyStats' => $monthlyStats,
+            'stats'             => $stats,
+            'recentRealisations'=> $recentRealisations,
+            'recentActualites'  => $recentActualites,
+            'recentUsers'       => $recentUsers,
+            'permissions'       => $permissions,
+            'monthlyStats'      => $monthlyStats,
         ]);
     }
 
@@ -117,14 +121,21 @@ class DashboardController extends Controller
      */
     public function getStats()
     {
+        $roleCounts = $this->getRoleCounts();
+
         return response()->json([
-            'total_realisations' => Realisation::count(),
-            'total_actualites' => Actualite::count(),
-            'total_users' => User::count(),
-            'total_leads' => 0, // Lead::count(),
+            'total_realisations'    => Realisation::count(),
+            'total_actualites'      => Actualite::count(),
+            'total_users'           => User::count(),
+            'total_leads'           => 0,
             'realisations_publiees' => Realisation::where('published', true)->count(),
-            'actualites_publiees' => Actualite::where('statut', 'publié')->count(),
-            'leads_nouveaux' => 0, // Lead::where('status', 'nouveau')->count(),
+            'actualites_publiees'   => Actualite::where('statut', 'publié')->count(),
+            'leads_nouveaux'        => 0,
+
+            // bonus (si ton front en a besoin)
+            'adminCount'            => $roleCounts['admin'],
+            'managerCount'          => $roleCounts['manager'],
+            'employeeCount'         => $roleCounts['employee'],
         ]);
     }
 
@@ -133,89 +144,120 @@ class DashboardController extends Controller
      */
     public function getRecentActivities()
     {
-        $activities = collect();
-
-        // Dernières réalisations
         $realisations = Realisation::with('user')
             ->latest()
             ->take(3)
             ->get()
             ->map(function ($item) {
                 return [
-                    'type' => 'realisation',
-                    'action' => 'créée',
-                    'title' => $item->titre,
-                    'user' => $item->user->name ?? 'Système',
-                    'date' => $item->created_at,
-                    'formatted_date' => $item->created_at->diffForHumans(),
+                    'type'           => 'realisation',
+                    'action'         => 'créée',
+                    'title'          => $item->titre ?? $item->title ?? 'Sans titre',
+                    'user'           => $item->user->name ?? 'Système',
+                    'date'           => $item->created_at,
+                    'formatted_date' => optional($item->created_at)->diffForHumans(),
                 ];
             });
 
-        // Dernières actualités
         $actualites = Actualite::with('user')
             ->latest()
             ->take(3)
             ->get()
             ->map(function ($item) {
                 return [
-                    'type' => 'actualite',
-                    'action' => 'publiée',
-                    'title' => $item->titre,
-                    'user' => $item->user->name ?? 'Système',
-                    'date' => $item->created_at,
-                    'formatted_date' => $item->created_at->diffForHumans(),
+                    'type'           => 'actualite',
+                    'action'         => 'publiée',
+                    'title'          => $item->titre ?? $item->title ?? 'Sans titre',
+                    'user'           => $item->user->name ?? 'Système',
+                    'date'           => $item->created_at,
+                    'formatted_date' => optional($item->created_at)->diffForHumans(),
                 ];
             });
 
-        // Derniers leads (désactivé temporairement)
-        /*
-        $leads = Lead::latest()
-            ->take(3)
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'type' => 'lead',
-                    'action' => 'reçu',
-                    'title' => "Contact de {$item->nom}",
-                    'user' => 'Site Web',
-                    'date' => $item->created_at,
-                    'formatted_date' => $item->created_at->diffForHumans(),
-                ];
-            });
-        */
-
-        // Fusionner et trier par date
-        $activities = $activities
-            ->merge($realisations)
-            ->merge($actualites)
-            // ->merge($leads) // Désactivé
-            ->sortByDesc('date')
-            ->take(10)
-            ->values();
-
-        return response()->json($activities);
+        return response()->json(
+            collect()
+                ->merge($realisations)
+                ->merge($actualites)
+                ->sortByDesc('date')
+                ->take(10)
+                ->values()
+        );
     }
 
     /**
      * Statistiques mensuelles pour les graphiques
      */
-    private function getMonthlyStats()
+    private function getMonthlyStats(): array
     {
         $months = [];
+
         for ($i = 5; $i >= 0; $i--) {
             $date = Carbon::now()->subMonths($i);
+
             $months[] = [
-                'month' => $date->format('M Y'),
+                'month'        => $date->format('M Y'),
                 'realisations' => Realisation::whereYear('created_at', $date->year)
                     ->whereMonth('created_at', $date->month)
                     ->count(),
-                'actualites' => Actualite::whereYear('created_at', $date->year)
+                'actualites'   => Actualite::whereYear('created_at', $date->year)
                     ->whereMonth('created_at', $date->month)
                     ->count(),
-                'leads' => 0, // Lead::whereYear... désactivé
+                'leads'        => 0,
             ];
         }
 
         return $months;
+    }
+
+    /**
+     * Détermine si le projet utilise Spatie roles et retourne les compteurs.
+     */
+    private function getRoleCounts(): array
+    {
+        $counts = ['admin' => 0, 'manager' => 0, 'employee' => 0];
+
+        // 1) Spatie (méthode scopeRole)
+        if (method_exists(User::class, 'role')) {
+            $counts['admin'] = User::role('admin')->count();
+            $counts['manager'] = User::role('manager')->count();
+
+            // "employee" n'est pas toujours un rôle Spatie : adapte si besoin
+            $counts['employee'] = User::role('employee')->count();
+
+            return $counts;
+        }
+
+        // 2) Fallback colonne users.role si elle existe
+        if (Schema::hasTable('users') && Schema::hasColumn('users', 'role')) {
+            $counts['admin'] = User::where('role', 'admin')->count();
+            $counts['manager'] = User::where('role', 'manager')->count();
+            $counts['employee'] = User::where('role', 'employee')->count();
+
+            return $counts;
+        }
+
+        // 3) Aucun système de rôle détecté -> tout à 0
+        return $counts;
+    }
+
+    /**
+     * Retourne le rôle “principal” à afficher côté UI (Spatie > colonne role > défaut)
+     */
+    private function getUserRole(?User $user): string
+    {
+        if (!$user) return 'user';
+
+        // Spatie : prend le 1er rôle si présent
+        if (method_exists($user, 'getRoleNames')) {
+            $first = $user->getRoleNames()->first();
+            return $first ? (string) $first : 'user';
+        }
+
+        // Colonne role si elle existe
+        if (Schema::hasTable('users') && Schema::hasColumn('users', 'role')) {
+            return (string) ($user->role ?? 'user');
+        }
+
+        return 'user';
     }
 }
