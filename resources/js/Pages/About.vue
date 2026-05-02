@@ -1,512 +1,643 @@
 <script setup>
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import MainLayout from '@/Layouts/GuestLayout.vue';
-import { Users, Target, Award, TrendingUp, Heart, Zap, Check, Globe, Sparkles, Rocket, Star, MessageCircle, Mail, Phone, ChevronRight } from 'lucide-vue-next';
-import { ref, onMounted } from 'vue';
+import {
+  ArrowRight,
+  Award,
+  BadgeCheck,
+  CheckCircle2,
+  Compass,
+  Fingerprint,
+  Globe2,
+  Heart,
+  Layers3,
+  Lightbulb,
+  Mail,
+  MapPin,
+  Megaphone,
+  Palette,
+  Phone,
+  Radio,
+  Rocket,
+  ShieldCheck,
+  Sparkles,
+  Target,
+  TrendingUp,
+  UsersRound,
+  Zap,
+} from 'lucide-vue-next';
 
 defineOptions({ layout: MainLayout });
 
-const stats = ref([
-  { value: '50+', label: 'Projets réussis', icon: 'check' },
-  { value: '98%', label: 'Clients satisfaits', icon: 'heart' },
-  { value: '24/7', label: 'Support disponible', icon: 'zap' },
-  { value: '3x', label: 'ROI moyen', icon: 'trending-up' }
-]);
+const contactEmail = 'Contact@kotavacom.com';
+const contactPhoneDisplay = '+229 93 37 49 63';
+const contactPhoneHref = 'tel:+22993374963';
+const location = 'Cotonou, Bénin';
 
-onMounted(() => {
-  // Animation des statistiques
-  const animateStats = () => {
-    const statElements = document.querySelectorAll('.stat-value');
-    statElements.forEach((el, index) => {
-      const stat = stats.value[index];
-      if (stat.value === '24/7') {
-        el.textContent = '24/7';
-        return;
-      }
+const identityStats = [
+  { value: '6', label: 'expertises intégrées', icon: Award },
+  { value: '360°', label: 'vision de marque', icon: Globe2 },
+  { value: '100%', label: 'engagement projet', icon: Heart },
+  { value: 'A+', label: 'exigence créative', icon: BadgeCheck },
+];
 
-      const numericValue = parseInt(stat.value);
-      if (!isNaN(numericValue)) {
-        let current = 0;
-        const target = numericValue;
-        const increment = target / 30;
-        const timer = setInterval(() => {
-          current += increment;
-          if (current >= target) {
-            current = target;
-            clearInterval(timer);
-          }
-          el.textContent = Math.floor(current) + (stat.value.includes('%') ? '%' : '+');
-        }, 50);
-      }
-    });
-  };
+const dnaPoints = [
+  {
+    title: 'Direction',
+    text: 'Clarifier la vision, le positionnement et les objectifs avant toute création.',
+    icon: Compass,
+  },
+  {
+    title: 'Identité',
+    text: 'Construire des univers visuels cohérents, reconnaissables et professionnels.',
+    icon: Palette,
+  },
+  {
+    title: 'Expérience',
+    text: 'Créer des supports, contenus, interfaces et événements pensés pour l’audience.',
+    icon: Sparkles,
+  },
+  {
+    title: 'Impact',
+    text: 'Déployer des actions visibles, utiles et capables de produire un résultat concret.',
+    icon: TrendingUp,
+  },
+];
 
-  // Animation au scroll
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('animate-in');
-        if (entry.target.classList.contains('stats-section')) {
-          setTimeout(animateStats, 500);
-        }
-      }
-    });
-  }, { threshold: 0.1 });
+const trajectory = [
+  {
+    number: '01',
+    title: 'Comprendre',
+    label: 'Contexte, audience, objectifs',
+    text: 'Nous commençons par comprendre votre marque, votre marché, votre cible et vos priorités.',
+    icon: Lightbulb,
+  },
+  {
+    number: '02',
+    title: 'Orienter',
+    label: 'Stratégie, angle, message',
+    text: 'Nous définissons une direction claire pour éviter les actions dispersées et incohérentes.',
+    icon: Target,
+  },
+  {
+    number: '03',
+    title: 'Créer',
+    label: 'Design, contenu, digital',
+    text: 'Nous produisons des supports modernes, propres et adaptés à vos canaux de communication.',
+    icon: Layers3,
+  },
+  {
+    number: '04',
+    title: 'Amplifier',
+    label: 'Diffusion, média, social, suivi',
+    text: 'Nous donnons de la portée à vos messages et analysons les résultats pour améliorer.',
+    icon: Rocket,
+  },
+];
 
-  document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
-});
+const expertiseMap = [
+  { title: 'Stratégie', icon: Compass },
+  { title: 'Branding', icon: Palette },
+  { title: 'Digital', icon: Globe2 },
+  { title: 'Audiovisuel', icon: Radio },
+  { title: 'Événementiel', icon: Megaphone },
+  { title: 'Social Media', icon: UsersRound },
+];
+
+const values = [
+  {
+    title: 'Clarté',
+    text: 'Un message fort doit être compris rapidement.',
+    icon: Target,
+  },
+  {
+    title: 'Cohérence',
+    text: 'Tous les supports doivent parler le même langage.',
+    icon: Layers3,
+  },
+  {
+    title: 'Fiabilité',
+    text: 'Chaque projet doit avancer avec méthode et précision.',
+    icon: ShieldCheck,
+  },
+  {
+    title: 'Créativité utile',
+    text: 'Le design doit être beau, mais surtout servir un objectif.',
+    icon: Zap,
+  },
+];
+
+const reasons = [
+  {
+    title: 'Une vision complète',
+    text: 'Nous relions stratégie, identité, contenu, digital et diffusion dans une seule logique.',
+    icon: BadgeCheck,
+  },
+  {
+    title: 'Une équipe complémentaire',
+    text: 'Les profils créatifs, techniques et stratégiques travaillent ensemble.',
+    icon: UsersRound,
+  },
+  {
+    title: 'Une exécution moderne',
+    text: 'Chaque livrable est pensé pour les usages actuels : web, social, print, média et événementiel.',
+    icon: Rocket,
+  },
+  {
+    title: 'Une proximité client',
+    text: 'Nous avançons avec des échanges clairs, un suivi régulier et une vraie implication.',
+    icon: Heart,
+  },
+];
+
+const floatingMarks = [
+  'left-[8%] top-[20%] bg-brand-orange',
+  'left-[18%] bottom-[22%] bg-brand-emerald',
+  'left-[38%] top-[12%] bg-white',
+  'right-[12%] top-[22%] bg-brand-orange',
+  'right-[18%] bottom-[24%] bg-brand-emerald',
+  'left-[58%] bottom-[14%] bg-brand-blue',
+  'left-[74%] top-[44%] bg-white',
+  'left-[46%] bottom-[36%] bg-brand-orange',
+];
 </script>
 
 <template>
-  <Head title="À propos - KOTAVA Communication" />
+  <Head title="À propos — KOTAVA Communication">
+    <meta
+      name="description"
+      content="KOTAVA Communication est une agence créative basée à Cotonou, spécialisée en stratégie, branding, digital, audiovisuel, événementiel, relations publiques et social media."
+    />
+  </Head>
 
-  <!-- Hero Section avec animation -->
-  <section class="relative bg-gradient-to-br from-[#0e437d] via-[#1a6ca3] to-[#22ae84] py-24 overflow-hidden min-h-[90vh] flex items-center">
-    <!-- Animation background -->
-    <div class="absolute inset-0 overflow-hidden">
-      <div class="absolute top-20 left-10 w-64 h-64 bg-[#FFD166] rounded-full opacity-20 animate-pulse animation-delay-1000"></div>
-      <div class="absolute bottom-20 right-10 w-80 h-80 bg-[#EF476F] rounded-full opacity-15 animate-pulse animation-delay-2000"></div>
-      <div class="absolute top-1/2 left-1/4 w-48 h-48 bg-[#06D6A0] rounded-full opacity-20 animate-pulse"></div>
+  <main class="relative overflow-hidden bg-brand-dark text-white">
+    <!-- HERO ADN -->
+    <section class="relative isolate overflow-hidden px-3 pb-14 pt-32 sm:px-4 lg:px-6 lg:pt-36">
+      <div class="absolute inset-0 bg-grid-dark opacity-25"></div>
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_15%_18%,rgba(249,115,22,0.18),transparent_28%),radial-gradient(circle_at_86%_76%,rgba(16,185,129,0.15),transparent_30%),radial-gradient(circle_at_50%_44%,rgba(30,58,138,0.36),transparent_36%)]"></div>
+      <div class="absolute inset-x-0 top-0 h-52 bg-gradient-to-b from-brand-dark via-brand-dark/[0.92] to-transparent"></div>
 
-      <!-- Effet shimmer -->
-      <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer"></div>
-
-      <!-- Particules flottantes -->
-      <div v-for="i in 20" :key="i"
-           class="absolute w-2 h-2 bg-white rounded-full opacity-30 animate-float"
-           :style="{
-             left: `${Math.random() * 100}%`,
-             top: `${Math.random() * 100}%`,
-             animationDelay: `${Math.random() * 5}s`,
-             animationDuration: `${10 + Math.random() * 20}s`
-           }"></div>
-    </div>
-
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center animate-on-scroll">
-      <!-- Badge animé -->
-      <div class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/20 backdrop-blur-lg text-white mb-8 text-sm font-medium animate-bounce-subtle">
-        <Sparkles :size="16" />
-        <span>Votre succès commence ici</span>
-      </div>
-
-      <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 animate-slide-up">
-        Qui sommes-<span class="text-[#FFD166] relative">
-          nous ?
-          <span class="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-[#FFD166] to-transparent animate-underline"></span>
-        </span>
-      </h1>
-
-      <p class="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed mb-10 animate-slide-up animation-delay-200">
-        Nous transformons vos idées en <span class="text-[#FFD166] font-semibold">expériences digitales mémorables</span>
-        qui captivent et convertissent.
-      </p>
-
-      <!-- CTA Hero -->
-      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center animate-slide-up animation-delay-400">
-        <a href="/contact"
-           class="group relative px-8 py-4 bg-gradient-to-r from-[#FFD166] to-[#FFB347] text-gray-900 rounded-xl font-bold text-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105 animate-pulse-subtle">
-          <span class="relative z-10 flex items-center gap-2">
-            Démarrer mon projet <ChevronRight :size="20" class="group-hover:translate-x-1 transition-transform" />
-          </span>
-          <div class="absolute inset-0 bg-gradient-to-r from-[#FFD166] to-[#FFB347] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </a>
-
-        <a href="tel:+33612345678"
-           class="group px-6 py-4 bg-white/10 backdrop-blur-lg text-white rounded-xl font-semibold text-lg border-2 border-white/20 hover:bg-white/20 hover:border-white/40 transition-all duration-300">
-          <span class="flex items-center gap-2">
-            <Phone :size="20" /> +33 6 12 34 56 78
-          </span>
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Statistiques animées -->
-  <section class="py-16 bg-gradient-to-r from-white via-gray-50 to-white stats-section animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-        <div v-for="(stat, index) in stats" :key="index"
-             class="text-center p-6 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-          <div class="text-4xl font-bold text-[#0e437d] mb-2 stat-value">{{ stat.value }}</div>
-          <div class="text-gray-600 font-medium">{{ stat.label }}</div>
-          <div class="w-12 h-1 bg-gradient-to-r from-[#0e437d] to-[#22ae84] mx-auto mt-3"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Notre Histoire avec timeline animée -->
-  <section class="py-20 bg-white relative overflow-hidden animate-on-scroll">
-    <div class="absolute top-0 left-0 w-32 h-32 bg-[#06D6A0]/10 rounded-full -translate-x-16 -translate-y-16"></div>
-    <div class="absolute bottom-0 right-0 w-48 h-48 bg-[#0e437d]/10 rounded-full translate-x-24 translate-y-24"></div>
-
-    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h2 class="text-3xl font-bold text-gray-900 mb-12 text-center">
-        <span class="relative">
-          Notre Voyage
-          <Sparkles class="absolute -top-6 -right-6 text-[#FFD166]" :size="24" />
-        </span>
-      </h2>
-
-      <div class="relative">
-        <!-- Ligne de timeline -->
-        <div class="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gradient-to-b from-[#0e437d] via-[#22ae84] to-[#FFD166] hidden md:block"></div>
-
-        <div class="space-y-12">
-          <!-- Étape 1 -->
-          <div class="relative md:flex items-center gap-8">
-            <div class="md:w-1/2 md:text-right md:pr-12 mb-4 md:mb-0">
-              <div class="inline-block px-4 py-2 rounded-full bg-[#0e437d]/10 text-[#0e437d] mb-3 text-sm font-semibold">2019-2021</div>
-              <h3 class="text-2xl font-bold text-gray-900 mb-3">Les Fondations</h3>
-              <p class="text-gray-600">Création avec une vision : démocratiser le design de qualité pour les petites entreprises</p>
-            </div>
-            <div class="hidden md:block w-8 h-8 rounded-full bg-gradient-to-r from-[#0e437d] to-[#22ae84] border-4 border-white shadow-lg"></div>
-            <div class="md:w-1/2 md:pl-12">
-              <div class="bg-gradient-to-br from-gray-50 to-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <ul class="space-y-2">
-                  <li class="flex items-center gap-2"><Check :size="16" class="text-[#22ae84]" /> Design graphique & identité visuelle</li>
-                  <li class="flex items-center gap-2"><Check :size="16" class="text-[#22ae84]" /> Équipe passionnée de 3 experts</li>
-                  <li class="flex items-center gap-2"><Check :size="16" class="text-[#22ae84]" /> Premiers clients fidélisés</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <!-- Étape 2 -->
-          <div class="relative md:flex items-center gap-8">
-            <div class="md:w-1/2 md:pr-12 order-2">
-              <div class="bg-gradient-to-br from-gray-50 to-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <ul class="space-y-2">
-                  <li class="flex items-center gap-2"><Check :size="16" class="text-[#22ae84]" /> Stratégie réseaux sociaux</li>
-                  <li class="flex items-center gap-2"><Check :size="16" class="text-[#22ae84]" /> Développement web sur mesure</li>
-                  <li class="flex items-center gap-2"><Check :size="16" class="text-[#22ae84]" /> Marketing digital intégré</li>
-                </ul>
-              </div>
-            </div>
-            <div class="hidden md:block w-8 h-8 rounded-full bg-gradient-to-r from-[#0e437d] to-[#22ae84] border-4 border-white shadow-lg order-1"></div>
-            <div class="md:w-1/2 md:text-left md:pl-12 mb-4 md:mb-0 order-3">
-              <div class="inline-block px-4 py-2 rounded-full bg-[#22ae84]/10 text-[#22ae84] mb-3 text-sm font-semibold">2021-2023</div>
-              <h3 class="text-2xl font-bold text-gray-900 mb-3">Expansion Digitale</h3>
-              <p class="text-gray-600">Diversification vers le digital et création de stratégies omnicanales</p>
-            </div>
-          </div>
-
-          <!-- Étape 3 -->
-          <div class="relative md:flex items-center gap-8">
-            <div class="md:w-1/2 md:text-right md:pr-12 mb-4 md:mb-0">
-              <div class="inline-block px-4 py-2 rounded-full bg-[#FFD166]/10 text-[#B78300] mb-3 text-sm font-semibold">2023-2025</div>
-              <h3 class="text-2xl font-bold text-gray-900 mb-3">Innovation & IA</h3>
-              <p class="text-gray-600">Intégration d'intelligence artificielle et solutions automatisées avancées</p>
-            </div>
-            <div class="hidden md:block w-8 h-8 rounded-full bg-gradient-to-r from-[#FFD166] to-[#FFB347] border-4 border-white shadow-lg"></div>
-            <div class="md:w-1/2 md:pl-12">
-              <div class="bg-gradient-to-br from-gray-50 to-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                <ul class="space-y-2">
-                  <li class="flex items-center gap-2"><Check :size="16" class="text-[#22ae84]" /> 6 pôles d'expertise</li>
-                  <li class="flex items-center gap-2"><Check :size="16" class="text-[#22ae84]" /> Solutions IA intégrées</li>
-                  <li class="flex items-center gap-2"><Check :size="16" class="text-[#22ae84]" /> Partenariats internationaux</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Vision & Mission avec hover effects -->
-  <section class="py-20 bg-gradient-to-b from-gray-50 to-white animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid lg:grid-cols-2 gap-12">
-        <!-- Vision -->
-        <div class="group relative bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
-          <div class="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-[#0e437d] to-[#22ae84] rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-            <Target :size="32" class="text-white" />
-          </div>
-          <h3 class="text-2xl font-bold text-gray-900 mb-4">Notre Vision</h3>
-          <p class="text-gray-600 leading-relaxed mb-4">
-            Redéfinir la communication comme une <span class="text-[#0e437d] font-semibold">expérience sensorielle</span> où chaque interaction crée une connexion authentique entre les marques et leur audience.
-          </p>
-          <div class="space-y-3 mt-6">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-[#0e437d]/10 flex items-center justify-center">
-                <Rocket :size="16" class="text-[#0e437d]" />
-              </div>
-              <span class="text-gray-700">Avant-gardiste digital</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-[#0e437d]/10 flex items-center justify-center">
-                <Sparkles :size="16" class="text-[#0e437d]" />
-              </div>
-              <span class="text-gray-700">Expériences mémorables</span>
-            </div>
-          </div>
+      <div class="pointer-events-none absolute inset-0 overflow-hidden">
+        <div class="absolute left-1/2 top-[10%] hidden -translate-x-1/2 select-none text-[10vw] font-black uppercase leading-none tracking-[-0.12em] text-white/[0.025] lg:block">
+          KOTAVA DNA
         </div>
 
-        <!-- Mission -->
-        <div class="group relative bg-gradient-to-br from-[#0e437d] to-[#22ae84] rounded-3xl p-8 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
-          <div class="absolute -top-4 -right-4 w-20 h-20 bg-white rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-            <Award :size="32" class="text-[#0e437d]" />
-          </div>
-          <h3 class="text-2xl font-bold mb-4">Notre Mission</h3>
-          <p class="text-white/90 leading-relaxed mb-4">
-            Mettre la technologie au service de la créativité pour développer des solutions <span class="font-semibold">intelligentes et impactantes</span> qui transforment votre vision en réalité digitale.
-          </p>
-          <div class="space-y-3 mt-6">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
-                <Zap :size="16" class="text-white" />
-              </div>
-              <span>Solutions évolutives</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
-                <Check :size="16" class="text-white" />
-              </div>
-              <span>Accessible à tous les budgets</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Nos Valeurs avec animation au hover -->
-  <section class="py-20 bg-white animate-on-scroll">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl font-bold text-gray-900 mb-4">Nos Valeurs Fondamentales</h2>
-        <p class="text-gray-600 text-lg max-w-2xl mx-auto">Les piliers sur lesquels nous construisons chaque succès</p>
+        <div
+          v-for="(mark, index) in floatingMarks"
+          :key="mark"
+          :class="['about-mark absolute h-3 w-2 rounded-[0.35rem]', mark]"
+          :style="{ animationDelay: `${index * 170}ms` }"
+        ></div>
       </div>
 
-      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div v-for="(value, index) in [
-          { icon: Heart, title: 'Connexion & Confiance', desc: 'Relations authentiques et durables', colorClass: 'from-[#0e437d] to-[#22ae84]' },
-          { icon: TrendingUp, title: 'Performance & Impact', desc: 'Résultats mesurables et croissance', colorClass: 'from-[#22ae84] to-[#1c978a]' },
-          { icon: Zap, title: 'Créativité & Authenticité', desc: 'Design percutant et cohérent', colorClass: 'from-[#1c978a] to-[#178e8b]' },
-          { icon: Globe, title: 'Innovation & Excellence', desc: 'Avantage technologique constant', colorClass: 'from-[#178e8b] to-[#0e437d]' }
-        ]" :key="index"
-        class="group">
-          <div class="relative h-full bg-white rounded-2xl p-8 border border-gray-100 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3">
-            <div class="text-5xl font-bold text-gray-900/10 mb-4 absolute top-4 right-4">0{{ index + 1 }}</div>
-
-            <div class="w-16 h-16 mb-6 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
-                 :class="`bg-gradient-to-br ${value.colorClass}`">
-              <component :is="value.icon" :size="28" class="text-white" />
-            </div>
-
-            <h3 class="text-xl font-bold text-gray-900 mb-3">{{ value.title }}</h3>
-            <p class="text-gray-600">{{ value.desc }}</p>
-
-            <div class="mt-6 pt-4 border-t border-gray-100">
-              <div class="flex items-center text-sm text-gray-500 group-hover:text-[#0e437d] transition-colors">
-                <span>En savoir plus</span>
-                <ChevronRight :size="16" class="ml-1 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
- <!-- Pourquoi nous choisir - Section persuasive -->
-<section class="py-20 bg-gradient-to-br from-gray-50 via-white to-gray-50 animate-on-scroll">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="text-center mb-16">
-      <h2 class="text-3xl font-bold text-gray-900 mb-4">Pourquoi nous choisir ?</h2>
-      <p class="text-gray-600 text-lg">La différence qui fait de nous votre meilleur partenaire digital</p>
-    </div>
-
-    <div class="grid lg:grid-cols-2 gap-12">
-      <div class="space-y-8">
-        <div v-for="(point, index) in [
-          { icon: Users, title: 'Équipe créative pluridisciplinaire', desc: 'Graphistes, développeurs, stratèges pour une vision 360°' },
-          { icon: Zap, title: 'Technologies de pointe', desc: 'IA créative, automatisation, data analysis et outils premium' },
-          { icon: MessageCircle, title: 'Communication transparente', desc: 'Suivi régulier, reporting détaillé, ajustements rapides' }
-        ]" :key="index"
-        class="group flex items-start gap-6 p-6 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-[#0e437d]/10 to-[#22ae84]/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-            <component :is="point.icon" :size="24" class="text-[#0e437d]" />
-          </div>
+      <div class="site-container relative z-10">
+        <div class="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
           <div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ point.title }}</h3>
-            <p class="text-gray-600">{{ point.desc }}</p>
+            <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-orange backdrop-blur">
+              <Fingerprint :size="14" />
+              ADN de l’agence
+            </div>
+
+            <h1 class="mt-6 max-w-4xl text-5xl font-black leading-[0.88] tracking-[-0.075em] text-white sm:text-6xl lg:text-7xl">
+              KOTAVA construit des marques
+              <span class="block bg-gradient-to-r from-brand-orange via-white to-brand-emerald bg-clip-text text-transparent">
+                claires, visibles et mémorables.
+              </span>
+            </h1>
+
+            <p class="mt-6 max-w-xl text-base leading-8 text-white/[0.64]">
+              Nous sommes une agence de communication basée à Cotonou. Notre rôle est de transformer
+              vos idées en identité, contenu, expérience et présence digitale cohérente.
+            </p>
+
+            <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/contact"
+                class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] bg-brand-orange px-6 py-4 text-sm font-black text-white shadow-orange transition hover:-translate-y-0.5 hover:bg-brand-orange/90"
+              >
+                Parler de mon projet
+                <ArrowRight :size="18" />
+              </Link>
+
+              <a
+                :href="contactPhoneHref"
+                class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] border border-white/10 bg-white/[0.08] px-6 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-white/[0.12]"
+              >
+                <Phone :size="18" />
+                {{ contactPhoneDisplay }}
+              </a>
+            </div>
+
+            <div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div
+                v-for="stat in identityStats"
+                :key="stat.label"
+                class="rounded-[1.35rem] border border-white/10 bg-white/[0.055] p-4 backdrop-blur"
+              >
+                <component :is="stat.icon" :size="19" class="text-brand-emerald" />
+
+                <div class="mt-3 text-2xl font-black tracking-[-0.055em] text-white">
+                  {{ stat.value }}
+                </div>
+
+                <div class="text-[11px] font-bold uppercase tracking-[0.12em] text-white/[0.42]">
+                  {{ stat.label }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Identity map -->
+          <div class="relative min-h-[700px]">
+            <div class="absolute left-1/2 top-1/2 h-[86%] w-[74%] -translate-x-1/2 -translate-y-1/2 rounded-[6rem] bg-brand-blue/[0.30] blur-3xl"></div>
+
+            <div class="identity-map absolute left-1/2 top-1/2 z-20 w-full max-w-[720px] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[3rem] border border-white/10 bg-white/[0.065] p-5 shadow-[0_45px_150px_rgba(0,0,0,0.42)] backdrop-blur-2xl">
+              <div class="relative min-h-[620px] overflow-hidden rounded-[2.4rem] border border-white/10 bg-[#080D15] p-6">
+                <div class="absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.07)_0,transparent_24%,rgba(249,115,22,0.12)_52%,transparent_78%)]"></div>
+
+                <div class="relative z-10 flex items-start justify-between gap-5 border-b border-white/10 pb-6">
+                  <div>
+                    <div class="text-[10px] font-black uppercase tracking-[0.22em] text-brand-orange">
+                      Carte d’identité
+                    </div>
+
+                    <h2 class="mt-3 max-w-lg text-4xl font-black leading-[0.92] tracking-[-0.065em] text-white sm:text-5xl">
+                      Une agence pensée comme un système de marque.
+                    </h2>
+                  </div>
+
+                  <div class="rounded-[1.4rem] bg-white px-5 py-4 text-slate-950">
+                    <div class="text-[10px] font-black uppercase tracking-[0.16em] text-slate-400">
+                      Vision
+                    </div>
+                    <div class="mt-1 text-4xl font-black tracking-[-0.08em]">360°</div>
+                  </div>
+                </div>
+
+                <!-- Compass visual -->
+                <div class="relative z-10 mt-8 min-h-[360px]">
+                  <div class="absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 rounded-[3rem] border border-white/10"></div>
+                  <div class="absolute left-1/2 top-1/2 h-60 w-60 -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed border-brand-orange/[0.35]"></div>
+                  <div class="dna-orbit absolute left-1/2 top-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 rounded-full border border-brand-emerald/[0.40]"></div>
+
+                  <div class="absolute left-1/2 top-1/2 flex h-32 w-32 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[2rem] bg-white text-brand-blue shadow-2xl">
+                    <Fingerprint :size="52" />
+                  </div>
+
+                  <div
+                    v-for="(point, index) in dnaPoints"
+                    :key="point.title"
+                    :class="[
+                      'absolute rounded-[1.5rem] border border-white/10 bg-black/[0.50] p-4 backdrop-blur',
+                      index === 0 ? 'left-0 top-8' : '',
+                      index === 1 ? 'right-0 top-16' : '',
+                      index === 2 ? 'bottom-8 left-4' : '',
+                      index === 3 ? 'bottom-4 right-4' : ''
+                    ]"
+                  >
+                    <component :is="point.icon" :size="22" class="text-brand-orange" />
+
+                    <div class="mt-4 text-lg font-black tracking-[-0.04em] text-white">
+                      {{ point.title }}
+                    </div>
+
+                    <p class="mt-2 max-w-[220px] text-xs leading-5 text-white/[0.52]">
+                      {{ point.text }}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="relative z-10 mt-6 grid grid-cols-3 gap-3">
+                  <div class="rounded-[1.4rem] bg-brand-blue p-4">
+                    <div class="text-sm font-black">Stratégie</div>
+                  </div>
+                  <div class="rounded-[1.4rem] bg-brand-orange p-4">
+                    <div class="text-sm font-black">Création</div>
+                  </div>
+                  <div class="rounded-[1.4rem] bg-brand-emerald p-4">
+                    <div class="text-sm font-black">Impact</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="about-note absolute left-0 top-16 hidden rotate-[-7deg] rounded-[1.5rem] bg-white p-5 text-slate-950 shadow-2xl lg:block">
+              <MapPin :size="22" class="text-brand-orange" />
+              <div class="mt-4 text-xl font-black tracking-[-0.05em]">{{ location }}</div>
+              <div class="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-400">Agence créative</div>
+            </div>
           </div>
         </div>
       </div>
+    </section>
 
-      <div class="space-y-8">
-        <div v-for="(point, index) in [
-          { icon: Globe, title: 'Réseau stratégique étendu', desc: 'Partenaires, influenceurs, experts SEO/SEA, médias spécialisés' },
-          { icon: Check, title: 'Méthodologie éprouvée', desc: 'Diagnostic > Stratégie > Création > Diffusion > Optimisation' },
-          { icon: Star, title: 'Garantie satisfaction', desc: 'Révisions illimitées jusqu à satisfaction totale' }
-        ]" :key="index"
-        class="group flex items-start gap-6 p-6 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-          <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-[#0e437d]/10 to-[#22ae84]/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-            <component :is="point.icon" :size="24" class="text-[#0e437d]" />
-          </div>
+    <!-- TRAJECTOIRE -->
+    <section class="relative isolate overflow-hidden px-3 py-14 sm:px-4 lg:px-6">
+      <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,17,31,0.1),rgba(8,17,31,0.78),rgba(8,17,31,0.1))]"></div>
+
+      <div class="site-container relative z-10">
+        <div class="mb-8 grid gap-6 lg:grid-cols-[0.48fr_1.52fr] lg:items-end">
           <div>
-            <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ point.title }}</h3>
-            <p class="text-gray-600">{{ point.desc }}</p>
+            <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-orange">
+              <Rocket :size="15" />
+              Notre méthode
+            </div>
+
+            <h2 class="mt-5 text-4xl font-black leading-[0.95] tracking-[-0.06em] text-white sm:text-5xl">
+              De l’idée
+              <span class="block text-brand-orange">à la présence forte.</span>
+            </h2>
+          </div>
+
+          <p class="max-w-2xl text-sm leading-7 text-white/[0.55]">
+            Une marque ne devient pas visible par hasard. Elle se construit avec une direction,
+            une identité, des supports et une diffusion cohérente.
+          </p>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <div
+            v-for="step in trajectory"
+            :key="step.title"
+            class="group relative min-h-80 overflow-hidden rounded-[2.2rem] border border-white/10 bg-white/[0.055] p-5 backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/[0.09]"
+          >
+            <div class="absolute -right-16 -top-16 h-48 w-48 rounded-[3rem] bg-brand-orange/[0.14] blur-3xl transition group-hover:scale-125"></div>
+
+            <div class="relative">
+              <div class="flex items-start justify-between gap-5">
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-brand-blue">
+                  <component :is="step.icon" :size="24" />
+                </div>
+
+                <div class="text-6xl font-black tracking-[-0.1em] text-white/[0.10]">
+                  {{ step.number }}
+                </div>
+              </div>
+
+              <div class="mt-16 text-[10px] font-black uppercase tracking-[0.18em] text-brand-orange">
+                {{ step.label }}
+              </div>
+
+              <h3 class="mt-3 text-2xl font-black tracking-[-0.05em] text-white">
+                {{ step.title }}
+              </h3>
+
+              <p class="mt-3 text-sm leading-7 text-white/[0.55]">
+                {{ step.text }}
+              </p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- CTA Section HORS de la grille - centrée sur toute la largeur -->
-    <div class="mt-12 lg:col-span-2"> <!-- lg:col-span-2 pour qu'elle prenne 2 colonnes sur desktop -->
-      <div class="bg-gradient-to-r from-[#0e437d] to-[#22ae84] rounded-2xl p-8 text-white text-center shadow-xl max-w-4xl mx-auto">
-        <h3 class="text-2xl font-bold mb-4">Prêt à booster votre présence digitale ?</h3>
-        <p class="text-white/90 mb-6">Réservez votre audit gratuit dès maintenant</p>
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
-          <a href="tel:+33612345678"
-             class="px-6 py-3 bg-white text-[#0e437d] rounded-lg font-semibold hover:bg-gray-100 transition-all duration-300">
-            Appelez-nous
-          </a>
-          <a href="/contact"
-             class="px-6 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white/10 transition-all duration-300">
-            Demander un devis
-          </a>
+    <!-- EXPERTISE MAP -->
+    <section class="relative isolate overflow-hidden px-3 py-14 sm:px-4 lg:px-6">
+      <div class="site-container relative z-10">
+        <div class="relative overflow-hidden rounded-[2.8rem] border border-white/10 bg-white/[0.065] p-6 backdrop-blur-2xl sm:p-8">
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(249,115,22,0.16),transparent_30%),radial-gradient(circle_at_86%_80%,rgba(16,185,129,0.14),transparent_32%)]"></div>
+
+          <div class="relative grid gap-8 lg:grid-cols-[0.78fr_1.22fr] lg:items-center">
+            <div>
+              <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-orange">
+                <Layers3 :size="14" />
+                Pôles intégrés
+              </div>
+
+              <h2 class="mt-5 text-4xl font-black leading-[0.95] tracking-[-0.06em] text-white sm:text-5xl">
+                Six expertises.
+                <span class="block bg-gradient-to-r from-brand-orange via-white to-brand-emerald bg-clip-text text-transparent">
+                  Une seule direction.
+                </span>
+              </h2>
+
+              <p class="mt-5 max-w-xl text-sm leading-7 text-white/[0.60]">
+                KOTAVA agit comme un atelier complet : stratégie, identité, digital, contenu,
+                événementiel et social media avancent ensemble.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div
+                v-for="(item, index) in expertiseMap"
+                :key="item.title"
+                class="rounded-[1.7rem] border border-white/10 bg-black/[0.35] p-5"
+              >
+                <div
+                  :class="[
+                    'flex h-12 w-12 items-center justify-center rounded-2xl text-white',
+                    index % 3 === 0 ? 'bg-brand-blue' : index % 3 === 1 ? 'bg-brand-orange' : 'bg-brand-emerald'
+                  ]"
+                >
+                  <component :is="item.icon" :size="22" />
+                </div>
+
+                <div class="mt-14 text-xl font-black tracking-[-0.045em] text-white">
+                  {{ item.title }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
+    </section>
 
-  <!-- Section Contact CTA finale -->
-  <section class="py-20 bg-gradient-to-br from-[#0e437d] via-[#1a6ca3] to-[#22ae84] text-white animate-on-scroll">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <Sparkles :size="48" class="mx-auto mb-6 text-[#FFD166] animate-pulse" />
+    <!-- VALEURS + RAISONS -->
+    <section class="relative isolate overflow-hidden px-3 py-14 sm:px-4 lg:px-6">
+      <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,17,31,0.1),rgba(8,17,31,0.78),rgba(8,17,31,0.1))]"></div>
 
-      <h2 class="text-4xl md:text-5xl font-bold mb-6">
-        Transformons ensemble vos <span class="text-[#FFD166]">idées en succès</span>
-      </h2>
+      <div class="site-container relative z-10">
+        <div class="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
+          <div class="relative overflow-hidden rounded-[2.8rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-2xl">
+            <div class="absolute -right-24 -top-24 h-80 w-80 rounded-[5rem] bg-brand-orange/[0.16] blur-3xl"></div>
 
-      <p class="text-xl opacity-90 mb-10 max-w-2xl mx-auto">
-        Notre équipe est prête à créer une stratégie sur-mesure pour propulser votre entreprise.
-      </p>
+            <div class="relative">
+              <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-orange">
+                <Heart :size="14" />
+                Valeurs
+              </div>
 
-      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-        <a href="/contact"
-           class="group relative px-8 py-4 bg-white text-[#0e437d] rounded-xl font-bold text-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105">
-          <span class="relative z-10 flex items-center gap-3">
-            <Mail :size="20" /> Obtenir une proposition personnalisée
-          </span>
-          <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-        </a>
-      </div>
+              <h2 class="mt-5 text-4xl font-black leading-[0.95] tracking-[-0.06em] text-white">
+                Ce qui guide
+                <span class="block text-brand-orange">notre exigence.</span>
+              </h2>
 
-      <div class="mt-12 pt-8 border-t border-white/20">
-        <p class="text-white/80 mb-4">Ou contactez-nous directement :</p>
-        <div class="flex flex-wrap justify-center gap-6">
-          <a href="mailto:contact@kotava.com" class="flex items-center gap-2 hover:text-[#FFD166] transition-colors">
-            <Mail :size="18" /> contact@kotava.com
-          </a>
-          <a href="tel:+33612345678" class="flex items-center gap-2 hover:text-[#FFD166] transition-colors">
-            <Phone :size="18" /> +33 6 12 34 56 78
-          </a>
+              <div class="mt-8 grid gap-3 sm:grid-cols-2">
+                <div
+                  v-for="value in values"
+                  :key="value.title"
+                  class="rounded-[1.6rem] border border-white/10 bg-black/[0.35] p-4"
+                >
+                  <component :is="value.icon" :size="23" class="text-brand-orange" />
+
+                  <h3 class="mt-10 text-xl font-black text-white">
+                    {{ value.title }}
+                  </h3>
+
+                  <p class="mt-2 text-sm leading-6 text-white/[0.52]">
+                    {{ value.text }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative overflow-hidden rounded-[2.8rem] border border-white/10 bg-white/[0.06] p-6 backdrop-blur-2xl">
+            <div class="absolute -bottom-24 -right-20 h-80 w-80 rounded-[4rem] bg-brand-emerald/[0.14] blur-3xl"></div>
+
+            <div class="relative">
+              <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-2 text-[11px] font-black uppercase tracking-[0.22em] text-brand-emerald">
+                <CheckCircle2 :size="14" />
+                Pourquoi KOTAVA
+              </div>
+
+              <div class="mt-6 space-y-3">
+                <div
+                  v-for="reason in reasons"
+                  :key="reason.title"
+                  class="rounded-[1.6rem] border border-white/10 bg-black/[0.35] p-4"
+                >
+                  <div class="flex items-start gap-4">
+                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-brand-blue">
+                      <component :is="reason.icon" :size="21" />
+                    </div>
+
+                    <div>
+                      <h3 class="text-base font-black text-white">
+                        {{ reason.title }}
+                      </h3>
+
+                      <p class="mt-1 text-sm leading-6 text-white/[0.52]">
+                        {{ reason.text }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CTA -->
+          <div class="relative overflow-hidden rounded-[2.8rem] border border-white/10 bg-white/[0.065] p-6 backdrop-blur-2xl lg:col-span-2 sm:p-8">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(249,115,22,0.16),transparent_30%),radial-gradient(circle_at_86%_80%,rgba(16,185,129,0.14),transparent_32%)]"></div>
+
+            <div class="relative grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center">
+              <div>
+                <div class="flex h-16 w-16 items-center justify-center rounded-[1.4rem] bg-brand-orange text-white shadow-orange">
+                  <Sparkles :size="28" />
+                </div>
+
+                <h2 class="mt-6 text-4xl font-black leading-[0.95] tracking-[-0.06em] text-white sm:text-5xl">
+                  Transformons vos idées
+                  <span class="block bg-gradient-to-r from-brand-orange via-white to-brand-emerald bg-clip-text text-transparent">
+                    en présence forte.
+                  </span>
+                </h2>
+
+                <p class="mt-4 max-w-xl text-sm leading-7 text-white/[0.60]">
+                  Discutons de votre marque, de votre projet ou de votre campagne.
+                  Notre équipe vous aide à construire une communication plus claire, plus visible et plus impactante.
+                </p>
+              </div>
+
+              <div class="grid gap-3">
+                <Link
+                  href="/contact"
+                  class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] bg-brand-orange px-6 py-4 text-sm font-black text-white shadow-orange transition hover:-translate-y-0.5 hover:bg-brand-orange/90"
+                >
+                  Obtenir une proposition
+                  <ArrowRight :size="18" />
+                </Link>
+
+                <a
+                  :href="contactPhoneHref"
+                  class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] border border-white/10 bg-white/[0.08] px-6 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-white/[0.12]"
+                >
+                  <Phone :size="18" />
+                  {{ contactPhoneDisplay }}
+                </a>
+
+                <a
+                  :href="`mailto:${contactEmail}`"
+                  class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] border border-white/10 bg-white/[0.08] px-6 py-4 text-sm font-black text-white transition hover:-translate-y-0.5 hover:bg-white/[0.12]"
+                >
+                  <Mail :size="18" />
+                  {{ contactEmail }}
+                </a>
+
+                <div class="inline-flex items-center justify-center gap-2 rounded-[1.15rem] border border-white/10 bg-white/[0.05] px-6 py-4 text-sm font-black text-white/[0.65]">
+                  <MapPin :size="18" />
+                  {{ location }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </main>
 </template>
 
 <style scoped>
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(180deg); }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
+@keyframes aboutMark {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 0.28;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  50% {
+    transform: translate3d(18px, -24px, 0) rotate(18deg);
+    opacity: 0.85;
   }
 }
 
-@keyframes underline {
-  from { width: 0; opacity: 0; }
-  to { width: 100%; opacity: 1; }
-}
-
-@keyframes pulse-subtle {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-}
-
-@keyframes bounce-subtle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.animate-float {
-  animation: float linear infinite;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.8s ease-out forwards;
-}
-
-.animate-underline {
-  animation: underline 1s ease-out forwards;
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s ease-in-out infinite;
-}
-
-.animate-bounce-subtle {
-  animation: bounce-subtle 2s ease-in-out infinite;
-}
-
-.animate-shimmer {
-  animation: shimmer 3s infinite;
-}
-
-.animation-delay-200 {
-  animation-delay: 200ms;
-}
-
-.animation-delay-400 {
-  animation-delay: 400ms;
-}
-
-.animation-delay-1000 {
-  animation-delay: 1000ms;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2000ms;
-}
-
-.animate-on-scroll {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.animate-on-scroll.animate-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .text-5xl {
-    font-size: 3rem;
+@keyframes identityMap {
+  0%, 100% {
+    transform: translate(-50%, -50%) rotate(-0.7deg);
   }
-  .text-7xl {
-    font-size: 4rem;
+
+  50% {
+    transform: translate(-50%, calc(-50% - 10px)) rotate(0.7deg);
   }
+}
+
+@keyframes dnaOrbit {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) rotate(180deg) scale(1.08);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg) scale(1);
+  }
+}
+
+@keyframes aboutNote {
+  0%, 100% {
+    transform: translateY(0) rotate(-7deg);
+  }
+
+  50% {
+    transform: translateY(-14px) rotate(-3deg);
+  }
+}
+
+.about-mark {
+  animation: aboutMark 7s ease-in-out infinite;
+}
+
+.identity-map {
+  animation: identityMap 7s ease-in-out infinite;
+}
+
+.dna-orbit {
+  animation: dnaOrbit 18s linear infinite;
+}
+
+.about-note {
+  animation: aboutNote 6s ease-in-out infinite;
 }
 </style>

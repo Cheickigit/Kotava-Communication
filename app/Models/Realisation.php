@@ -12,58 +12,92 @@ class Realisation extends Model
     protected $fillable = [
         'title',
         'slug',
+        'client',
+
+        // Anciennes colonnes de la table
+        'sector',
+        'country',
+        'type',
+        'completion_date',
+        'summary',
         'description',
-        'short_description',
+        'context',
+        'solution',
+        'results',
+        'client_testimony',
+
+        // Médias
+        'media',
         'image',
         'cover_image',
-        'client',
         'client_logo',
-        'category', // branding, web, social, video
-        'service_type',
-        'status', // en_cours, termine, en_attente
+        'gallery',
+
+        // Publication
         'published',
         'featured',
+        'status',
+        'statut',
+
+        // Nouvelles colonnes dashboard
+        'short_description',
+        'category',
+        'service_type',
         'budget',
         'start_date',
         'end_date',
+
+        // Témoignage
         'testimonial',
         'testimonial_author',
-        'gallery', // JSON array d'images
-        'metrics', // JSON pour les statistiques du projet
-        'team_id', // Si vous utilisez les équipes
+
+        // SEO / Stats
+        'meta_title',
+        'meta_description',
+        'metrics',
+
+        // Relations éventuelles
+        'categorie_id',
+        'team_id',
+        'user_id',
     ];
 
     protected $casts = [
         'published' => 'boolean',
         'featured' => 'boolean',
+        'budget' => 'decimal:2',
         'start_date' => 'date',
         'end_date' => 'date',
+        'completion_date' => 'date',
+        'media' => 'array',
         'gallery' => 'array',
         'metrics' => 'array',
     ];
 
-    // Scope pour les projets publiés
     public function scopePublished($query)
     {
         return $query->where('published', true);
     }
 
-    // Scope pour les projets en vedette
     public function scopeFeatured($query)
     {
         return $query->where('featured', true);
     }
 
-    // Scope par catégorie
     public function scopeByCategory($query, $category)
     {
-        if ($category && $category !== 'all') {
+        if ($category && $category !== 'all' && $category !== 'tous') {
             return $query->where('category', $category);
         }
+
         return $query;
     }
 
-    // Accessor pour l'URL de l'image
+    public function categorie()
+    {
+        return $this->belongsTo(Categorie::class, 'categorie_id');
+    }
+
     public function getImageUrlAttribute()
     {
         if ($this->image && str_starts_with($this->image, 'http')) {
@@ -73,7 +107,69 @@ class Realisation extends Model
         return $this->image ? asset('storage/' . $this->image) : null;
     }
 
-    // Accessor pour la durée du projet
+    public function getCoverImageUrlAttribute()
+    {
+        if ($this->cover_image && str_starts_with($this->cover_image, 'http')) {
+            return $this->cover_image;
+        }
+
+        return $this->cover_image ? asset('storage/' . $this->cover_image) : null;
+    }
+
+    public function getClientLogoUrlAttribute()
+    {
+        if ($this->client_logo && str_starts_with($this->client_logo, 'http')) {
+            return $this->client_logo;
+        }
+
+        return $this->client_logo ? asset('storage/' . $this->client_logo) : null;
+    }
+
+    public function getMediaAttribute($value)
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (is_string($value) && $value !== '') {
+            $decoded = json_decode($value, true);
+
+            return is_array($decoded) ? $decoded : [];
+        }
+
+        return [];
+    }
+
+    public function getGalleryAttribute($value)
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (is_string($value) && $value !== '') {
+            $decoded = json_decode($value, true);
+
+            return is_array($decoded) ? $decoded : [];
+        }
+
+        return [];
+    }
+
+    public function getMetricsAttribute($value)
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (is_string($value) && $value !== '') {
+            $decoded = json_decode($value, true);
+
+            return is_array($decoded) ? $decoded : [];
+        }
+
+        return [];
+    }
+
     public function getDurationAttribute()
     {
         if ($this->start_date && $this->end_date) {
@@ -83,7 +179,9 @@ class Realisation extends Model
 
             if ($interval->m > 0) {
                 return $interval->m . ' mois';
-            } elseif ($interval->d > 0) {
+            }
+
+            if ($interval->d > 0) {
                 return $interval->d . ' jours';
             }
         }

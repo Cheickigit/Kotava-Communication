@@ -1,97 +1,113 @@
 <script setup>
-import { ref, computed } from 'vue';
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import Banner from '@/Components/Banner.vue';
 import {
-  LayoutDashboard, FileText, Image, Users, Calendar,
-  MessageSquare, BarChart3, Settings, LogOut, Menu,
-  Bell, Search, User, ChevronDown, Sparkles, Mail, Plus,
-  X, Home
+  ArrowLeft,
+  FileText,
+  Home,
+  Image,
+  LayoutDashboard,
+  LogOut,
+  Mail,
+  Menu,
+  Sparkles,
+  User,
+  X,
 } from 'lucide-vue-next';
 
 defineProps({
-    title: String,
+  title: String,
 });
 
 const sidebarOpen = ref(true);
-const notificationsOpen = ref(false);
+const mobileSidebarOpen = ref(false);
 const profileOpen = ref(false);
-const showingNavigationDropdown = ref(false);
 
 const page = usePage();
+
 const user = computed(() => page.props.auth?.user);
+
+const userInitials = computed(() => {
+  const name = user.value?.name || 'Admin';
+
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join('');
+});
+
+const normalizePath = (url) => {
+  try {
+    return new URL(url, window.location.origin).pathname;
+  } catch {
+    return String(url || '').split('?')[0];
+  }
+};
+
+const currentPath = computed(() => normalizePath(page.url));
 
 const menuItems = [
   {
     label: 'Retour au site',
+    description: 'Voir le site public',
     icon: Home,
     href: '/',
     external: true,
-    roles: ['Super Admin', 'Administrateur', 'Community Manager', 'Designer']
   },
   {
     label: 'Dashboard',
+    description: 'Vue générale',
     icon: LayoutDashboard,
     href: '/dashboard',
-    badge: null,
-    roles: ['Super Admin', 'Administrateur', 'Community Manager', 'Designer']
   },
   {
-    label: 'Réalisations',
+    label: 'Portfolio',
+    description: 'Réalisations & projets',
     icon: Image,
     href: '/dashboard/realisations',
-    badge: null,
-    roles: ['Super Admin', 'Administrateur', 'Designer']
   },
   {
     label: 'Actualités',
+    description: 'Articles & publications',
     icon: FileText,
     href: '/dashboard/actualites',
-    badge: null,
-    roles: ['Super Admin', 'Administrateur', 'Community Manager']
   },
   {
-    label: 'Équipe',
-    icon: Users,
-    href: '/dashboard/equipe',
-    badge: null,
-    roles: ['Super Admin', 'Administrateur']
-  },
-  {
-    label: 'Leads',
+    label: 'Contacts',
+    description: 'Messages reçus',
     icon: Mail,
     href: '/dashboard/leads',
-    badge: null,
-    roles: ['Super Admin', 'Administrateur', 'Community Manager']
-  },
-  {
-    label: 'Analytics',
-    icon: BarChart3,
-    href: '/dashboard/analytics',
-    badge: null,
-    roles: ['Super Admin', 'Administrateur']
-  },
-  {
-    label: 'Paramètres',
-    icon: Settings,
-    href: '/dashboard/settings',
-    badge: null,
-    roles: ['Super Admin', 'Administrateur']
   },
 ];
 
-const notifications = [
-  { id: 1, type: 'lead', message: 'Nouveau lead de Marie K.', time: '5 min' },
-  { id: 2, type: 'comment', message: 'Commentaire sur "Branding 2024"', time: '1h' },
-  { id: 3, type: 'system', message: 'Mise à jour système disponible', time: '2h' },
-];
-
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value;
-};
+const primaryMenuItems = computed(() => menuItems.filter((item) => !item.external));
+const externalMenuItem = computed(() => menuItems.find((item) => item.external));
 
 const isActive = (href) => {
-  return page.url === href || page.url.startsWith(href + '/');
+  const path = normalizePath(href);
+
+  if (path === '/dashboard') {
+    return currentPath.value === '/dashboard';
+  }
+
+  return currentPath.value === path || currentPath.value.startsWith(`${path}/`);
+};
+
+const currentPageTitle = computed(() => {
+  const current = primaryMenuItems.value.find((item) => isActive(item.href));
+  return current?.label || 'Dashboard';
+});
+
+const currentPageDescription = computed(() => {
+  const current = primaryMenuItems.value.find((item) => isActive(item.href));
+  return current?.description || 'Gestion de la plateforme KOTAVA';
+});
+
+const closeMobileSidebar = () => {
+  mobileSidebarOpen.value = false;
 };
 
 const logout = () => {
@@ -104,267 +120,7 @@ const logout = () => {
     <Head :title="title" />
     <Banner />
 
-    <div class="min-h-screen bg-gray-50">
-      <!-- Sidebar -->
-      <aside
-        :class="[
-          'fixed top-0 left-0 h-full bg-white border-r border-gray-200 transition-all duration-300 z-40 shadow-xl',
-          sidebarOpen ? 'w-72' : 'w-20',
-          showingNavigationDropdown ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'
-        ]"
-      >
-        <!-- Logo -->
-        <div class="h-20 flex items-center px-6 border-b border-gray-200">
-          <Link :href="route('dashboard')" class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-gradient-to-br from-[#0e437d] to-[#22ae84] rounded-xl flex items-center justify-center shadow-lg">
-              <Sparkles :size="20" class="text-white" />
-            </div>
-            <Transition
-              enter-active-class="transition-all duration-300"
-              enter-from-class="opacity-0 w-0"
-              enter-to-class="opacity-100 w-auto"
-              leave-active-class="transition-all duration-200"
-              leave-from-class="opacity-100 w-auto"
-              leave-to-class="opacity-0 w-0"
-            >
-              <div v-if="sidebarOpen" class="overflow-hidden">
-                <div class="text-lg font-bold text-gray-900">KOTAVA</div>
-                <div class="text-xs text-gray-600">Dashboard</div>
-              </div>
-            </Transition>
-          </Link>
-        </div>
-
-        <!-- Navigation -->
-        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto max-h-[calc(100vh-160px)]">
-          <component
-            :is="item.external ? 'a' : Link"
-            v-for="item in menuItems"
-            :key="item.href"
-            :href="item.href"
-            :class="[
-              'flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group relative',
-              isActive(item.href) && !item.external
-                ? 'bg-gradient-to-r from-[#0e437d] to-[#22ae84] text-white shadow-lg'
-                : 'text-gray-700 hover:bg-gray-50 hover:text-[#22ae84]'
-            ]"
-          >
-            <component
-              :is="item.icon"
-              :size="22"
-              :class="[
-                'flex-shrink-0 transition-transform group-hover:scale-110',
-                isActive(item.href) && !item.external ? 'text-white' : ''
-              ]"
-            />
-
-            <Transition
-              enter-active-class="transition-all duration-300"
-              enter-from-class="opacity-0 w-0"
-              enter-to-class="opacity-100 w-auto"
-              leave-active-class="transition-all duration-200"
-              leave-from-class="opacity-100 w-auto"
-              leave-to-class="opacity-0 w-0"
-            >
-              <span v-if="sidebarOpen" class="font-medium overflow-hidden whitespace-nowrap">
-                {{ item.label }}
-              </span>
-            </Transition>
-
-            <!-- Badge -->
-            <span
-              v-if="item.badge && sidebarOpen"
-              :class="[
-                'ml-auto px-2 py-1 text-xs font-bold rounded-full',
-                isActive(item.href)
-                  ? 'bg-white/20 text-white'
-                  : 'bg-[#22ae84] text-white'
-              ]"
-            >
-              {{ item.badge }}
-            </span>
-
-            <!-- Tooltip pour sidebar fermée -->
-            <div
-              v-if="!sidebarOpen"
-              class="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 whitespace-nowrap z-50"
-            >
-              {{ item.label }}
-            </div>
-          </component>
-        </nav>
-
-        <!-- User Profile (Bottom) -->
-        <div class="border-t border-gray-200 p-4">
-          <div
-            @click="profileOpen = !profileOpen"
-            :class="[
-              'flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all cursor-pointer',
-              !sidebarOpen && 'justify-center'
-            ]"
-          >
-            <div class="w-10 h-10 bg-gradient-to-br from-[#0e437d] to-[#22ae84] rounded-xl flex items-center justify-center flex-shrink-0">
-              <User :size="20" class="text-white" />
-            </div>
-
-            <Transition
-              enter-active-class="transition-all duration-300"
-              enter-from-class="opacity-0 w-0"
-              enter-to-class="opacity-100 w-auto"
-              leave-active-class="transition-all duration-200"
-              leave-from-class="opacity-100 w-auto"
-              leave-to-class="opacity-0 w-0"
-            >
-              <div v-if="sidebarOpen" class="flex-1 overflow-hidden">
-                <div class="font-medium text-gray-900 text-sm truncate">
-                  {{ user?.name }}
-                </div>
-                <div class="text-xs text-gray-600 truncate">
-                  {{ user?.email }}
-                </div>
-              </div>
-            </Transition>
-          </div>
-
-          <!-- Profile Dropdown (appears when clicked) -->
-          <Transition
-            enter-active-class="transition-all duration-200 ease-out"
-            enter-from-class="opacity-0 scale-95 -translate-y-2"
-            enter-to-class="opacity-100 scale-100 translate-y-0"
-            leave-active-class="transition-all duration-150 ease-in"
-            leave-from-class="opacity-100 scale-100 translate-y-0"
-            leave-to-class="opacity-0 scale-95 -translate-y-2"
-          >
-            <div
-              v-if="profileOpen && sidebarOpen"
-              class="mt-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden"
-            >
-              <div class="p-2">
-                <Link :href="route('profile.show')" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 transition-all text-gray-700">
-                  <User :size="18" class="text-gray-600" />
-                  <span>Mon Profil</span>
-                </Link>
-              </div>
-              <div class="p-2 border-t border-gray-200">
-                <button @click="logout" class="flex items-center gap-3 w-full px-4 py-3 rounded-lg hover:bg-red-50 text-red-600 transition-all">
-                  <LogOut :size="18" />
-                  <span>Déconnexion</span>
-                </button>
-              </div>
-            </div>
-          </Transition>
-        </div>
-      </aside>
-
-      <!-- Main Content Area -->
-      <div
-        :class="[
-          'transition-all duration-300',
-          sidebarOpen ? 'sm:ml-72' : 'sm:ml-20'
-        ]"
-      >
-        <!-- Top Bar -->
-        <header class="sticky top-0 z-30 h-20 bg-white border-b border-gray-200 shadow-sm">
-          <div class="h-full px-6 flex items-center justify-between">
-            <!-- Left: Menu Toggle + Search -->
-            <div class="flex items-center gap-4">
-              <button
-                @click="toggleSidebar"
-                class="hidden sm:block p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-all"
-              >
-                <Menu :size="22" />
-              </button>
-
-              <!-- Mobile menu button -->
-              <button
-                @click="showingNavigationDropdown = !showingNavigationDropdown"
-                class="sm:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-all"
-              >
-                <Menu v-if="!showingNavigationDropdown" :size="22" />
-                <X v-else :size="22" />
-              </button>
-
-              <div class="relative hidden md:block">
-                <Search :size="20" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Rechercher..."
-                  class="pl-10 pr-4 py-2 w-80 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#22ae84] focus:border-transparent transition-all"
-                />
-              </div>
-            </div>
-
-            <!-- Right: Actions -->
-            <div class="flex items-center gap-3">
-              <!-- Quick Add -->
-              <button class="p-2.5 rounded-xl bg-gradient-to-r from-[#0e437d] to-[#22ae84] text-white hover:shadow-lg hover:scale-105 transition-all">
-                <Plus :size="20" />
-              </button>
-
-              <!-- Notifications -->
-              <div class="relative">
-                <button
-                  @click="notificationsOpen = !notificationsOpen"
-                  class="relative p-2.5 rounded-xl text-gray-700 hover:bg-gray-100 transition-all"
-                >
-                  <Bell :size="20" />
-                  <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
-
-                <!-- Notifications Dropdown -->
-                <Transition
-                  enter-active-class="transition-all duration-200 ease-out"
-                  enter-from-class="opacity-0 scale-95 translate-y-2"
-                  enter-to-class="opacity-100 scale-100 translate-y-0"
-                  leave-active-class="transition-all duration-150 ease-in"
-                  leave-from-class="opacity-100 scale-100 translate-y-0"
-                  leave-to-class="opacity-0 scale-95 translate-y-2"
-                >
-                  <div
-                    v-if="notificationsOpen"
-                    class="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
-                  >
-                    <div class="p-4 border-b border-gray-200">
-                      <h3 class="font-semibold text-gray-900">Notifications</h3>
-                    </div>
-                    <div class="max-h-96 overflow-y-auto">
-                      <div
-                        v-for="notif in notifications"
-                        :key="notif.id"
-                        class="p-4 hover:bg-gray-50 transition-colors cursor-pointer border-b border-gray-100 last:border-0"
-                      >
-                        <p class="text-sm text-gray-900 mb-1">{{ notif.message }}</p>
-                        <p class="text-xs text-gray-600">Il y a {{ notif.time }}</p>
-                      </div>
-                    </div>
-                  </div>
-                </Transition>
-              </div>
-
-              <!-- Profile Desktop -->
-              <div class="hidden sm:block">
-                <div class="w-9 h-9 bg-gradient-to-br from-[#0e437d] to-[#22ae84] rounded-lg flex items-center justify-center cursor-pointer">
-                  <User :size="18" class="text-white" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <!-- Page Heading -->
-        <header v-if="$slots.header" class="bg-white shadow">
-          <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <slot name="header" />
-          </div>
-        </header>
-
-        <!-- Page Content -->
-        <main class="p-6">
-          <slot />
-        </main>
-      </div>
-
-      <!-- Mobile Overlay -->
+    <div class="min-h-screen bg-[#F3F5F8] text-slate-950">
       <Transition
         enter-active-class="transition-opacity duration-300"
         enter-from-class="opacity-0"
@@ -373,12 +129,274 @@ const logout = () => {
         leave-from-class="opacity-100"
         leave-to-class="opacity-0"
       >
-        <div
-          v-if="showingNavigationDropdown"
-          @click="showingNavigationDropdown = false"
-          class="fixed inset-0 bg-black/50 z-30 sm:hidden"
-        ></div>
+        <button
+          v-if="mobileSidebarOpen"
+          type="button"
+          class="fixed inset-0 z-40 bg-slate-950/55 backdrop-blur-sm sm:hidden"
+          aria-label="Fermer le menu"
+          @click="closeMobileSidebar"
+        ></button>
       </Transition>
+
+      <aside
+        :class="[
+          'fixed left-0 top-0 z-50 h-full w-72 border-r border-white/10 bg-[#08111F] text-white shadow-[30px_0_90px_rgba(8,17,31,0.22)] transition-all duration-300',
+          sidebarOpen ? 'sm:w-72' : 'sm:w-24',
+          mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full sm:translate-x-0'
+        ]"
+      >
+        <div class="pointer-events-none absolute inset-0 bg-grid-dark opacity-20"></div>
+        <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_12%,rgba(249,115,22,0.18),transparent_26%),radial-gradient(circle_at_88%_80%,rgba(16,185,129,0.14),transparent_30%)]"></div>
+
+        <div class="relative z-10 flex h-full flex-col">
+          <div class="flex h-24 items-center justify-between border-b border-white/10 px-5">
+            <a
+              href="/dashboard"
+              class="flex min-w-0 items-center gap-3"
+              @click="closeMobileSidebar"
+            >
+              <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.15rem] border border-white/10 bg-white/[0.08] p-2.5">
+                <img src="/logo_horizontal.png" alt="KOTAVA" class="h-full w-full object-contain" />
+              </span>
+
+              <Transition
+                enter-active-class="transition-all duration-300"
+                enter-from-class="opacity-0 translate-x-2"
+                enter-to-class="opacity-100 translate-x-0"
+                leave-active-class="transition-all duration-200"
+                leave-from-class="opacity-100 translate-x-0"
+                leave-to-class="opacity-0 translate-x-2"
+              >
+                <div v-if="sidebarOpen" class="min-w-0">
+                  <div class="truncate text-sm font-black uppercase tracking-[0.18em] text-white">
+                    KOTAVA
+                  </div>
+                  <div class="mt-0.5 truncate text-[10px] font-bold uppercase tracking-[0.14em] text-white/[0.42]">
+                    Administration
+                  </div>
+                </div>
+              </Transition>
+            </a>
+
+            <button
+              type="button"
+              class="rounded-xl p-2 text-white/[0.55] transition hover:bg-white/[0.08] hover:text-white sm:hidden"
+              @click="closeMobileSidebar"
+            >
+              <X :size="21" />
+            </button>
+          </div>
+
+          <div class="px-4 pt-5">
+            <a
+              v-if="externalMenuItem"
+              :href="externalMenuItem.href"
+              class="group flex items-center gap-3 rounded-[1.15rem] border border-white/10 bg-white/[0.06] px-4 py-3 text-sm font-black text-white/[0.78] transition hover:bg-white/[0.10] hover:text-white"
+              @click="closeMobileSidebar"
+            >
+              <ArrowLeft :size="19" class="text-brand-orange transition group-hover:-translate-x-1" />
+
+              <span v-if="sidebarOpen" class="truncate">
+                {{ externalMenuItem.label }}
+              </span>
+            </a>
+          </div>
+
+          <nav class="relative z-20 flex-1 space-y-1 overflow-y-auto px-4 py-5">
+            <a
+              v-for="item in primaryMenuItems"
+              :key="item.href"
+              :href="item.href"
+              :class="[
+                'group relative flex items-center gap-3 rounded-[1.15rem] px-4 py-3.5 transition',
+                isActive(item.href)
+                  ? 'bg-brand-orange text-white shadow-orange'
+                  : 'text-white/[0.62] hover:bg-white/[0.075] hover:text-white'
+              ]"
+              @click="closeMobileSidebar"
+            >
+              <component
+                :is="item.icon"
+                :size="21"
+                :class="[
+                  'shrink-0 transition group-hover:scale-110',
+                  isActive(item.href) ? 'text-white' : 'text-white/[0.62] group-hover:text-brand-orange'
+                ]"
+              />
+
+              <Transition
+                enter-active-class="transition-all duration-300"
+                enter-from-class="opacity-0 translate-x-2"
+                enter-to-class="opacity-100 translate-x-0"
+                leave-active-class="transition-all duration-200"
+                leave-from-class="opacity-100 translate-x-0"
+                leave-to-class="opacity-0 translate-x-2"
+              >
+                <span v-if="sidebarOpen" class="min-w-0">
+                  <span class="block truncate text-sm font-black">
+                    {{ item.label }}
+                  </span>
+
+                  <span
+                    :class="[
+                      'mt-0.5 block truncate text-[10px] font-bold uppercase tracking-[0.12em]',
+                      isActive(item.href) ? 'text-white/[0.72]' : 'text-white/[0.34]'
+                    ]"
+                  >
+                    {{ item.description }}
+                  </span>
+                </span>
+              </Transition>
+
+              <span
+                v-if="isActive(item.href)"
+                class="absolute right-3 h-2 w-2 rounded-full bg-white"
+              ></span>
+
+              <div
+                v-if="!sidebarOpen"
+                class="pointer-events-none absolute left-full ml-3 min-w-max rounded-xl bg-slate-950 px-3 py-2 text-xs font-black text-white opacity-0 shadow-2xl transition group-hover:opacity-100"
+              >
+                {{ item.label }}
+              </div>
+            </a>
+          </nav>
+
+          <div class="relative z-20 border-t border-white/10 p-4">
+            <button
+              type="button"
+              :class="[
+                'flex w-full items-center gap-3 rounded-[1.15rem] border border-white/10 bg-white/[0.06] p-3 text-left transition hover:bg-white/[0.10]',
+                !sidebarOpen && 'sm:justify-center'
+              ]"
+              @click="profileOpen = !profileOpen"
+            >
+              <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] bg-brand-orange text-sm font-black text-white shadow-orange">
+                {{ userInitials }}
+              </span>
+
+              <Transition
+                enter-active-class="transition-all duration-300"
+                enter-from-class="opacity-0 translate-x-2"
+                enter-to-class="opacity-100 translate-x-0"
+                leave-active-class="transition-all duration-200"
+                leave-from-class="opacity-100 translate-x-0"
+                leave-to-class="opacity-0 translate-x-2"
+              >
+                <span v-if="sidebarOpen" class="min-w-0 flex-1">
+                  <span class="block truncate text-sm font-black text-white">
+                    {{ user?.name || 'Administrateur' }}
+                  </span>
+
+                  <span class="mt-0.5 block truncate text-xs font-bold text-white/[0.42]">
+                    {{ user?.email }}
+                  </span>
+                </span>
+              </Transition>
+            </button>
+
+            <Transition
+              enter-active-class="transition-all duration-200 ease-out"
+              enter-from-class="opacity-0 -translate-y-2 scale-95"
+              enter-to-class="opacity-100 translate-y-0 scale-100"
+              leave-active-class="transition-all duration-150 ease-in"
+              leave-from-class="opacity-100 translate-y-0 scale-100"
+              leave-to-class="opacity-0 -translate-y-2 scale-95"
+            >
+              <div
+                v-if="profileOpen && sidebarOpen"
+                class="mt-3 overflow-hidden rounded-[1.15rem] border border-white/10 bg-white/[0.08] p-2 backdrop-blur"
+              >
+                <a
+                  :href="route('profile.show')"
+                  class="flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-white/[0.72] transition hover:bg-white/[0.08] hover:text-white"
+                  @click="closeMobileSidebar"
+                >
+                  <User :size="18" />
+                  Mon profil
+                </a>
+
+                <button
+                  type="button"
+                  class="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-bold text-red-300 transition hover:bg-red-500/10 hover:text-red-200"
+                  @click="logout"
+                >
+                  <LogOut :size="18" />
+                  Déconnexion
+                </button>
+              </div>
+            </Transition>
+          </div>
+        </div>
+      </aside>
+
+      <div
+        :class="[
+          'min-h-screen transition-all duration-300',
+          sidebarOpen ? 'sm:pl-72' : 'sm:pl-24'
+        ]"
+      >
+        <header class="sticky top-0 z-30 border-b border-slate-200/80 bg-white/85 backdrop-blur-xl">
+          <div class="flex h-20 items-center justify-between gap-4 px-4 sm:px-6">
+            <div class="flex min-w-0 items-center gap-3">
+              <button
+                type="button"
+                class="hidden rounded-xl p-2.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 sm:inline-flex"
+                @click="sidebarOpen = !sidebarOpen"
+              >
+                <Menu :size="22" />
+              </button>
+
+              <button
+                type="button"
+                class="rounded-xl p-2.5 text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 sm:hidden"
+                @click="mobileSidebarOpen = true"
+              >
+                <Menu :size="22" />
+              </button>
+
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <Sparkles :size="16" class="text-brand-orange" />
+                  <p class="truncate text-[11px] font-black uppercase tracking-[0.18em] text-brand-orange">
+                    KOTAVA Dashboard
+                  </p>
+                </div>
+
+                <h1 class="mt-1 truncate text-xl font-black tracking-[-0.04em] text-slate-950 sm:text-2xl">
+                  {{ currentPageTitle }}
+                </h1>
+              </div>
+            </div>
+
+            <div class="hidden text-right md:block">
+              <p class="text-sm font-black text-slate-950">
+                {{ user?.name || 'Administrateur' }}
+              </p>
+
+              <p class="mt-0.5 text-xs font-bold text-slate-500">
+                {{ currentPageDescription }}
+              </p>
+            </div>
+
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-orange text-sm font-black text-white shadow-orange md:hidden">
+              {{ userInitials }}
+            </div>
+          </div>
+        </header>
+
+        <section v-if="$slots.header" class="border-b border-slate-200 bg-white">
+          <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+            <slot name="header" />
+          </div>
+        </section>
+
+        <main class="px-4 py-6 sm:px-6 lg:px-8">
+          <div class="mx-auto max-w-7xl">
+            <slot />
+          </div>
+        </main>
+      </div>
     </div>
   </div>
 </template>
