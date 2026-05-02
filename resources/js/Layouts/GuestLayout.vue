@@ -92,11 +92,19 @@ const footerLinks = [
 const footerTags = ['Stratégie', 'Branding', 'Digital', 'Influence'];
 
 const isActive = (href, children = []) => {
-  if (href === '/') return currentUrl.value === '/';
+  if (href === '/') {
+    return currentUrl.value === '/';
+  }
 
-  return currentUrl.value === href
-    || currentUrl.value.startsWith(`${href}/`)
-    || children.some((child) => currentUrl.value === child.href || currentUrl.value.startsWith(`${child.href}/`));
+  return (
+    currentUrl.value === href ||
+    currentUrl.value.startsWith(`${href}/`) ||
+    children.some(
+      (child) =>
+        currentUrl.value === child.href ||
+        currentUrl.value.startsWith(`${child.href}/`)
+    )
+  );
 };
 
 const closeMenus = () => {
@@ -192,6 +200,7 @@ onUnmounted(() => {
                 :aria-expanded="servicesOpen"
               >
                 {{ item.label }}
+
                 <ChevronDown
                   :size="15"
                   :class="[
@@ -354,9 +363,15 @@ onUnmounted(() => {
             <div class="flex items-center justify-between rounded-2xl bg-brand-light p-3">
               <div class="flex items-center gap-3">
                 <img src="/logo_horizontal.png" alt="" class="h-9 w-9 object-contain" />
+
                 <div>
-                  <div class="text-sm font-black text-brand-blue">Menu KOTAVA</div>
-                  <div class="text-xs font-semibold text-brand-gray">Navigation & expertises</div>
+                  <div class="text-sm font-black text-brand-blue">
+                    Menu KOTAVA
+                  </div>
+
+                  <div class="text-xs font-semibold text-brand-gray">
+                    Navigation & expertises
+                  </div>
                 </div>
               </div>
 
@@ -394,6 +409,7 @@ onUnmounted(() => {
                   <div class="text-xs font-black uppercase tracking-[0.18em] text-brand-blue">
                     Services
                   </div>
+
                   <p class="mt-1 max-w-lg text-xs leading-5 text-brand-gray">
                     Des expertises complémentaires pour construire une marque claire, visible et cohérente.
                   </p>
@@ -419,6 +435,7 @@ onUnmounted(() => {
                       <h4 class="text-sm font-black text-brand-ink group-hover:text-brand-blue">
                         {{ service.title }}
                       </h4>
+
                       <p class="mt-1 text-xs leading-5 text-brand-gray">
                         {{ service.desc }}
                       </p>
@@ -438,12 +455,20 @@ onUnmounted(() => {
             </div>
 
             <div class="mt-3 grid gap-2 sm:grid-cols-3">
-              <a :href="`mailto:${contactEmail}`" class="btn-secondary w-full" @click="closeMenus">
+              <a
+                :href="`mailto:${contactEmail}`"
+                class="btn-secondary w-full"
+                @click="closeMenus"
+              >
                 <Mail :size="16" />
                 Email
               </a>
 
-              <a :href="contactPhoneHref" class="btn-secondary w-full" @click="closeMenus">
+              <a
+                :href="contactPhoneHref"
+                class="btn-secondary w-full"
+                @click="closeMenus"
+              >
                 <Phone :size="16" />
                 Appeler
               </a>
@@ -462,130 +487,170 @@ onUnmounted(() => {
       <slot />
     </main>
 
-    <footer class="mt-20 bg-white px-3 pb-6 sm:px-4 lg:px-6">
-      <div class="site-container">
-        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-brand-light shadow-soft">
-          <div class="grid gap-8 p-6 sm:p-8 lg:grid-cols-12 lg:p-10">
-            <div class="lg:col-span-5">
-              <Link href="/" class="inline-flex items-center">
-                <img
-                  src="/logo.png"
-                  alt="KOTAVA Communication"
-                  class="h-10 w-auto object-contain sm:h-12"
-                />
-              </Link>
+   <footer class="relative isolate overflow-hidden bg-brand-dark px-3 pb-6 pt-20 text-white sm:px-4 lg:px-6">
+  <div class="absolute inset-0 bg-grid-dark opacity-35"></div>
 
-              <p class="mt-5 max-w-md text-sm leading-7 text-brand-gray">
-                KOTAVA Communication accompagne les marques, entreprises et institutions
-                dans leur stratégie, leur image et leur déploiement digital avec une approche
-                créative, moderne et cohérente.
-              </p>
+  <div class="absolute inset-0 bg-[radial-gradient(circle_at_8%_18%,rgba(16,185,129,0.16),transparent_28%),radial-gradient(circle_at_92%_72%,rgba(249,115,22,0.14),transparent_28%),radial-gradient(circle_at_50%_48%,rgba(30,58,138,0.32),transparent_34%)]"></div>
 
-              <div class="mt-5 flex flex-wrap gap-2">
-                <span
-                  v-for="tag in footerTags"
-                  :key="tag"
-                  class="inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-black text-brand-blue ring-1 ring-slate-200"
-                >
-                  <img src="/logo_horizontal.png" alt="" class="h-4 w-4 object-contain" />
-                  {{ tag }}
+  <div class="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-brand-dark via-brand-dark/90 to-transparent"></div>
+
+  <div class="pointer-events-none absolute inset-0 overflow-hidden">
+    <div class="absolute inset-x-0 top-[14%] hidden select-none text-center text-[11vw] font-black uppercase leading-none tracking-[-0.09em] text-white/[0.025] lg:block">
+      KOTAVA
+    </div>
+
+    <img
+      src="/logo.png"
+      alt=""
+      class="absolute left-[5%] top-[18%] hidden h-24 w-auto opacity-[0.04] lg:block"
+    />
+
+    <img
+      src="/logo.png"
+      alt=""
+      class="absolute right-[5%] bottom-[18%] hidden h-28 w-auto opacity-[0.035] lg:block"
+    />
+  </div>
+
+  <div class="site-container relative z-10">
+    <div class="overflow-hidden rounded-[2.4rem] border border-white/10 bg-white/[0.06] shadow-[0_35px_110px_rgba(0,0,0,0.28)] backdrop-blur-2xl">
+      <div class="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-12 lg:p-10">
+        <div class="absolute -left-24 -top-24 h-80 w-80 rounded-[5rem] bg-brand-emerald/15 blur-3xl"></div>
+        <div class="absolute -bottom-28 -right-24 h-96 w-96 rounded-[5rem] bg-brand-orange/15 blur-3xl"></div>
+
+        <div class="relative lg:col-span-5">
+          <Link href="/" class="inline-flex items-center">
+            <img
+              src="/logo.png"
+              alt="KOTAVA Communication"
+              class="h-10 w-auto object-contain sm:h-12"
+            />
+          </Link>
+
+          <p class="mt-5 max-w-md text-sm leading-7 text-white/60">
+            KOTAVA Communication accompagne les marques, entreprises et institutions
+            dans leur stratégie, leur image et leur déploiement digital avec une approche
+            créative, moderne et cohérente.
+          </p>
+
+          <div class="mt-5 flex flex-wrap gap-2">
+            <span
+              v-for="tag in footerTags"
+              :key="tag"
+              class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.08] px-3 py-2 text-xs font-black text-white/75 backdrop-blur transition hover:bg-white/[0.12] hover:text-brand-emerald"
+            >
+              <img src="/logo_horizontal.png" alt="" class="h-4 w-4 object-contain" />
+              {{ tag }}
+            </span>
+          </div>
+        </div>
+
+        <div class="relative lg:col-span-3">
+          <h3 class="text-sm font-black uppercase tracking-[0.18em] text-brand-emerald">
+            Navigation
+          </h3>
+
+          <div class="mt-5 grid grid-cols-2 gap-3 sm:max-w-sm lg:grid-cols-1">
+            <Link
+              v-for="item in footerLinks"
+              :key="item.href"
+              :href="item.href"
+              class="text-sm font-semibold text-white/60 transition hover:text-brand-orange"
+            >
+              {{ item.label }}
+            </Link>
+          </div>
+        </div>
+
+        <div class="relative lg:col-span-4">
+          <h3 class="text-sm font-black uppercase tracking-[0.18em] text-brand-emerald">
+            Contact
+          </h3>
+
+          <div class="mt-5 space-y-4">
+            <a :href="`mailto:${contactEmail}`" class="group flex items-start gap-3">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.08] text-brand-emerald transition group-hover:bg-brand-emerald group-hover:text-white">
+                <Mail :size="17" />
+              </span>
+
+              <span>
+                <span class="block text-xs font-black uppercase tracking-[0.14em] text-white/35">
+                  Email
                 </span>
-              </div>
-            </div>
 
-            <div class="lg:col-span-3">
-              <h3 class="text-sm font-black uppercase tracking-[0.18em] text-brand-blue">
-                Navigation
-              </h3>
+                <span class="mt-1 block break-all text-sm font-semibold text-white/75 transition group-hover:text-brand-orange">
+                  {{ contactEmail }}
+                </span>
+              </span>
+            </a>
 
-              <div class="mt-5 grid grid-cols-2 gap-3 sm:max-w-sm lg:grid-cols-1">
-                <Link
-                  v-for="item in footerLinks"
-                  :key="item.href"
-                  :href="item.href"
-                  class="text-sm font-semibold text-brand-gray transition hover:text-brand-blue"
-                >
-                  {{ item.label }}
-                </Link>
-              </div>
-            </div>
+            <a :href="contactPhoneHref" class="group flex items-start gap-3">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.08] text-brand-emerald transition group-hover:bg-brand-emerald group-hover:text-white">
+                <Phone :size="17" />
+              </span>
 
-            <div class="lg:col-span-4">
-              <h3 class="text-sm font-black uppercase tracking-[0.18em] text-brand-blue">
-                Contact
-              </h3>
+              <span>
+                <span class="block text-xs font-black uppercase tracking-[0.14em] text-white/35">
+                  Téléphone
+                </span>
 
-              <div class="mt-5 space-y-4">
-                <a :href="`mailto:${contactEmail}`" class="group flex items-start gap-3">
-                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-brand-blue ring-1 ring-slate-200 transition group-hover:text-brand-emerald">
-                    <Mail :size="17" />
-                  </span>
-                  <span>
-                    <span class="block text-xs font-black uppercase tracking-[0.14em] text-brand-gray">
-                      Email
-                    </span>
-                    <span class="mt-1 block break-all text-sm font-semibold text-brand-ink transition group-hover:text-brand-blue">
-                      {{ contactEmail }}
-                    </span>
-                  </span>
-                </a>
+                <span class="mt-1 block text-sm font-semibold text-white/75 transition group-hover:text-brand-orange">
+                  {{ contactPhoneDisplay }}
+                </span>
+              </span>
+            </a>
 
-                <a :href="contactPhoneHref" class="group flex items-start gap-3">
-                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-brand-blue ring-1 ring-slate-200 transition group-hover:text-brand-emerald">
-                    <Phone :size="17" />
-                  </span>
-                  <span>
-                    <span class="block text-xs font-black uppercase tracking-[0.14em] text-brand-gray">
-                      Téléphone
-                    </span>
-                    <span class="mt-1 block text-sm font-semibold text-brand-ink transition group-hover:text-brand-blue">
-                      {{ contactPhoneDisplay }}
-                    </span>
-                  </span>
-                </a>
+            <div class="flex items-start gap-3">
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.08] text-brand-emerald">
+                <MapPin :size="17" />
+              </span>
 
-                <div class="flex items-start gap-3">
-                  <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-brand-blue ring-1 ring-slate-200">
-                    <MapPin :size="17" />
-                  </span>
-                  <span>
-                    <span class="block text-xs font-black uppercase tracking-[0.14em] text-brand-gray">
-                      Localisation
-                    </span>
-                    <span class="mt-1 block text-sm font-semibold text-brand-ink">
-                      Cotonou, Bénin
-                    </span>
-                  </span>
-                </div>
-              </div>
+              <span>
+                <span class="block text-xs font-black uppercase tracking-[0.14em] text-white/35">
+                  Localisation
+                </span>
 
-              <Link href="/contact" class="btn-primary mt-6 w-full justify-center sm:w-auto">
-                Démarrer un projet
-                <ArrowRight :size="16" />
-              </Link>
+                <span class="mt-1 block text-sm font-semibold text-white/75">
+                  Cotonou, Bénin
+                </span>
+              </span>
             </div>
           </div>
 
-          <div class="border-t border-slate-200 bg-white/80 px-6 py-5 sm:px-8 lg:px-10">
-            <div class="flex flex-col gap-3 text-xs font-semibold text-brand-gray sm:flex-row sm:items-center sm:justify-between">
-              <p>© {{ new Date().getFullYear() }} KOTAVA Communication. Tous droits réservés.</p>
+          <Link
+            href="/contact"
+            class="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-[1.15rem] bg-brand-orange px-5 py-3 text-sm font-black text-white shadow-orange transition hover:-translate-y-0.5 hover:bg-brand-orange/90 sm:w-auto"
+          >
+            Démarrer un projet
+            <ArrowRight :size="16" />
+          </Link>
+        </div>
+      </div>
 
-              <div class="flex flex-wrap gap-4">
-                <Link href="/mentions-legales" class="transition hover:text-brand-blue">
-                  Mentions légales
-                </Link>
-                <Link href="/politique-confidentialite" class="transition hover:text-brand-blue">
-                  Confidentialité
-                </Link>
-                <Link href="/login" class="transition hover:text-brand-blue">
-                  Administration
-                </Link>
-              </div>
-            </div>
+      <div class="border-t border-white/10 bg-slate-950/35 px-6 py-5 backdrop-blur sm:px-8 lg:px-10">
+        <div class="flex flex-col gap-3 text-xs font-semibold text-white/45 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {{ new Date().getFullYear() }} KOTAVA Communication. Tous droits réservés.
+          </p>
+
+          <div class="flex flex-wrap gap-4">
+            <Link href="/mentions-legales" class="transition hover:text-brand-emerald">
+              Mentions légales
+            </Link>
+
+            <Link href="/politique-confidentialite" class="transition hover:text-brand-emerald">
+              Confidentialité
+            </Link>
+
+            <Link href="/login" class="transition hover:text-brand-emerald">
+              Administration
+            </Link>
           </div>
         </div>
       </div>
-    </footer>
+    </div>
+  </div>
+</footer>
 
     <Transition
       enter-active-class="transition duration-300 ease-out"
