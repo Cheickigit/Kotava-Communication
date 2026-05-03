@@ -1,15 +1,29 @@
 <script setup>
-import { Head, Link } from "@inertiajs/vue3";
-import GuestLayout from "@/Layouts/GuestLayout.vue";
+import { Head, Link } from '@inertiajs/vue3';
+import GuestLayout from '@/Layouts/GuestLayout.vue';
 import {
   ArrowLeft,
-  Calendar,
-  Tag,
-  Share2,
-  Clock,
+  ArrowRight,
   BookOpen,
+  CalendarDays,
+  CheckCircle2,
+  ChevronRight,
+  Clock3,
+  Eye,
+  FileText,
+  Image as ImageIcon,
+  Mail,
+  MessageCircle,
+  Newspaper,
+  Phone,
+  Quote,
+  Share2,
   Sparkles,
-} from "lucide-vue-next";
+  Star,
+  Tag,
+  Target,
+} from 'lucide-vue-next';
+import { computed, ref } from 'vue';
 
 defineOptions({ layout: GuestLayout });
 
@@ -18,211 +32,644 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  relatedActualites: {
+    type: Array,
+    default: () => [],
+  },
+  recentActualites: {
+    type: Array,
+    default: () => [],
+  },
+  prevActualite: {
+    type: Object,
+    default: null,
+  },
+  nextActualite: {
+    type: Object,
+    default: null,
+  },
+  meta: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 
-const formatDate = (dateString) => {
-  if (!dateString) return "Date non spécifiée";
-  const date = new Date(dateString);
-  return date.toLocaleDateString("fr-FR", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+const copied = ref(false);
+
+const contactEmail = 'Contact@kotavacom.com';
+const contactPhoneDisplay = '+229 93 37 49 63';
+const contactPhoneHref = 'tel:+22993374963';
+const whatsappHref = 'https://wa.me/22993374963';
+
+const title = computed(() => props.actualite?.title || props.actualite?.titre || 'Article KOTAVA');
+
+const pageTitle = computed(() =>
+  props.meta?.title || `${title.value} - KOTAVA Communication`
+);
+
+const pageDescription = computed(() =>
+  props.meta?.description ||
+  props.actualite?.extrait ||
+  props.actualite?.summary ||
+  'Découvrez cet article de KOTAVA Communication.'
+);
+
+const coverImage = computed(() => props.actualite?.image_url || props.actualite?.image || null);
+
+const content = computed(() =>
+  props.actualite?.content ||
+  props.actualite?.description ||
+  ''
+);
+
+const hasHtmlContent = computed(() => /<\/?[a-z][\s\S]*>/i.test(content.value));
+
+const articleDate = computed(() =>
+  props.actualite?.date_publication_display ||
+  props.actualite?.created_at ||
+  'Date non spécifiée'
+);
+
+const categoryLabel = computed(() =>
+  props.actualite?.category_label ||
+  props.actualite?.category ||
+  'Article'
+);
+
+const readingTime = computed(() => {
+  const cleanText = String(content.value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const words = cleanText ? cleanText.split(' ').length : 0;
+  const minutes = Math.max(1, Math.ceil(words / 220));
+
+  return `${minutes} min`;
+});
+
+const articleHref = (article) => article?.url || (article?.slug ? `/blog/${article.slug}` : '/blog');
+
+const articleImage = (article) => article?.image_url || article?.image || null;
+
+const articleExcerpt = (article) => {
+  return article?.extrait || article?.summary || article?.description || article?.content || '';
 };
 
-const readingTime = (text) => {
-  const t = String(text ?? "").replace(/<[^>]*>/g, " ").trim();
-  const words = t ? t.split(/\s+/).length : 0;
-  const minutes = Math.max(1, Math.round(words / 200));
-  return `${minutes} min`;
+const articleDateDisplay = (article) => {
+  return article?.date_publication_display || article?.created_at || 'Date non spécifiée';
 };
 
 const share = async () => {
-  const url = typeof window !== "undefined" ? window.location.href : "";
-  const title = props.actualite?.title ?? "Article";
+  const url = typeof window !== 'undefined' ? window.location.href : '';
 
   try {
     if (navigator?.share) {
-      await navigator.share({ title, url });
+      await navigator.share({
+        title: title.value,
+        text: pageDescription.value,
+        url,
+      });
+
       return;
     }
   } catch (_) {}
 
   try {
     await navigator.clipboard.writeText(url);
-    alert("Lien copié !");
+    copied.value = true;
+
+    setTimeout(() => {
+      copied.value = false;
+    }, 1800);
   } catch (_) {
-    // fallback minimal
-    prompt("Copie le lien :", url);
+    prompt('Copiez le lien :', url);
   }
 };
 </script>
 
 <template>
-  <GuestLayout>
-    <Head :title="(actualite?.title ?? 'Article') + ' - KOTAVA Communication'" />
+  <Head :title="pageTitle">
+    <meta name="description" :content="pageDescription" />
+    <meta property="og:title" :content="pageTitle" />
+    <meta property="og:description" :content="pageDescription" />
+    <meta property="og:type" content="article" />
+    <meta v-if="meta?.image" property="og:image" :content="meta.image" />
+    <meta v-if="meta?.url" property="og:url" :content="meta.url" />
+  </Head>
 
-    <div class="min-h-screen bg-slate-50">
-      <!-- Hero -->
-      <section class="relative overflow-hidden">
-        <div class="absolute inset-0">
-          <div class="absolute inset-0 bg-gradient-to-br from-[#0e437d] via-[#1a6ca3] to-[#22ae84]" />
-          <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-slate-50" />
+  <main class="overflow-hidden bg-[#07101d] text-white">
+    <!-- HERO -->
+    <section class="relative isolate px-4 pb-12 pt-10 sm:px-6 lg:px-8 lg:pb-16">
+      <div class="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_15%_15%,rgba(249,115,22,0.24),transparent_28%),radial-gradient(circle_at_88%_8%,rgba(16,185,129,0.16),transparent_30%),linear-gradient(135deg,#07101d_0%,#10235f_48%,#06131f_100%)]"></div>
+      <div class="absolute inset-0 -z-10 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:42px_42px] opacity-40"></div>
+
+      <div class="mx-auto max-w-7xl">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <Link
+            href="/blog"
+            class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-3 text-sm font-black text-white/[0.72] backdrop-blur transition hover:bg-white/[0.12] hover:text-white"
+          >
+            <ArrowLeft :size="18" />
+            Retour au blog
+          </Link>
+
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-3 text-sm font-black text-white/[0.72] backdrop-blur transition hover:bg-white/[0.12] hover:text-white"
+            @click="share"
+          >
+            <Share2 :size="18" />
+            {{ copied ? 'Lien copié' : 'Partager' }}
+          </button>
         </div>
 
-        <div class="relative max-w-6xl mx-auto px-6 pt-10 pb-14">
-          <div class="flex items-center justify-between gap-4">
-            <Link
-              href="/blog"
-              class="inline-flex items-center gap-2 rounded-xl bg-white/10 backdrop-blur-md px-4 py-2 text-white border border-white/20 hover:bg-white/15 transition"
-            >
-              <ArrowLeft :size="18" />
-              <span class="text-sm font-semibold">Retour au blog</span>
-            </Link>
-
-            <button
-              type="button"
-              @click="share"
-              class="inline-flex items-center gap-2 rounded-xl bg-white/10 backdrop-blur-md px-4 py-2 text-white border border-white/20 hover:bg-white/15 transition"
-            >
-              <Share2 :size="18" />
-              <span class="text-sm font-semibold">Partager</span>
-            </button>
-          </div>
-
-          <div class="mt-10">
-            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 backdrop-blur-md text-white text-sm font-semibold border border-white/20">
-              <Sparkles :size="14" />
-              <span>{{ actualite?.category || "Article" }}</span>
-            </div>
-
-            <h1 class="mt-6 text-4xl md:text-6xl font-bold text-white leading-tight">
-              {{ actualite?.title }}
-            </h1>
-
-            <div class="mt-6 flex flex-wrap items-center gap-3 text-white/90">
-              <span class="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-4 py-2 text-sm">
-                <Calendar :size="16" />
-                {{ formatDate(actualite?.date_publication) }}
+        <div class="mt-10 grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
+          <div>
+            <div class="flex flex-wrap items-center gap-3">
+              <span class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-white/[0.72]">
+                <Tag :size="14" class="text-brand-orange" />
+                {{ categoryLabel }}
               </span>
 
-              <span class="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-4 py-2 text-sm">
-                <Clock :size="16" />
-                {{ readingTime(actualite?.content) }}
-              </span>
-
-              <span v-if="actualite?.featured" class="inline-flex items-center gap-2 rounded-full bg-[#FFD166]/15 border border-[#FFD166]/30 px-4 py-2 text-sm text-[#FFD166]">
-                <BookOpen :size="16" />
+              <span
+                v-if="actualite?.featured"
+                class="inline-flex items-center gap-2 rounded-2xl bg-brand-orange px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-white"
+              >
+                <Star :size="14" />
                 En vedette
               </span>
+            </div>
 
-              <span v-if="actualite?.tags" class="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/15 px-4 py-2 text-sm">
-                <Tag :size="16" />
-                {{ actualite?.tags }}
+            <h1 class="mt-6 max-w-4xl text-4xl font-black leading-[0.95] tracking-[-0.07em] text-white sm:text-5xl lg:text-6xl">
+              {{ title }}
+            </h1>
+
+            <p v-if="actualite?.extrait || actualite?.summary" class="mt-6 max-w-3xl text-base leading-8 text-white/[0.62] sm:text-lg">
+              {{ actualite.extrait || actualite.summary }}
+            </p>
+
+            <div class="mt-8 flex flex-wrap gap-3">
+              <span class="inline-flex items-center gap-2 rounded-2xl bg-white/[0.08] px-4 py-3 text-sm font-bold text-white/[0.76] ring-1 ring-white/10">
+                <CalendarDays :size="17" />
+                {{ articleDate }}
+              </span>
+
+              <span class="inline-flex items-center gap-2 rounded-2xl bg-white/[0.08] px-4 py-3 text-sm font-bold text-white/[0.76] ring-1 ring-white/10">
+                <Clock3 :size="17" />
+                {{ readingTime }} de lecture
+              </span>
+
+              <span class="inline-flex items-center gap-2 rounded-2xl bg-white/[0.08] px-4 py-3 text-sm font-bold text-white/[0.76] ring-1 ring-white/10">
+                <BookOpen :size="17" />
+                Publication KOTAVA
               </span>
             </div>
-
-            <p v-if="actualite?.extrait" class="mt-8 max-w-3xl text-lg md:text-xl text-white/90 leading-relaxed">
-              {{ actualite.extrait }}
-            </p>
           </div>
-        </div>
-      </section>
 
-      <!-- Cover -->
-      <section v-if="actualite?.image" class="-mt-10">
-        <div class="max-w-6xl mx-auto px-6">
-          <div class="rounded-3xl overflow-hidden border border-slate-200 bg-white shadow-xl">
-            <div class="relative h-64 sm:h-80 md:h-[420px]">
-              <img
-                :src="actualite.image"
-                :alt="actualite?.title"
-                class="absolute inset-0 w-full h-full object-cover"
-              />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-            </div>
-          </div>
-        </div>
-      </section>
+          <div class="relative">
+            <div class="absolute -inset-5 rounded-[2.5rem] bg-brand-orange/20 blur-3xl"></div>
 
-      <!-- Content -->
-      <section class="py-12">
-        <div class="max-w-6xl mx-auto px-6">
-          <div class="grid lg:grid-cols-12 gap-8">
-            <div class="lg:col-span-8">
-              <article class="rounded-3xl border border-slate-200 bg-white shadow-sm p-6 sm:p-10">
-                <div
-                  v-if="actualite?.content"
-                  class="prose prose-slate max-w-none"
-                  v-html="actualite.content"
+            <div class="relative overflow-hidden rounded-[2.3rem] border border-white/10 bg-white/[0.08] p-3 shadow-2xl shadow-black/20 backdrop-blur-xl">
+              <div class="relative h-[22rem] overflow-hidden rounded-[1.8rem] bg-[#0b1524] sm:h-[26rem] lg:h-[30rem]">
+                <img
+                  v-if="coverImage"
+                  :src="coverImage"
+                  :alt="title"
+                  class="absolute inset-0 h-full w-full object-cover opacity-90"
                 />
-                <div v-else class="text-slate-600">
-                  Contenu indisponible.
-                </div>
 
-                <div class="mt-10 pt-8 border-t border-slate-200 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-                  <Link
-                    href="/blog"
-                    class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold border border-slate-200 bg-white hover:bg-slate-50 transition"
-                  >
-                    <ArrowLeft :size="18" />
-                    Retour aux articles
-                  </Link>
+                <div v-else class="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_30%_20%,rgba(249,115,22,0.20),transparent_32%),linear-gradient(135deg,#0f172a,#07101d)]">
+                  <div class="text-center">
+                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-orange text-white">
+                      <ImageIcon :size="28" />
+                    </div>
 
-                  <button
-                    type="button"
-                    @click="share"
-                    class="inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold bg-gradient-to-r from-[#0e437d] to-[#22ae84] text-white hover:shadow-lg transition"
-                  >
-                    <Share2 :size="18" />
-                    Partager
-                  </button>
-                </div>
-              </article>
-            </div>
-
-            <!-- Aside -->
-            <aside class="lg:col-span-4">
-              <div class="sticky top-6 space-y-6">
-                <div class="rounded-3xl border border-slate-200 bg-white shadow-sm p-6">
-                  <div class="text-sm font-semibold text-slate-900">Informations</div>
-                  <div class="mt-4 space-y-3 text-sm text-slate-700">
-                    <div class="flex items-center justify-between gap-3">
-                      <span class="text-slate-500">Date</span>
-                      <span class="font-medium">{{ formatDate(actualite?.date_publication) }}</span>
-                    </div>
-                    <div class="flex items-center justify-between gap-3">
-                      <span class="text-slate-500">Catégorie</span>
-                      <span class="font-medium">{{ actualite?.category || "Article" }}</span>
-                    </div>
-                    <div class="flex items-center justify-between gap-3">
-                      <span class="text-slate-500">Lecture</span>
-                      <span class="font-medium">{{ readingTime(actualite?.content) }}</span>
-                    </div>
-                    <div class="flex items-center justify-between gap-3" v-if="actualite?.featured">
-                      <span class="text-slate-500">Statut</span>
-                      <span class="font-medium text-emerald-700">En vedette</span>
-                    </div>
+                    <p class="mt-4 text-sm font-bold text-white/[0.42]">
+                      Visuel à venir
+                    </p>
                   </div>
                 </div>
 
-                <div class="rounded-3xl border border-slate-200 bg-gradient-to-br from-[#0e437d] to-[#22ae84] text-white shadow-sm p-6">
-                  <div class="text-sm font-semibold">Besoin d’aide sur votre communication ?</div>
-                  <p class="mt-3 text-white/90 text-sm leading-relaxed">
-                    Parlons de votre projet. Nous répondons rapidement et proposons une stratégie sur-mesure.
-                  </p>
-                  <Link
-                    :href="route('contact')"
-                    class="mt-5 inline-flex items-center justify-center w-full rounded-xl bg-white text-[#0e437d] px-5 py-3 text-sm font-semibold hover:bg-slate-100 transition"
-                  >
-                    Nous contacter
-                  </Link>
+                <div class="absolute inset-0 bg-gradient-to-t from-[#07101d] via-[#07101d]/15 to-transparent"></div>
+
+                <div class="absolute bottom-5 left-5 right-5">
+                  <div class="rounded-2xl border border-white/10 bg-white/[0.08] p-4 backdrop-blur-xl">
+                    <p class="text-xs font-black uppercase tracking-[0.14em] text-white/[0.42]">
+                      Article
+                    </p>
+
+                    <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                      <div class="rounded-xl bg-white/[0.07] px-3 py-2">
+                        <p class="text-[0.65rem] font-black uppercase tracking-[0.12em] text-white/[0.35]">
+                          Catégorie
+                        </p>
+                        <p class="mt-1 truncate text-sm font-black text-white">
+                          {{ categoryLabel }}
+                        </p>
+                      </div>
+
+                      <div class="rounded-xl bg-white/[0.07] px-3 py-2">
+                        <p class="text-[0.65rem] font-black uppercase tracking-[0.12em] text-white/[0.35]">
+                          Lecture
+                        </p>
+                        <p class="mt-1 truncate text-sm font-black text-white">
+                          {{ readingTime }}
+                        </p>
+                      </div>
+
+                      <div class="rounded-xl bg-white/[0.07] px-3 py-2">
+                        <p class="text-[0.65rem] font-black uppercase tracking-[0.12em] text-white/[0.35]">
+                          Date
+                        </p>
+                        <p class="mt-1 truncate text-sm font-black text-white">
+                          {{ articleDate }}
+                        </p>
+                      </div>
+
+                      <div class="rounded-xl bg-white/[0.07] px-3 py-2">
+                        <p class="text-[0.65rem] font-black uppercase tracking-[0.12em] text-white/[0.35]">
+                          Source
+                        </p>
+                        <p class="mt-1 truncate text-sm font-black text-white">
+                          KOTAVA
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </aside>
+            </div>
           </div>
         </div>
-      </section>
-    </div>
-  </GuestLayout>
+      </div>
+    </section>
+
+    <!-- CONTENT -->
+    <section class="relative border-t border-white/10 px-4 py-14 sm:px-6 lg:px-8">
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_10%_18%,rgba(16,185,129,0.10),transparent_25%),radial-gradient(circle_at_90%_40%,rgba(249,115,22,0.10),transparent_28%)]"></div>
+
+      <div class="relative mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_380px]">
+        <div class="space-y-6">
+          <article class="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 shadow-2xl shadow-black/10 backdrop-blur sm:p-9">
+            <div class="mb-8 flex items-center gap-3">
+              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-orange text-white">
+                <Newspaper :size="22" />
+              </div>
+
+              <div>
+                <p class="text-xs font-black uppercase tracking-[0.16em] text-brand-orange">
+                  Lecture
+                </p>
+                <h2 class="text-2xl font-black tracking-[-0.05em] text-white">
+                  Contenu de l’article
+                </h2>
+              </div>
+            </div>
+
+            <div
+              v-if="content && hasHtmlContent"
+              class="article-content"
+              v-html="content"
+            ></div>
+
+            <div
+              v-else-if="content"
+              class="whitespace-pre-line text-base leading-8 text-white/[0.68]"
+            >
+              {{ content }}
+            </div>
+
+            <div v-else class="rounded-2xl border border-dashed border-white/10 bg-white/[0.04] p-8 text-center">
+              <BookOpen :size="34" class="mx-auto text-brand-orange" />
+              <p class="mt-4 text-sm font-bold text-white/[0.50]">
+                Contenu indisponible.
+              </p>
+            </div>
+          </article>
+
+          <article
+            v-if="actualite?.extrait"
+            class="relative overflow-hidden rounded-[2rem] border border-brand-orange/25 bg-brand-orange p-6 text-white shadow-2xl shadow-brand-orange/20 sm:p-9"
+          >
+            <div class="absolute -right-10 -top-10 h-44 w-44 rounded-full bg-white/20 blur-3xl"></div>
+
+            <div class="relative">
+              <Quote :size="42" class="text-white" />
+
+              <p class="mt-5 text-xl font-semibold leading-9 text-white/[0.90]">
+                {{ actualite.extrait }}
+              </p>
+            </div>
+          </article>
+
+          <div class="rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 shadow-2xl shadow-black/10 backdrop-blur">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <Link
+                v-if="prevActualite?.slug"
+                :href="articleHref(prevActualite)"
+                class="group rounded-2xl border border-white/10 bg-white/[0.045] p-5 transition hover:border-brand-orange/50 hover:bg-white/[0.08]"
+              >
+                <div class="flex items-center gap-2 text-xs font-black uppercase tracking-[0.14em] text-white/[0.38]">
+                  <ArrowLeft :size="15" />
+                  Article précédent
+                </div>
+
+                <div class="mt-3 line-clamp-2 text-lg font-black text-white group-hover:text-brand-orange">
+                  {{ prevActualite.title }}
+                </div>
+              </Link>
+
+              <Link
+                v-if="nextActualite?.slug"
+                :href="articleHref(nextActualite)"
+                class="group rounded-2xl border border-white/10 bg-white/[0.045] p-5 text-right transition hover:border-brand-orange/50 hover:bg-white/[0.08]"
+              >
+                <div class="flex items-center justify-end gap-2 text-xs font-black uppercase tracking-[0.14em] text-white/[0.38]">
+                  Article suivant
+                  <ArrowRight :size="15" />
+                </div>
+
+                <div class="mt-3 line-clamp-2 text-lg font-black text-white group-hover:text-brand-orange">
+                  {{ nextActualite.title }}
+                </div>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <!-- ASIDE -->
+        <aside class="space-y-6 lg:sticky lg:top-24 lg:self-start">
+          <div class="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 shadow-2xl shadow-black/10 backdrop-blur">
+            <h3 class="text-xl font-black tracking-[-0.04em] text-white">
+              Informations
+            </h3>
+
+            <div class="mt-6 space-y-3">
+              <div class="flex items-center justify-between gap-4 rounded-2xl bg-white/[0.045] px-4 py-3">
+                <span class="inline-flex items-center gap-2 text-sm font-bold text-white/[0.45]">
+                  <CalendarDays :size="16" />
+                  Date
+                </span>
+
+                <span class="max-w-[11rem] truncate text-right text-sm font-black text-white">
+                  {{ articleDate }}
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between gap-4 rounded-2xl bg-white/[0.045] px-4 py-3">
+                <span class="inline-flex items-center gap-2 text-sm font-bold text-white/[0.45]">
+                  <Tag :size="16" />
+                  Catégorie
+                </span>
+
+                <span class="max-w-[11rem] truncate text-right text-sm font-black text-white">
+                  {{ categoryLabel }}
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between gap-4 rounded-2xl bg-white/[0.045] px-4 py-3">
+                <span class="inline-flex items-center gap-2 text-sm font-bold text-white/[0.45]">
+                  <Clock3 :size="16" />
+                  Lecture
+                </span>
+
+                <span class="max-w-[11rem] truncate text-right text-sm font-black text-white">
+                  {{ readingTime }}
+                </span>
+              </div>
+
+              <div
+                v-if="actualite?.featured"
+                class="flex items-center justify-between gap-4 rounded-2xl bg-brand-orange/10 px-4 py-3"
+              >
+                <span class="inline-flex items-center gap-2 text-sm font-bold text-brand-orange">
+                  <Star :size="16" />
+                  Statut
+                </span>
+
+                <span class="text-right text-sm font-black text-brand-orange">
+                  En vedette
+                </span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-5 py-3 text-sm font-black text-white/[0.76] transition hover:bg-white/[0.12] hover:text-white"
+              @click="share"
+            >
+              <Share2 :size="17" />
+              {{ copied ? 'Lien copié' : 'Partager l’article' }}
+            </button>
+          </div>
+
+          <div
+            v-if="relatedActualites?.length"
+            class="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 shadow-2xl shadow-black/10 backdrop-blur"
+          >
+            <div class="flex items-center justify-between gap-4">
+              <h3 class="text-xl font-black tracking-[-0.04em] text-white">
+                Articles similaires
+              </h3>
+
+              <Link href="/blog" class="text-sm font-black text-brand-orange">
+                Tout voir
+              </Link>
+            </div>
+
+            <div class="mt-5 space-y-4">
+              <Link
+                v-for="article in relatedActualites"
+                :key="article.id"
+                :href="articleHref(article)"
+                class="group block overflow-hidden rounded-2xl border border-white/10 bg-white/[0.045] transition hover:border-brand-orange/50 hover:bg-white/[0.08]"
+              >
+                <div class="flex gap-4 p-4">
+                  <div class="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-[#0b1524]">
+                    <img
+                      v-if="articleImage(article)"
+                      :src="articleImage(article)"
+                      :alt="article.title"
+                      class="h-full w-full object-cover"
+                    />
+
+                    <div v-else class="flex h-full w-full items-center justify-center text-white/[0.25]">
+                      <ImageIcon :size="18" />
+                    </div>
+                  </div>
+
+                  <div class="min-w-0">
+                    <p class="text-xs font-black uppercase tracking-[0.12em] text-white/[0.35]">
+                      {{ article.category_label || article.category || 'Article' }}
+                    </p>
+
+                    <h4 class="mt-1 line-clamp-2 text-sm font-black leading-5 text-white group-hover:text-brand-orange">
+                      {{ article.title }}
+                    </h4>
+
+                    <p class="mt-1 text-xs font-bold text-white/[0.35]">
+                      {{ articleDateDisplay(article) }}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </div>
+
+          <div
+            v-if="recentActualites?.length"
+            class="rounded-[2rem] border border-white/10 bg-white/[0.06] p-6 shadow-2xl shadow-black/10 backdrop-blur"
+          >
+            <h3 class="text-xl font-black tracking-[-0.04em] text-white">
+              Dernières publications
+            </h3>
+
+            <div class="mt-5 space-y-3">
+              <Link
+                v-for="article in recentActualites"
+                :key="article.id"
+                :href="articleHref(article)"
+                class="group block rounded-2xl border border-white/10 bg-white/[0.045] p-4 transition hover:border-brand-orange/50 hover:bg-white/[0.08]"
+              >
+                <p class="text-xs font-black uppercase tracking-[0.12em] text-white/[0.35]">
+                  {{ articleDateDisplay(article) }}
+                </p>
+
+                <h4 class="mt-2 line-clamp-2 text-sm font-black leading-5 text-white group-hover:text-brand-orange">
+                  {{ article.title }}
+                </h4>
+              </Link>
+            </div>
+          </div>
+
+          <div class="rounded-[2rem] bg-brand-orange p-6 text-white shadow-2xl shadow-brand-orange/20">
+            <h3 class="text-xl font-black tracking-[-0.04em]">
+              Besoin d’une stratégie ?
+            </h3>
+
+            <p class="mt-3 text-sm leading-6 text-white/[0.82]">
+              Parlons de votre image, de vos contenus et de vos objectifs de communication.
+            </p>
+
+            <div class="mt-6 space-y-3">
+              <Link
+                href="/contact"
+                class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-black text-brand-orange transition hover:bg-slate-950 hover:text-white"
+              >
+                <Mail :size="17" />
+                Nous contacter
+              </Link>
+
+              <a
+                :href="contactPhoneHref"
+                class="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/30 bg-white/10 px-5 py-3 text-sm font-black text-white transition hover:bg-white/20"
+              >
+                <Phone :size="17" />
+                {{ contactPhoneDisplay }}
+              </a>
+
+              <a
+                :href="whatsappHref"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/30 bg-white/10 px-5 py-3 text-sm font-black text-white transition hover:bg-white/20"
+              >
+                <MessageCircle :size="17" />
+                WhatsApp direct
+              </a>
+            </div>
+
+            <p class="mt-5 text-center text-xs font-bold text-white/[0.72]">
+              {{ contactEmail }}
+            </p>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
 </template>
+
+<style scoped>
+.article-content {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 1rem;
+  line-height: 2rem;
+}
+
+.article-content :deep(h1),
+.article-content :deep(h2),
+.article-content :deep(h3),
+.article-content :deep(h4) {
+  color: #ffffff;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+  margin-bottom: 1rem;
+  margin-top: 2rem;
+}
+
+.article-content :deep(h1) {
+  font-size: 2.4rem;
+}
+
+.article-content :deep(h2) {
+  font-size: 2rem;
+}
+
+.article-content :deep(h3) {
+  font-size: 1.5rem;
+}
+
+.article-content :deep(p) {
+  margin-bottom: 1.25rem;
+}
+
+.article-content :deep(a) {
+  color: #f97316;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.article-content :deep(ul),
+.article-content :deep(ol) {
+  margin-bottom: 1.25rem;
+  margin-left: 1.5rem;
+}
+
+.article-content :deep(ul) {
+  list-style: disc;
+}
+
+.article-content :deep(ol) {
+  list-style: decimal;
+}
+
+.article-content :deep(li) {
+  margin-bottom: 0.55rem;
+}
+
+.article-content :deep(blockquote) {
+  border-left: 4px solid #f97316;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 1rem;
+  color: rgba(255, 255, 255, 0.82);
+  font-weight: 700;
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+}
+
+.article-content :deep(img) {
+  border-radius: 1.5rem;
+  margin: 1.5rem 0;
+  width: 100%;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>

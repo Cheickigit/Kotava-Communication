@@ -5,95 +5,248 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Actualite;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 class ActualiteController extends Controller
 {
-    /**
-     * Affiche la liste des actualités
-     */
-    public function index(Request $request)
+    private function categories(): array
     {
-        $user = Auth::user();
-        $teamId = $user->currentTeam->id ?? null;
+        return [
+            'actualite'  => 'Actualité',
+            'blog'       => 'Article Blog',
+            'communique' => 'Communiqué',
+            'temoignage' => 'Témoignage Client',
+            'cas_etude'  => 'Cas d’étude',
+        ];
+    }
 
-        $query = Actualite::query();
+    private function statuts(): array
+    {
+        return [
+            'tous'      => 'Tous',
+            'brouillon' => 'Brouillon',
+            'publié'    => 'Publié',
+            'archivé'   => 'Archivé',
+        ];
+    }
 
-        // Filtrer par équipe
-        if ($teamId) {
+    private function columnExists(string $column): bool
+    {
+        return Schema::hasTable('actualites') && Schema::hasColumn('actualites', $column);
+    }
+
+    private function onlyExistingColumns(array $data): array
+    {
+        return collect($data)
+            ->filter(fn ($value, $key) => $this->columnExists($key))
+            ->toArray();
+    }
+
+    private function statusColumn(): ?string
+    {
+        if ($this->columnExists('statut')) {
+            return 'statut';
+        }
+
+        if ($this->columnExists('status')) {
+            return 'status';
+        }
+
+        return null;
+    }
+
+    private function titleColumn(): string
+    {
+        if ($this->columnExists('title')) {
+            return 'title';
+        }
+
+        if ($this->columnExists('titre')) {
+            return 'titre';
+        }
+
+        return 'title';
+    }
+
+    private function publicUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        if (Str::startsWith($path, ['http://', 'https://', '/storage/', '/images/', '/assets/'])) {
+            return $path;
+        }
+
+        return asset('storage/' . ltrim($path, '/'));
+    }
+
+    private function currentTeamId(): ?int
+{
+    $user = Auth::user();
+
+    if (! $user) {
+        return null;
+    }
+
+    if (Schema::hasTable('users') && Schema::hasColumn('users', 'current_team_id')) {
+        return $user->current_team_id ? (int) $user->current_team_id : null;
+    }
+
+    return null;
+}
+
+    private function applyTeamScope($query)
+    {
+        $teamId = $this->currentTeamId();
+
+        if ($teamId && $this->columnExists('team_id')) {
             $query->where('team_id', $teamId);
         }
 
-        // Filtres
-        if ($request->has('statut') && $request->statut !== 'tous') {
-            $query->where('statut', $request->statut);
+        return $query;
+    }
+
+    private function mapActualite(Actualite $actualite): array
+    {
+        $titleColumn = $this->titleColumn();
+
+        $title = $actualite->{$titleColumn} ?? $actualite->title ?? $actualite->titre ?? 'Sans titre';
+        $content = $actualite->content ?? $actualite->description ?? '';
+
+        return [
+            'id' => $actualite->id,
+            'title' => $title,
+            'titre' => $title,
+            'slug' => $actualite->slug,
+            'extrait' => $actualite->extrait,
+            'description' => $actualite->description ?? $content,
+            'content' => $content,
+            'category' => $actualite->category ?? 'actualite',
+            'category_label' => $this->categories()[$actualite->category ?? 'actualite'] ?? 'Actualité',
+            'statut' => $actualite->statut ?? $actualite->status ?? 'brouillon',
+            'status' => $actualite->statut ?? $actualite->status ?? 'brouillon',
+            'published' => (bool) ($actualite->published ?? (($actualite->statut ?? null) === 'publié')),
+            'featured' => (bool) ($actualite->featured ?? false),
+            'image' => $actualite->image,
+            'image_url' => $this->publicUrl($actualite->image),
+            'date_publication' => optional($actualite->date_publication)->format('Y-m-d'),
+            'date_publication_display' => optional($actualite->date_publication)->format('d/m/Y'),
+            'meta_title' => $actualite->meta_title ?? null,
+            'meta_description' => $actualite->meta_description ?? null,
+            'created_at' => optional($actualite->created_at)->format('d/m/Y'),
+            'updated_at' => optional($actualite->updated_at)->format('d/m/Y'),
+            'user' => $actualite->relationLoaded('user') && $actualite->user
+                ? ['name' => $actualite->user->name]
+                : null,
+        ];
+    }
+
+    public function index(Request $request)
+    {
+        $query = Actualite::query();
+
+        if ($this->columnExists('user_id')) {
+            $query->with('user');
         }
 
-        if ($request->has('category') && $request->category !== 'tous') {
+        $this->applyTeamScope($query);
+
+        $statusCol = $this->statusColumn();
+
+        if ($request->filled('statut') && $request->statut !== 'tous' && $statusCol) {
+            $query->where($statusCol, $request->statut);
+        }
+
+        if ($request->filled('category') && $request->category !== 'tous' && $this->columnExists('category')) {
             $query->where('category', $request->category);
         }
 
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%")
-                  ->orWhere('extrait', 'like', "%{$search}%");
+        if ($request->filled('search')) {
+            $search = trim((string) $request->search);
+            $operator = config('database.default') === 'pgsql' ? 'ilike' : 'like';
+
+            $query->where(function ($q) use ($search, $operator) {
+                if ($this->columnExists('title')) {
+                    $q->orWhere('title', $operator, "%{$search}%");
+                }
+
+                if ($this->columnExists('titre')) {
+                    $q->orWhere('titre', $operator, "%{$search}%");
+                }
+
+                if ($this->columnExists('content')) {
+                    $q->orWhere('content', $operator, "%{$search}%");
+                }
+
+                if ($this->columnExists('description')) {
+                    $q->orWhere('description', $operator, "%{$search}%");
+                }
+
+                if ($this->columnExists('extrait')) {
+                    $q->orWhere('extrait', $operator, "%{$search}%");
+                }
             });
         }
 
-        $actualites = $query->latest('date_publication')
+        if ($this->columnExists('date_publication')) {
+            $query->latest('date_publication');
+        } else {
+            $query->latest();
+        }
+
+        $actualites = $query
             ->paginate(15)
-            ->withQueryString();
+            ->withQueryString()
+            ->through(fn ($actualite) => $this->mapActualite($actualite));
 
-        // Statistiques
+        $baseStatsQuery = Actualite::query();
+        $this->applyTeamScope($baseStatsQuery);
+
+        $publishedQuery = Actualite::query();
+        $this->applyTeamScope($publishedQuery);
+
+        $draftQuery = Actualite::query();
+        $this->applyTeamScope($draftQuery);
+
+        $featuredQuery = Actualite::query();
+        $this->applyTeamScope($featuredQuery);
+
         $stats = [
-            'total' => Actualite::when($teamId, fn($q) => $q->where('team_id', $teamId))->count(),
-            'publie' => Actualite::when($teamId, fn($q) => $q->where('team_id', $teamId))->where('statut', 'publié')->count(),
-            'brouillon' => Actualite::when($teamId, fn($q) => $q->where('team_id', $teamId))->where('statut', 'brouillon')->count(),
-            'featured' => Actualite::when($teamId, fn($q) => $q->where('team_id', $teamId))->where('featured', true)->count(),
-        ];
+            'total' => $baseStatsQuery->count(),
 
-        $categories = [
-            'actualite' => 'Actualité',
-            'blog' => 'Article Blog',
-            'communique' => 'Communiqué',
-            'temoignage' => 'Témoignage',
-            'cas_etude' => 'Cas d\'étude',
-        ];
+            'publie' => $statusCol
+                ? $publishedQuery->where($statusCol, 'publié')->count()
+                : ($this->columnExists('published')
+                    ? $publishedQuery->where('published', true)->count()
+                    : 0),
 
-        $statuts = [
-            'tous' => 'Tous',
-            'brouillon' => 'Brouillon',
-            'publié' => 'Publié',
-            'archivé' => 'Archivé',
+            'brouillon' => $statusCol
+                ? $draftQuery->where($statusCol, 'brouillon')->count()
+                : 0,
+
+            'featured' => $this->columnExists('featured')
+                ? $featuredQuery->where('featured', true)->count()
+                : 0,
         ];
 
         return Inertia::render('Admin/Actualites/Index', [
             'actualites' => $actualites,
             'filters' => $request->only(['search', 'statut', 'category']),
             'stats' => $stats,
-            'categories' => $categories,
-            'statuts' => $statuts,
+            'categories' => $this->categories(),
+            'statuts' => $this->statuts(),
         ]);
     }
 
-    /**
-     * Affiche le formulaire de création
-     */
     public function create()
     {
         return Inertia::render('Admin/Actualites/Create', [
-            'categories' => [
-                'actualite' => 'Actualité',
-                'blog' => 'Article Blog',
-                'communique' => 'Communiqué',
-                'temoignage' => 'Témoignage Client',
-                'cas_etude' => 'Cas d\'étude',
-            ],
+            'categories' => $this->categories(),
             'statuts' => [
                 'brouillon' => 'Brouillon',
                 'publié' => 'Publié',
@@ -101,9 +254,6 @@ class ActualiteController extends Controller
         ]);
     }
 
-    /**
-     * Enregistre une nouvelle actualité
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -113,7 +263,7 @@ class ActualiteController extends Controller
             'content' => 'required|string',
             'category' => 'required|in:actualite,blog,communique,temoignage,cas_etude',
             'statut' => 'required|in:brouillon,publié',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
             'date_publication' => 'nullable|date',
             'featured' => 'boolean',
             'meta_title' => 'nullable|string|max:255',
@@ -122,54 +272,55 @@ class ActualiteController extends Controller
 
         $user = Auth::user();
 
-        // Générer le slug
-        $slug = $validated['slug'] ?? Str::slug($validated['title']);
+        $slug = $validated['slug'] ?: Str::slug($validated['title']);
+
         if (Actualite::where('slug', $slug)->exists()) {
             $slug = $slug . '-' . time();
         }
 
+        $published = $validated['statut'] === 'publié';
+
         $data = [
             'title' => $validated['title'],
+            'titre' => $validated['title'],
             'slug' => $slug,
             'extrait' => $validated['extrait'],
+
+            // Compatibilité ancienne/nouvelle structure
             'content' => $validated['content'],
+            'description' => $validated['content'],
+
             'category' => $validated['category'],
             'statut' => $validated['statut'],
-            'date_publication' => $validated['date_publication'] ?? now(),
-            'featured' => $validated['featured'] ?? false,
-            'meta_title' => $validated['meta_title'],
-            'meta_description' => $validated['meta_description'],
-            'user_id' => $user->id,
-            'team_id' => $user->currentTeam->id ?? null,
+            'status' => $validated['statut'],
+            'published' => $published,
+
+            'date_publication' => $validated['date_publication'] ?? ($published ? now() : null),
+            'featured' => $request->boolean('featured'),
+
+            'meta_title' => $validated['meta_title'] ?? null,
+            'meta_description' => $validated['meta_description'] ?? null,
+
+            'user_id' => $user?->id,
+            'team_id' => $this->currentTeamId(),
         ];
 
-        // Gestion de l'image
         if ($request->hasFile('image')) {
             $data['image'] = $request->file('image')->store('actualites', 'public');
         }
 
-        Actualite::create($data);
+        Actualite::create($this->onlyExistingColumns($data));
 
-        return redirect()->route('admin.actualites.index')
-            ->with('success', 'Actualité créée avec succès !');
+        return redirect()
+            ->route('dashboard.actualites.index')
+            ->with('success', 'Actualité créée avec succès.');
     }
 
-    /**
-     * Affiche le formulaire d'édition
-     */
     public function edit(Actualite $actualite)
     {
-        $this->authorize('update', $actualite);
-
         return Inertia::render('Admin/Actualites/Edit', [
-            'actualite' => $actualite,
-            'categories' => [
-                'actualite' => 'Actualité',
-                'blog' => 'Article Blog',
-                'communique' => 'Communiqué',
-                'temoignage' => 'Témoignage Client',
-                'cas_etude' => 'Cas d\'étude',
-            ],
+            'actualite' => $this->mapActualite($actualite),
+            'categories' => $this->categories(),
             'statuts' => [
                 'brouillon' => 'Brouillon',
                 'publié' => 'Publié',
@@ -178,13 +329,8 @@ class ActualiteController extends Controller
         ]);
     }
 
-    /**
-     * Met à jour une actualité
-     */
     public function update(Request $request, Actualite $actualite)
     {
-        $this->authorize('update', $actualite);
-
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:actualites,slug,' . $actualite->id,
@@ -192,7 +338,7 @@ class ActualiteController extends Controller
             'content' => 'required|string',
             'category' => 'required|in:actualite,blog,communique,temoignage,cas_etude',
             'statut' => 'required|in:brouillon,publié,archivé',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
             'date_publication' => 'nullable|date',
             'featured' => 'boolean',
             'remove_image' => 'boolean',
@@ -200,21 +346,31 @@ class ActualiteController extends Controller
             'meta_description' => 'nullable|string|max:500',
         ]);
 
+        $published = $validated['statut'] === 'publié';
+
         $data = [
             'title' => $validated['title'],
+            'titre' => $validated['title'],
             'slug' => $validated['slug'],
             'extrait' => $validated['extrait'],
+
+            // Compatibilité ancienne/nouvelle structure
             'content' => $validated['content'],
+            'description' => $validated['content'],
+
             'category' => $validated['category'],
             'statut' => $validated['statut'],
-            'date_publication' => $validated['date_publication'],
-            'featured' => $validated['featured'] ?? false,
-            'meta_title' => $validated['meta_title'],
-            'meta_description' => $validated['meta_description'],
+            'status' => $validated['statut'],
+            'published' => $published,
+
+            'date_publication' => $validated['date_publication'] ?? ($published ? now() : null),
+            'featured' => $request->boolean('featured'),
+
+            'meta_title' => $validated['meta_title'] ?? null,
+            'meta_description' => $validated['meta_description'] ?? null,
         ];
 
-        // Gestion de l'image
-        if ($request->has('remove_image') && $actualite->image) {
+        if ($request->boolean('remove_image') && $actualite->image) {
             Storage::disk('public')->delete($actualite->image);
             $data['image'] = null;
         }
@@ -223,61 +379,84 @@ class ActualiteController extends Controller
             if ($actualite->image) {
                 Storage::disk('public')->delete($actualite->image);
             }
+
             $data['image'] = $request->file('image')->store('actualites', 'public');
         }
 
-        $actualite->update($data);
+        $actualite->update($this->onlyExistingColumns($data));
 
-        return redirect()->route('admin.actualites.index')
-            ->with('success', 'Actualité mise à jour avec succès !');
+        return redirect()
+            ->route('dashboard.actualites.index')
+            ->with('success', 'Actualité mise à jour avec succès.');
     }
 
-    /**
-     * Supprime une actualité
-     */
     public function destroy(Actualite $actualite)
     {
-        $this->authorize('delete', $actualite);
-
         if ($actualite->image) {
             Storage::disk('public')->delete($actualite->image);
         }
 
         $actualite->delete();
 
-        return redirect()->route('admin.actualites.index')
-            ->with('success', 'Actualité supprimée avec succès !');
+        return redirect()
+            ->route('dashboard.actualites.index')
+            ->with('success', 'Actualité supprimée avec succès.');
     }
 
-    /**
-     * Change le statut de publication
-     */
+    public function publish(Actualite $actualite)
+    {
+        $statusCol = $this->statusColumn();
+
+        $isPublished = ($actualite->{$statusCol} ?? null) === 'publié' || (bool) ($actualite->published ?? false);
+
+        $newStatus = $isPublished ? 'brouillon' : 'publié';
+
+        $data = [
+            'statut' => $newStatus,
+            'status' => $newStatus,
+            'published' => $newStatus === 'publié',
+            'date_publication' => $newStatus === 'publié'
+                ? ($actualite->date_publication ?? now())
+                : $actualite->date_publication,
+        ];
+
+        $actualite->update($this->onlyExistingColumns($data));
+
+        return back()->with(
+            'success',
+            $newStatus === 'publié'
+                ? 'Actualité publiée avec succès.'
+                : 'Actualité dépubliée avec succès.'
+        );
+    }
+
+    public function feature(Actualite $actualite)
+    {
+        if (! $this->columnExists('featured')) {
+            return back()->with('error', 'La colonne featured n’existe pas encore dans la table actualites.');
+        }
+
+        $featured = ! (bool) $actualite->featured;
+
+        $actualite->update([
+            'featured' => $featured,
+        ]);
+
+        return back()->with(
+            'success',
+            $featured
+                ? 'Actualité mise en vedette avec succès.'
+                : 'Actualité retirée de la vedette.'
+        );
+    }
+
     public function togglePublish(Actualite $actualite)
     {
-        $this->authorize('update', $actualite);
-
-        $actualite->update([
-            'statut' => $actualite->statut === 'publié' ? 'brouillon' : 'publié',
-        ]);
-
-        $action = $actualite->statut === 'publié' ? 'publiée' : 'dépubliée';
-
-        return back()->with('success', "Actualité {$action} avec succès !");
+        return $this->publish($actualite);
     }
 
-    /**
-     * Change le statut "featured"
-     */
     public function toggleFeatured(Actualite $actualite)
     {
-        $this->authorize('update', $actualite);
-
-        $actualite->update([
-            'featured' => !$actualite->featured,
-        ]);
-
-        $action = $actualite->featured ? 'mise en vedette' : 'retirée de la vedette';
-
-        return back()->with('success', "Actualité {$action} avec succès !");
+        return $this->feature($actualite);
     }
 }

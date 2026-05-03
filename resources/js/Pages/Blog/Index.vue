@@ -1,572 +1,778 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import {
-  Sparkles,
-  ChevronRight,
-  Phone,
-  Mail,
-  Calendar,
+  ArrowRight,
   BookOpen,
-  Users,
-  Target,
-  Award,
-  TrendingUp,
-  Heart,
-  Zap,
-  Globe,
-  Check,
-  Star,
+  CalendarDays,
+  CheckCircle2,
+  ChevronRight,
+  Eye,
+  FileText,
+  Filter,
+  Image as ImageIcon,
+  Mail,
   MessageCircle,
-  ArrowLeft
+  Newspaper,
+  PenLine,
+  Search,
+  Sparkles,
+  Star,
+  Target,
+  TrendingUp,
+  UsersRound,
+  X,
+  Zap,
 } from 'lucide-vue-next';
-import { ref, onMounted } from 'vue';
+import { computed, reactive } from 'vue';
 
 defineOptions({ layout: GuestLayout });
 
-const stats = ref([
-  { value: '50+', label: 'Articles publiés', icon: BookOpen },
-  { value: '98%', label: 'Lecteurs satisfaits', icon: Heart },
-  { value: '10K+', label: 'Lecteurs mensuels', icon: Users },
-  { value: '24/7', label: 'Contenu frais', icon: Zap }
-]);
-
-const categories = ref([
-  { name: 'Marketing Digital', count: 15, color: 'from-[#0e437d] to-[#22ae84]' },
-  { name: 'Design Graphique', count: 12, color: 'from-[#22ae84] to-[#1c978a]' },
-  { name: 'Stratégie Web', count: 18, color: 'from-[#1c978a] to-[#178e8b]' },
-  { name: 'Réseaux Sociaux', count: 22, color: 'from-[#178e8b] to-[#0e437d]' }
-]);
-
-onMounted(() => {
-  // Animation des statistiques
-  const animateStats = () => {
-    const statElements = document.querySelectorAll('.stat-value');
-    statElements.forEach((el, index) => {
-      const stat = stats.value[index];
-      if (stat.value === '24/7') {
-        el.textContent = '24/7';
-        return;
-      }
-
-      const numericValue = parseInt(stat.value);
-      if (!isNaN(numericValue)) {
-        let current = 0;
-        const target = numericValue;
-        const increment = target / 30;
-        const timer = setInterval(() => {
-          current += increment;
-          if (current >= target) {
-            current = target;
-            clearInterval(timer);
-          }
-          el.textContent = Math.floor(current) + (stat.value.includes('K+') ? 'K+' : '+');
-        }, 50);
-      }
-    });
-  };
-
-  // Animation au scroll
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('animate-in');
-        if (entry.target.classList.contains('stats-section')) {
-          setTimeout(animateStats, 500);
-        }
-      }
-    });
-  }, { threshold: 0.1 });
-
-  document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
-
-  // Créer des particules
-  createParticles();
+const props = defineProps({
+  actualites: {
+    type: [Object, Array],
+    default: () => ({
+      data: [],
+      links: [],
+      meta: {},
+    }),
+  },
+  featuredActualites: {
+    type: Array,
+    default: () => [],
+  },
+  recentActualites: {
+    type: Array,
+    default: () => [],
+  },
+  categories: {
+    type: [Array, Object],
+    default: () => [],
+  },
+  filters: {
+    type: Object,
+    default: () => ({}),
+  },
+  currentFilter: {
+    type: String,
+    default: 'tous',
+  },
+  meta: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 
-const createParticles = () => {
-  const heroSection = document.querySelector('.hero-section');
-  if (!heroSection) return;
+const contactEmail = 'Contact@kotavacom.com';
+const contactPhoneDisplay = '+229 93 37 49 63';
+const whatsappHref = 'https://wa.me/22993374963';
 
-  for (let i = 0; i < 15; i++) {
-    const particle = document.createElement('div');
-    particle.className = 'particle';
-    particle.style.left = `${Math.random() * 100}%`;
-    particle.style.top = `${Math.random() * 100}%`;
-    particle.style.animationDelay = `${Math.random() * 5}s`;
-    particle.style.animationDuration = `${10 + Math.random() * 20}s`;
-    heroSection.appendChild(particle);
+const pageTitle = computed(() => props.meta?.title || 'Blog - KOTAVA Communication');
+const pageDescription = computed(() =>
+  props.meta?.description ||
+  'Découvrez les actualités, articles, communiqués et analyses de KOTAVA Communication.'
+);
+
+const form = reactive({
+  search: props.filters?.search || '',
+  category: props.currentFilter || props.filters?.category || 'tous',
+});
+
+const articles = computed(() => {
+  if (Array.isArray(props.actualites)) {
+    return props.actualites;
   }
+
+  return props.actualites?.data || [];
+});
+
+const paginationLinks = computed(() => {
+  if (Array.isArray(props.actualites)) {
+    return [];
+  }
+
+  return props.actualites?.links || [];
+});
+
+const normalizedCategories = computed(() => {
+  if (Array.isArray(props.categories)) {
+    return props.categories;
+  }
+
+  return Object.entries(props.categories || {}).map(([slug, label]) => ({
+    slug,
+    name: label,
+    label,
+    count: null,
+  }));
+});
+
+const totalArticles = computed(() => {
+  if (props.actualites?.meta?.total) {
+    return props.actualites.meta.total;
+  }
+
+  if (typeof props.actualites?.total === 'number') {
+    return props.actualites.total;
+  }
+
+  return articles.value.length;
+});
+
+const stats = computed(() => [
+  {
+    value: `${totalArticles.value}+`,
+    label: 'Publications',
+    icon: BookOpen,
+  },
+  {
+    value: normalizedCategories.value.length || 5,
+    label: 'Catégories',
+    icon: Filter,
+  },
+  {
+    value: props.featuredActualites?.length || 0,
+    label: 'En vedette',
+    icon: Star,
+  },
+  {
+    value: '360°',
+    label: 'Vision communication',
+    icon: Zap,
+  },
+]);
+
+const featuredArticle = computed(() => {
+  if (props.featuredActualites?.length) {
+    return props.featuredActualites[0];
+  }
+
+  return articles.value[0] || null;
+});
+
+const secondaryFeatured = computed(() => {
+  if (props.featuredActualites?.length > 1) {
+    return props.featuredActualites.slice(1, 3);
+  }
+
+  return articles.value.slice(1, 3);
+});
+
+const articleHref = (article) => article?.url || (article?.slug ? `/blog/${article.slug}` : '/blog');
+
+const imageUrl = (article) => article?.image_url || article?.image || null;
+
+const articleDate = (article) => {
+  return article?.date_publication_display || article?.created_at || 'Date non spécifiée';
 };
 
-// Props depuis Laravel controller
-defineProps({
-  actualites: {
-    type: Array,
-    default: () => []
-  }
-});
+const articleExcerpt = (article) => {
+  return article?.extrait || article?.summary || article?.description || article?.content || '';
+};
 
-// Format date
-const formatDate = (dateString) => {
-  if (!dateString) return 'Date non spécifiée';
-
-  const date = new Date(dateString);
-  return date.toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
+const applyFilters = () => {
+  router.get('/blog', {
+    search: form.search || undefined,
+    category: form.category !== 'tous' ? form.category : undefined,
+  }, {
+    preserveScroll: true,
+    preserveState: true,
+    replace: true,
   });
+};
+
+const resetFilters = () => {
+  form.search = '';
+  form.category = 'tous';
+
+  router.get('/blog', {}, {
+    preserveScroll: true,
+    replace: true,
+  });
+};
+
+const categoryColorClass = (index) => {
+  const classes = [
+    'from-brand-orange to-emerald-400',
+    'from-brand-blue to-brand-orange',
+    'from-emerald-400 to-brand-blue',
+    'from-orange-400 to-brand-orange',
+    'from-brand-blue to-emerald-400',
+  ];
+
+  return classes[index % classes.length];
 };
 </script>
 
 <template>
-  <GuestLayout>
-    <Head title="Blog - KOTAVA Communication" />
+  <Head :title="pageTitle">
+    <meta name="description" :content="pageDescription" />
+    <meta name="keywords" content="KOTAVA Communication, blog communication, marketing digital, branding, communication digitale, actualités KOTAVA, agence communication Bénin" />
+    <meta property="og:title" :content="pageTitle" />
+    <meta property="og:description" :content="pageDescription" />
+    <meta property="og:type" content="website" />
+  </Head>
 
-    <!-- Hero Section avec animations -->
-    <section class="relative py-20 bg-gradient-to-br from-[#0e437d] via-[#1a6ca3] to-[#22ae84] overflow-hidden min-h-[80vh] flex items-center hero-section animate-on-scroll">
-      <!-- Animation background -->
-      <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute top-20 left-10 w-64 h-64 bg-[#FFD166] rounded-full opacity-20 animate-pulse animation-delay-1000"></div>
-        <div class="absolute bottom-20 right-10 w-80 h-80 bg-[#EF476F] rounded-full opacity-15 animate-pulse animation-delay-2000"></div>
-        <div class="absolute top-1/2 left-1/4 w-48 h-48 bg-[#06D6A0] rounded-full opacity-20 animate-pulse"></div>
+  <main class="overflow-hidden bg-[#07101d] text-white">
+    <!-- HERO -->
+    <section class="relative isolate px-4 pb-12 pt-16 sm:px-6 lg:px-8 lg:pb-16 lg:pt-20">
+      <div class="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_15%_18%,rgba(249,115,22,0.24),transparent_28%),radial-gradient(circle_at_88%_8%,rgba(16,185,129,0.16),transparent_30%),linear-gradient(135deg,#07101d_0%,#10235f_48%,#06131f_100%)]"></div>
+      <div class="absolute inset-0 -z-10 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:42px_42px] opacity-40"></div>
 
-        <!-- Effet shimmer -->
-        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer"></div>
-      </div>
-
-      <div class="relative max-w-7xl mx-auto px-6 text-center">
-        <!-- Badge animé -->
-        <div class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/20 backdrop-blur-lg text-white mb-8 text-sm font-medium animate-bounce-subtle">
-          <Sparkles :size="16" />
-          <span>Découvrez nos insights</span>
-        </div>
-
-        <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 animate-slide-up">
-          Notre <span class="text-[#FFD166] relative">
-            Blog
-            <span class="absolute -bottom-2 left-0 w-full h-1 bg-gradient-to-r from-[#FFD166] to-transparent animate-underline"></span>
-          </span>
-        </h1>
-
-        <p class="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed mb-10 animate-slide-up animation-delay-200">
-          Découvrez nos <span class="text-[#FFD166] font-semibold">insights, tendances digitales</span> et conseils experts en communication.
-        </p>
-
-        <!-- CTA Hero -->
-        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center animate-slide-up animation-delay-400">
-          <a href="#newsletter"
-             class="group relative px-8 py-4 bg-gradient-to-r from-[#FFD166] to-[#FFB347] text-gray-900 rounded-xl font-bold text-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-105 animate-pulse-subtle">
-            <span class="relative z-10 flex items-center gap-2">
-              S'abonner à la newsletter <ChevronRight :size="20" class="group-hover:translate-x-1 transition-transform" />
-            </span>
-            <div class="absolute inset-0 bg-gradient-to-r from-[#FFD166] to-[#FFB347] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </a>
-
-          <a href="#articles"
-             class="group px-6 py-4 bg-white/10 backdrop-blur-lg text-white rounded-xl font-semibold text-lg border-2 border-white/20 hover:bg-white/20 hover:border-white/40 transition-all duration-300">
-            <span class="flex items-center gap-2">
-              <BookOpen :size="20" /> Voir les articles
-            </span>
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Statistiques du blog -->
-    <section class="py-16 bg-gradient-to-r from-white via-gray-50 to-white stats-section animate-on-scroll">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <div v-for="(stat, index) in stats" :key="index"
-               class="text-center p-6 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group">
-            <div class="flex justify-center mb-4">
-              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0e437d]/10 to-[#22ae84]/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <component :is="stat.icon" :size="24" class="text-[#0e437d]" />
-              </div>
-            </div>
-            <div class="text-4xl font-bold text-[#0e437d] mb-2 stat-value">{{ stat.value }}</div>
-            <div class="text-gray-600 font-medium">{{ stat.label }}</div>
-            <div class="w-12 h-1 bg-gradient-to-r from-[#0e437d] to-[#22ae84] mx-auto mt-3"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Catégories -->
-    <section class="py-16 bg-white animate-on-scroll">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="text-center mb-12">
-          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#0e437d]/10 text-[#0e437d] mb-4 text-sm font-semibold">
-            <BookOpen :size="14" />
-            Parcourir par catégorie
-          </div>
-          <h2 class="text-3xl font-bold text-gray-900 mb-4">Explorez nos thèmes</h2>
-          <p class="text-gray-600 max-w-2xl mx-auto">Découvrez nos articles organisés par catégories pour trouver exactement ce qui vous intéresse</p>
-        </div>
-
-        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-          <div v-for="(category, index) in categories" :key="index"
-               class="group bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 border border-gray-100">
-            <div class="w-16 h-16 mb-6 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
-                 :class="`bg-gradient-to-br ${category.color}`">
-              <div class="text-white text-2xl font-bold">{{ category.count }}</div>
+      <div class="mx-auto max-w-7xl">
+        <div class="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
+          <div>
+            <div class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.08] px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-white/[0.65] backdrop-blur">
+              <Sparkles :size="15" class="text-brand-orange" />
+              Insights & actualités
             </div>
 
-            <h3 class="text-xl font-bold text-gray-900 mb-3">{{ category.name }}</h3>
-            <p class="text-gray-600 mb-4">{{ category.count }} articles publiés</p>
+            <h1 class="mt-6 max-w-4xl text-5xl font-black leading-[0.92] tracking-[-0.08em] text-white sm:text-6xl lg:text-7xl">
+              Le blog de la communication qui construit des marques fortes.
+            </h1>
 
-            <div class="mt-6 pt-4 border-t border-gray-100">
-              <Link :href="`/blog/categorie/${category.name.toLowerCase().replace(' ', '-')}`"
-                    class="text-sm text-[#0e437d] font-medium hover:text-[#22ae84] transition-colors inline-flex items-center gap-1 group/link">
-                Voir les articles <ChevronRight :size="14" class="group-hover/link:translate-x-1 transition-transform" />
-              </Link>
+            <p class="mt-6 max-w-2xl text-base leading-8 text-white/[0.62] sm:text-lg">
+              Analyses, conseils pratiques, tendances digitales, branding, contenus et stratégies pour aider les entreprises à mieux communiquer.
+            </p>
+
+            <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+              <a
+                href="#articles"
+                class="inline-flex items-center justify-center gap-3 rounded-2xl bg-brand-orange px-6 py-4 text-sm font-black text-white shadow-[0_18px_50px_rgba(249,115,22,0.28)] transition hover:-translate-y-1"
+              >
+                Lire les articles
+                <ArrowRight :size="18" />
+              </a>
+
+              <a
+                href="#categories"
+                class="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/[0.08] px-6 py-4 text-sm font-black text-white/[0.76] backdrop-blur transition hover:-translate-y-1 hover:bg-white/[0.12] hover:text-white"
+              >
+                Explorer les thèmes
+                <BookOpen :size="18" />
+              </a>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- Articles Section -->
-    <section id="articles" class="py-20 bg-gray-50 animate-on-scroll">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="text-center mb-12">
-          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#22ae84]/10 text-[#22ae84] mb-4 text-sm font-semibold">
-            <Sparkles :size="14" />
-            Derniers articles
-          </div>
-          <h2 class="text-3xl font-bold text-gray-900 mb-4">Nos dernières publications</h2>
-          <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-            Restez à jour avec les dernières tendances et conseils en communication digitale
-          </p>
-        </div>
+          <div class="relative">
+            <div class="absolute -inset-6 rounded-[2.7rem] bg-brand-orange/20 blur-3xl"></div>
 
-        <div v-if="actualites && actualites.length > 0" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <article
-            v-for="article in actualites"
-            :key="article.id"
-            class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 hover:scale-105 overflow-hidden border border-gray-100"
-          >
-            <!-- Image de l'article -->
-            <div class="h-56 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-              <img
-                v-if="article.image"
-                :src="article.image"
-                :alt="article.title"
-                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-              />
-              <div v-else class="w-full h-full flex items-center justify-center">
-                <div class="text-center">
-                  <div class="w-12 h-12 bg-gradient-to-br from-[#0e437d] to-[#22ae84] rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <BookOpen :size="24" class="text-white" />
+            <div class="relative overflow-hidden rounded-[2.4rem] border border-white/10 bg-white/[0.08] p-4 shadow-2xl shadow-black/20 backdrop-blur-xl">
+              <div class="rounded-[1.9rem] border border-white/10 bg-[#0b1524] p-5">
+                <div class="flex items-center justify-between gap-4">
+                  <div>
+                    <p class="text-xs font-black uppercase tracking-[0.16em] text-brand-orange">
+                      À la une
+                    </p>
+                    <h2 class="mt-2 text-2xl font-black tracking-[-0.05em] text-white">
+                      Sélection éditoriale
+                    </h2>
                   </div>
-                  <div class="text-gray-500 text-sm">Image à venir</div>
+
+                  <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-orange text-white">
+                    <Newspaper :size="23" />
+                  </div>
+                </div>
+
+                <Link
+                  v-if="featuredArticle"
+                  :href="articleHref(featuredArticle)"
+                  class="group mt-6 block overflow-hidden rounded-[1.6rem] border border-white/10 bg-white/[0.06] transition hover:border-brand-orange/50 hover:bg-white/[0.09]"
+                >
+                  <div class="relative h-64 overflow-hidden bg-[#07101d]">
+                    <img
+                      v-if="imageUrl(featuredArticle)"
+                      :src="imageUrl(featuredArticle)"
+                      :alt="featuredArticle.title"
+                      class="h-full w-full object-cover opacity-90 transition duration-700 group-hover:scale-105 group-hover:opacity-100"
+                    />
+
+                    <div v-else class="flex h-full w-full items-center justify-center">
+                      <div class="text-center">
+                        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-orange text-white">
+                          <BookOpen :size="25" />
+                        </div>
+                        <p class="mt-3 text-sm font-bold text-white/[0.42]">
+                          Visuel à venir
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="absolute inset-0 bg-gradient-to-t from-[#07101d] via-transparent to-transparent"></div>
+
+                    <div class="absolute bottom-4 left-4 right-4">
+                      <span class="inline-flex rounded-xl bg-brand-orange px-3 py-1 text-xs font-black text-white">
+                        {{ featuredArticle.category_label || featuredArticle.category || 'Article' }}
+                      </span>
+
+                      <h3 class="mt-3 line-clamp-2 text-2xl font-black tracking-[-0.05em] text-white">
+                        {{ featuredArticle.title }}
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div class="p-5">
+                    <p class="line-clamp-2 text-sm leading-6 text-white/[0.55]">
+                      {{ articleExcerpt(featuredArticle) }}
+                    </p>
+
+                    <div class="mt-5 flex items-center justify-between gap-4">
+                      <span class="inline-flex items-center gap-2 text-xs font-bold text-white/[0.42]">
+                        <CalendarDays :size="14" />
+                        {{ articleDate(featuredArticle) }}
+                      </span>
+
+                      <span class="inline-flex items-center gap-2 text-sm font-black text-brand-orange">
+                        Lire
+                        <ChevronRight :size="16" class="transition group-hover:translate-x-1" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+
+                <div v-else class="mt-6 rounded-[1.6rem] border border-dashed border-white/10 bg-white/[0.04] p-8 text-center">
+                  <BookOpen :size="40" class="mx-auto text-brand-orange" />
+                  <p class="mt-4 text-sm font-bold text-white/[0.55]">
+                    Les articles publiés apparaîtront ici.
+                  </p>
+                </div>
+
+                <div v-if="secondaryFeatured.length" class="mt-4 grid gap-3 sm:grid-cols-2">
+                  <Link
+                    v-for="article in secondaryFeatured"
+                    :key="article.id"
+                    :href="articleHref(article)"
+                    class="group rounded-2xl border border-white/10 bg-white/[0.045] p-4 transition hover:border-brand-orange/50 hover:bg-white/[0.08]"
+                  >
+                    <p class="text-xs font-black uppercase tracking-[0.14em] text-white/[0.35]">
+                      {{ article.category_label || article.category || 'Article' }}
+                    </p>
+
+                    <h3 class="mt-2 line-clamp-2 text-sm font-black leading-5 text-white group-hover:text-brand-orange">
+                      {{ article.title }}
+                    </h3>
+                  </Link>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            <!-- Contenu de l'article -->
-            <div class="p-6">
-              <div class="flex items-center gap-2 mb-3">
-                <span class="text-sm font-semibold text-[#22ae84]">{{ formatDate(article.date_publication) }}</span>
-                <span class="text-gray-400">•</span>
-                <span class="text-sm text-gray-500">{{ article.category || 'Article' }}</span>
+        <!-- STATS -->
+        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div
+            v-for="stat in stats"
+            :key="stat.label"
+            class="rounded-[1.5rem] border border-white/10 bg-white/[0.07] p-5 backdrop-blur"
+          >
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <p class="text-3xl font-black tracking-[-0.05em] text-white">
+                  {{ stat.value }}
+                </p>
+
+                <p class="mt-1 text-sm font-bold text-white/[0.48]">
+                  {{ stat.label }}
+                </p>
               </div>
 
-              <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-[#0e437d] transition-colors">
-                {{ article.title }}
-              </h3>
-
-              <p class="text-gray-600 mb-4 line-clamp-2">
-                {{ article.extrait || article.content?.substring(0, 120) + '...' }}
-              </p>
-
-              <div class="flex items-center justify-between">
-                <Link
-                  :href="`/blog/${article.slug || article.id}`"
-                  class="inline-flex items-center gap-2 text-[#0e437d] font-semibold hover:gap-3 transition-all group/link"
-                >
-                  Lire la suite
-                  <ChevronRight :size="16" class="group-hover/link:translate-x-1 transition-transform" />
-                </Link>
-
-                <span v-if="article.featured" class="px-3 py-1 bg-gradient-to-r from-[#0e437d]/10 to-[#22ae84]/10 text-[#0e437d] text-xs font-semibold rounded-full">
-                  En vedette
-                </span>
+              <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-brand-orange/15 text-brand-orange">
+                <component :is="stat.icon" :size="21" />
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CATEGORIES -->
+    <section id="categories" class="border-t border-white/10 px-4 py-14 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div class="inline-flex items-center gap-2 rounded-2xl bg-brand-orange/10 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-brand-orange">
+              <BookOpen :size="15" />
+              Thématiques
+            </div>
+
+            <h2 class="mt-4 text-4xl font-black tracking-[-0.06em] text-white">
+              Explorer par catégorie
+            </h2>
+          </div>
+
+          <p class="max-w-xl text-sm leading-6 text-white/[0.52]">
+            Retrouvez rapidement les publications liées aux actualités, au blog, aux communiqués, aux témoignages et aux cas d’étude.
+          </p>
+        </div>
+
+        <div class="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          <Link
+            v-for="(category, index) in normalizedCategories"
+            :key="category.slug || category.name"
+            :href="category.slug === 'tous' ? '/blog' : `/blog?category=${category.slug}`"
+            :class="[
+              'group relative overflow-hidden rounded-[1.7rem] border p-5 transition hover:-translate-y-1',
+              form.category === category.slug || (!form.category && category.slug === 'tous')
+                ? 'border-brand-orange bg-brand-orange text-white shadow-[0_18px_50px_rgba(249,115,22,0.24)]'
+                : 'border-white/10 bg-white/[0.06] text-white hover:border-brand-orange/50 hover:bg-white/[0.09]'
+            ]"
+          >
+            <div
+              :class="[
+                'absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br opacity-25 blur-2xl',
+                categoryColorClass(index)
+              ]"
+            ></div>
+
+            <div class="relative">
+              <div
+                :class="[
+                  'flex h-12 w-12 items-center justify-center rounded-2xl transition',
+                  form.category === category.slug
+                    ? 'bg-white text-brand-orange'
+                    : 'bg-brand-orange/15 text-brand-orange group-hover:bg-brand-orange group-hover:text-white'
+                ]"
+              >
+                <FileText :size="21" />
+              </div>
+
+              <h3 class="mt-5 text-lg font-black tracking-[-0.04em]">
+                {{ category.label || category.name }}
+              </h3>
+
+              <p class="mt-2 text-sm font-bold opacity-60">
+                {{ category.count ?? 0 }} publication(s)
+              </p>
+            </div>
+          </Link>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARTICLES -->
+    <section id="articles" class="border-t border-white/10 px-4 py-14 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <div class="rounded-[2rem] border border-white/10 bg-white/[0.06] p-5 backdrop-blur sm:p-6">
+          <div class="grid gap-4 lg:grid-cols-[1fr_260px_auto] lg:items-end">
+            <div>
+              <label class="text-xs font-black uppercase tracking-[0.14em] text-white/[0.45]">
+                Recherche
+              </label>
+
+              <div class="relative mt-2">
+                <Search :size="18" class="absolute left-4 top-1/2 -translate-y-1/2 text-white/[0.35]" />
+
+                <input
+                  v-model="form.search"
+                  type="text"
+                  placeholder="Rechercher un article, une analyse, un communiqué..."
+                  class="w-full rounded-2xl border border-white/10 bg-white/[0.07] py-3 pl-11 pr-4 text-sm font-semibold text-white outline-none transition placeholder:text-white/[0.32] focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
+                  @keyup.enter="applyFilters"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="text-xs font-black uppercase tracking-[0.14em] text-white/[0.45]">
+                Catégorie
+              </label>
+
+              <select
+                v-model="form.category"
+                class="mt-2 w-full rounded-2xl border border-white/10 bg-[#0b1524] px-4 py-3 text-sm font-bold text-white outline-none transition focus:border-brand-orange focus:ring-4 focus:ring-brand-orange/10"
+              >
+                <option
+                  v-for="category in normalizedCategories"
+                  :key="category.slug"
+                  :value="category.slug"
+                >
+                  {{ category.label || category.name }}
+                </option>
+              </select>
+            </div>
+
+            <div class="flex gap-3">
+              <button
+                type="button"
+                class="inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-orange px-5 py-3 text-sm font-black text-white transition hover:-translate-y-1"
+                @click="applyFilters"
+              >
+                <Filter :size="17" />
+                Filtrer
+              </button>
+
+              <button
+                type="button"
+                class="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/[0.07] px-5 py-3 text-sm font-black text-white/[0.72] transition hover:bg-white/[0.12] hover:text-white"
+                @click="resetFilters"
+              >
+                <X :size="17" />
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <div class="inline-flex items-center gap-2 rounded-2xl bg-emerald-400/10 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-emerald-300">
+              <Sparkles :size="15" />
+              Publications
+            </div>
+
+            <h2 class="mt-4 text-4xl font-black tracking-[-0.06em] text-white">
+              Derniers articles
+            </h2>
+          </div>
+
+          <p class="text-sm font-bold text-white/[0.45]">
+            {{ totalArticles }} publication(s) trouvée(s)
+          </p>
+        </div>
+
+        <div v-if="articles.length" class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          <article
+            v-for="article in articles"
+            :key="article.id"
+            class="group overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.06] shadow-2xl shadow-black/10 backdrop-blur transition hover:-translate-y-2 hover:border-brand-orange/50 hover:bg-white/[0.09]"
+          >
+            <Link :href="articleHref(article)" class="block">
+              <div class="relative h-64 overflow-hidden bg-[#0b1524]">
+                <img
+                  v-if="imageUrl(article)"
+                  :src="imageUrl(article)"
+                  :alt="article.title"
+                  class="h-full w-full object-cover opacity-90 transition duration-700 group-hover:scale-105 group-hover:opacity-100"
+                />
+
+                <div v-else class="flex h-full w-full items-center justify-center">
+                  <div class="text-center">
+                    <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-orange text-white">
+                      <ImageIcon :size="25" />
+                    </div>
+                    <p class="mt-3 text-sm font-bold text-white/[0.42]">
+                      Image à venir
+                    </p>
+                  </div>
+                </div>
+
+                <div class="absolute inset-0 bg-gradient-to-t from-[#07101d] via-transparent to-transparent"></div>
+
+                <div class="absolute left-4 top-4 flex flex-wrap gap-2">
+                  <span class="rounded-xl bg-brand-orange px-3 py-1 text-xs font-black text-white">
+                    {{ article.category_label || article.category || 'Article' }}
+                  </span>
+
+                  <span
+                    v-if="article.featured"
+                    class="inline-flex items-center gap-1 rounded-xl bg-white px-3 py-1 text-xs font-black text-brand-orange"
+                  >
+                    <Star :size="13" />
+                    Vedette
+                  </span>
+                </div>
+              </div>
+
+              <div class="p-6">
+                <div class="flex flex-wrap items-center gap-3 text-xs font-bold text-white/[0.42]">
+                  <span class="inline-flex items-center gap-1">
+                    <CalendarDays :size="14" />
+                    {{ articleDate(article) }}
+                  </span>
+
+                  <span class="inline-flex items-center gap-1">
+                    <Eye :size="14" />
+                    Lecture
+                  </span>
+                </div>
+
+                <h3 class="mt-4 line-clamp-2 text-2xl font-black leading-tight tracking-[-0.05em] text-white transition group-hover:text-brand-orange">
+                  {{ article.title }}
+                </h3>
+
+                <p class="mt-4 line-clamp-3 text-sm leading-7 text-white/[0.55]">
+                  {{ articleExcerpt(article) }}
+                </p>
+
+                <div class="mt-6 inline-flex items-center gap-2 text-sm font-black text-brand-orange">
+                  Lire l’article
+                  <ChevronRight :size="16" class="transition group-hover:translate-x-1" />
+                </div>
+              </div>
+            </Link>
           </article>
         </div>
 
-        <!-- État vide -->
-        <div v-else class="text-center py-16">
-          <div class="w-24 h-24 bg-gradient-to-br from-[#0e437d]/10 to-[#22ae84]/10 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse-subtle">
-            <BookOpen :size="48" class="text-[#0e437d]" />
+        <div v-else class="mt-8 rounded-[2rem] border border-dashed border-white/10 bg-white/[0.04] p-12 text-center">
+          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-orange/15 text-brand-orange">
+            <BookOpen :size="32" />
           </div>
-          <h3 class="text-2xl font-bold text-gray-900 mb-4 animate-fade-in">Articles à venir</h3>
-          <p class="text-gray-600 max-w-md mx-auto mb-6 animate-fade-in animation-delay-200">
-            Notre équipe prépare actuellement des articles passionnants sur la communication digitale.
-            Revenez bientôt pour découvrir nos insights !
+
+          <h3 class="mt-6 text-3xl font-black tracking-[-0.05em] text-white">
+            Aucun article trouvé
+          </h3>
+
+          <p class="mx-auto mt-3 max-w-xl text-sm leading-7 text-white/[0.52]">
+            Les publications apparaîtront ici après leur création et leur publication depuis le dashboard.
           </p>
-          <div class="inline-flex items-center gap-2 text-[#0e437d] font-semibold animate-fade-in animation-delay-400">
-            <Calendar :size="20" />
-            Prochain article: Janvier 2024
-          </div>
+
+          <button
+            type="button"
+            class="mt-6 inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-orange px-5 py-3 text-sm font-black text-white"
+            @click="resetFilters"
+          >
+            Réinitialiser les filtres
+            <X :size="17" />
+          </button>
         </div>
 
-        <!-- Pagination -->
-        <div v-if="actualites && actualites.length > 0" class="mt-12 flex justify-center">
-          <div class="flex gap-2">
-            <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors hover:-translate-y-1">
-              Précédent
-            </button>
-            <button class="px-4 py-2 bg-gradient-to-r from-[#0e437d] to-[#22ae84] text-white rounded-lg hover:shadow-lg transition-all hover:-translate-y-1">
-              1
-            </button>
-            <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors hover:-translate-y-1">
-              Suivant
-            </button>
-          </div>
+        <!-- PAGINATION -->
+        <div
+          v-if="paginationLinks.length > 3"
+          class="mt-10 flex flex-wrap justify-center gap-2"
+        >
+          <component
+            :is="link.url ? Link : 'span'"
+            v-for="(link, index) in paginationLinks"
+            :key="index"
+            :href="link.url || undefined"
+            :class="[
+              'rounded-xl px-4 py-2 text-sm font-black transition',
+              link.active
+                ? 'bg-brand-orange text-white'
+                : link.url
+                  ? 'bg-white/[0.08] text-white/[0.72] ring-1 ring-white/10 hover:bg-brand-orange hover:text-white'
+                  : 'bg-white/[0.04] text-white/[0.25]'
+            ]"
+            v-html="link.label"
+          />
         </div>
       </div>
     </section>
 
-    <!-- Newsletter Section améliorée -->
-    <section id="newsletter" class="py-20 bg-gradient-to-br from-[#0e437d] to-[#22ae84] text-white animate-on-scroll">
-      <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute -top-20 -left-20 w-64 h-64 bg-white rounded-full opacity-10 blur-3xl"></div>
-        <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-white rounded-full opacity-10 blur-3xl"></div>
-      </div>
-
-      <div class="relative max-w-4xl mx-auto px-6 text-center">
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-sm text-white mb-6 text-sm font-medium animate-bounce-subtle">
-          <Sparkles :size="14" /> Offre exclusive
-        </div>
-
-        <h2 class="text-4xl md:text-5xl font-bold mb-6">
-          Restez <span class="text-[#FFD166]">informé</span>
-        </h2>
-
-        <p class="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-          Inscrivez-vous à notre newsletter pour recevoir nos derniers articles et conseils en communication digitale
-        </p>
-
-        <form class="max-w-md mx-auto space-y-4">
-          <div class="flex gap-3">
-            <input
-              type="email"
-              placeholder="Votre email"
-              class="flex-1 px-4 py-3 bg-white/10 backdrop-blur-lg text-white placeholder-white/60 rounded-xl border border-white/20 focus:ring-2 focus:ring-[#FFD166] focus:border-transparent outline-none transition-all"
-            />
-            <button
-              type="submit"
-              class="px-6 py-3 bg-gradient-to-r from-[#FFD166] to-[#FFB347] text-gray-900 font-semibold rounded-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 group"
-            >
-              <span class="flex items-center gap-2">
-                S'inscrire <ChevronRight :size="18" class="group-hover:translate-x-1 transition-transform" />
-              </span>
-            </button>
-          </div>
-          <p class="text-white/60 text-sm">
-            En vous inscrivant, vous acceptez de recevoir nos emails. Désabonnez-vous à tout moment.
-          </p>
-        </form>
-      </div>
-    </section>
-
-    <!-- Section Pourquoi lire notre blog -->
-    <section class="py-20 bg-white animate-on-scroll">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="text-center mb-12">
-          <h2 class="text-3xl font-bold text-gray-900 mb-4">Pourquoi lire notre blog ?</h2>
-          <p class="text-gray-600 max-w-2xl mx-auto">La valeur que nous apportons à nos lecteurs</p>
-        </div>
-
-        <div class="grid lg:grid-cols-3 gap-8">
-          <div class="group flex items-start gap-6 p-6 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-[#0e437d]/10 to-[#22ae84]/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-              <Target :size="24" class="text-[#0e437d]" />
+    <!-- VALUE -->
+    <section class="border-t border-white/10 px-4 py-16 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <div class="grid gap-6 lg:grid-cols-3">
+          <div class="rounded-[2rem] border border-white/10 bg-white/[0.06] p-7 backdrop-blur">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-orange text-white">
+              <Target :size="23" />
             </div>
+
+            <h3 class="mt-6 text-2xl font-black tracking-[-0.05em] text-white">
+              Contenu orienté action
+            </h3>
+
+            <p class="mt-3 text-sm leading-7 text-white/[0.55]">
+              Des conseils applicables pour améliorer votre présence digitale, votre image de marque et vos campagnes.
+            </p>
+          </div>
+
+          <div class="rounded-[2rem] border border-white/10 bg-white/[0.06] p-7 backdrop-blur">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-orange text-white">
+              <TrendingUp :size="23" />
+            </div>
+
+            <h3 class="mt-6 text-2xl font-black tracking-[-0.05em] text-white">
+              Veille stratégique
+            </h3>
+
+            <p class="mt-3 text-sm leading-7 text-white/[0.55]">
+              Des tendances suivies et interprétées pour aider les marques à rester pertinentes dans un environnement mouvant.
+            </p>
+          </div>
+
+          <div class="rounded-[2rem] border border-white/10 bg-white/[0.06] p-7 backdrop-blur">
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-orange text-white">
+              <CheckCircle2 :size="23" />
+            </div>
+
+            <h3 class="mt-6 text-2xl font-black tracking-[-0.05em] text-white">
+              Expertise terrain
+            </h3>
+
+            <p class="mt-3 text-sm leading-7 text-white/[0.55]">
+              Des analyses issues de projets réels en communication, branding, digital, production et événementiel.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="px-4 pb-16 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <div class="relative overflow-hidden rounded-[2.4rem] bg-brand-orange p-8 text-white shadow-2xl shadow-brand-orange/20 sm:p-10 lg:p-12">
+          <div class="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-white/20 blur-3xl"></div>
+          <div class="absolute -bottom-20 -left-20 h-72 w-72 rounded-full bg-white/10 blur-3xl"></div>
+
+          <div class="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
-              <h3 class="text-xl font-semibold text-gray-900 mb-2">Contenu expert</h3>
-              <p class="text-gray-600">Des articles rédigés par des professionnels du secteur avec des années d'expérience</p>
+              <div class="inline-flex items-center gap-2 rounded-2xl bg-white/15 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-white">
+                <MessageCircle :size="15" />
+                Besoin d’une stratégie ?
+              </div>
+
+              <h2 class="mt-5 max-w-3xl text-4xl font-black leading-tight tracking-[-0.06em] sm:text-5xl">
+                Vous voulez transformer vos idées en contenus qui marquent ?
+              </h2>
+
+              <p class="mt-4 max-w-2xl text-base leading-7 text-white/[0.82]">
+                KOTAVA Communication vous accompagne sur la stratégie, le branding, le digital, l’audiovisuel, l’événementiel et les réseaux sociaux.
+              </p>
+            </div>
+
+            <div class="flex flex-col gap-3">
+              <Link
+                href="/contact"
+                class="inline-flex items-center justify-center gap-3 rounded-2xl bg-white px-6 py-4 text-sm font-black text-brand-orange transition hover:bg-slate-950 hover:text-white"
+              >
+                Nous contacter
+                <ArrowRight :size="18" />
+              </Link>
+
+              <a
+                :href="whatsappHref"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/25 bg-white/10 px-6 py-4 text-sm font-black text-white transition hover:bg-white/20"
+              >
+                WhatsApp direct
+                <MessageCircle :size="18" />
+              </a>
             </div>
           </div>
 
-          <div class="group flex items-start gap-6 p-6 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-[#0e437d]/10 to-[#22ae84]/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-              <TrendingUp :size="24" class="text-[#0e437d]" />
-            </div>
-            <div>
-              <h3 class="text-xl font-semibold text-gray-900 mb-2">Tendances actuelles</h3>
-              <p class="text-gray-600">Restez à jour avec les dernières évolutions du digital et de la communication</p>
-            </div>
-          </div>
+          <div class="relative mt-8 flex flex-wrap gap-3 text-sm font-bold text-white/[0.78]">
+            <span class="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2">
+              <Mail :size="16" />
+              {{ contactEmail }}
+            </span>
 
-          <div class="group flex items-start gap-6 p-6 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-[#0e437d]/10 to-[#22ae84]/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
-              <Check :size="24" class="text-[#0e437d]" />
-            </div>
-            <div>
-              <h3 class="text-xl font-semibold text-gray-900 mb-2">Conseils pratiques</h3>
-              <p class="text-gray-600">Des astuces et méthodes que vous pouvez appliquer immédiatement dans vos projets</p>
-            </div>
+            <span class="inline-flex items-center gap-2 rounded-2xl bg-white/10 px-4 py-2">
+              <UsersRound :size="16" />
+              {{ contactPhoneDisplay }}
+            </span>
           </div>
         </div>
       </div>
     </section>
-
-    <!-- CTA Final -->
-    <section class="py-20 bg-gradient-to-br from-gray-50 via-white to-gray-50 animate-on-scroll">
-      <div class="max-w-4xl mx-auto px-6 text-center">
-        <div class="bg-gradient-to-r from-[#0e437d] to-[#22ae84] rounded-2xl p-8 text-white shadow-xl">
-          <h3 class="text-2xl font-bold mb-4">Vous avez un sujet à proposer ?</h3>
-          <p class="text-white/90 mb-6">Partagez-nous vos idées d'articles ou posez-nous vos questions</p>
-          <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link :href="route('contact')"
-                  class="px-6 py-3 bg-white text-[#0e437d] rounded-lg font-semibold hover:bg-gray-100 transition-all duration-300 hover:scale-105">
-              Nous contacter
-            </Link>
-            <a href="mailto:blog@kotava.com"
-               class="px-6 py-3 bg-transparent border-2 border-white text-white rounded-lg font-semibold hover:bg-white/10 transition-all duration-300 hover:scale-105">
-              blog@kotava.com
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
-  </GuestLayout>
+  </main>
 </template>
 
 <style scoped>
-@keyframes float {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-20px) rotate(180deg); }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse-subtle {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.02); }
-}
-
-@keyframes bounce-subtle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-
-@keyframes underline {
-  from { width: 0; opacity: 0; }
-  to { width: 100%; opacity: 1; }
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.particle {
-  position: absolute;
-  width: 2px;
-  height: 2px;
-  background-color: white;
-  border-radius: 50%;
-  opacity: 0.3;
-  animation: float linear infinite;
-}
-
-.animate-float {
-  animation: float linear infinite;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.8s ease-out forwards;
-  opacity: 0;
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle 2s ease-in-out infinite;
-}
-
-.animate-bounce-subtle {
-  animation: bounce-subtle 2s ease-in-out infinite;
-}
-
-.animate-underline {
-  animation: underline 1s ease-out forwards;
-}
-
-.animate-shimmer {
-  animation: shimmer 3s infinite;
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.8s ease-out forwards;
-  opacity: 0;
-}
-
-.animation-delay-200 {
-  animation-delay: 200ms;
-}
-
-.animation-delay-400 {
-  animation-delay: 400ms;
-}
-
-.animation-delay-1000 {
-  animation-delay: 1000ms;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2000ms;
-}
-
-.animate-on-scroll {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.animate-on-scroll.animate-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.line-clamp-2 {
+.line-clamp-2,
+.line-clamp-3 {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .text-5xl {
-    font-size: 3rem;
-  }
-  .text-7xl {
-    font-size: 4rem;
-  }
+.line-clamp-2 {
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  -webkit-line-clamp: 3;
 }
 </style>
