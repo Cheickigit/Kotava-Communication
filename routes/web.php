@@ -12,6 +12,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\RealisationController as AdminRealisationController;
 use App\Http\Controllers\Admin\ActualiteController as AdminActualiteController;
+use App\Http\Controllers\Admin\LeadController as AdminLeadController;
 use App\Http\Controllers\Admin\TeamController;
 
 /*
@@ -23,7 +24,7 @@ use App\Http\Controllers\Admin\TeamController;
 // Page d'accueil
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Services avec contrôleur
+// Services
 Route::controller(ServiceController::class)->group(function () {
     Route::get('/services', 'index')->name('services');
 
@@ -35,21 +36,21 @@ Route::controller(ServiceController::class)->group(function () {
     Route::get('/services/social-media', 'social')->name('services.social');
 });
 
-// Team
+// Équipe
 Route::get('/team', function () {
     return Inertia::render('Team');
 })->name('team');
 
-// Portfolio avec contrôleur
+// Portfolio
 Route::controller(PortfolioController::class)->group(function () {
     Route::get('/portfolio', 'index')->name('portfolio');
     Route::get('/portfolio/{slug}', 'show')->name('portfolio.show');
 
-    // API (publique) de filtrage — évite de mettre ça dans /api si tu gardes cette route
+    // Filtrage public portfolio
     Route::get('/api/portfolio/filter', 'filter')->name('api.portfolio.filter');
 });
 
-// Blog avec contrôleur
+// Blog / Actualités publiques
 Route::controller(BlogController::class)->group(function () {
     Route::get('/blog', 'index')->name('blog');
     Route::get('/blog/{slug}', 'show')->name('blog.show');
@@ -60,7 +61,7 @@ Route::get('/about', function () {
     return Inertia::render('About');
 })->name('about');
 
-// Contact avec contrôleur
+// Contact
 Route::controller(ContactController::class)->group(function () {
     Route::get('/contact', 'index')->name('contact');
     Route::post('/contact', 'store')->name('contact.store');
@@ -68,7 +69,7 @@ Route::controller(ContactController::class)->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Routes Dashboard (Protégées)
+| Routes Dashboard protégées
 |--------------------------------------------------------------------------
 */
 
@@ -77,14 +78,15 @@ Route::middleware([
     config('jetstream.auth_session'),
     'verified',
 ])->group(function () {
-
-    // Route principale du dashboard (Jetstream/Inertia)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Groupe des routes admin (sous /dashboard)
     Route::prefix('dashboard')->name('dashboard.')->group(function () {
+        /*
+        |--------------------------------------------------------------------------
+        | Module Réalisations / Portfolio
+        |--------------------------------------------------------------------------
+        */
 
-        // Module Réalisations
         Route::prefix('realisations')
             ->name('realisations.')
             ->controller(AdminRealisationController::class)
@@ -99,7 +101,12 @@ Route::middleware([
                 Route::post('/{realisation}/feature', 'feature')->name('feature');
             });
 
-        // Module Actualités/Blog
+        /*
+        |--------------------------------------------------------------------------
+        | Module Actualités / Blog
+        |--------------------------------------------------------------------------
+        */
+
         Route::prefix('actualites')
             ->name('actualites.')
             ->controller(AdminActualiteController::class)
@@ -111,9 +118,31 @@ Route::middleware([
                 Route::put('/{actualite}', 'update')->name('update');
                 Route::delete('/{actualite}', 'destroy')->name('destroy');
                 Route::post('/{actualite}/publish', 'publish')->name('publish');
+                Route::post('/{actualite}/feature', 'feature')->name('feature');
             });
 
-        // Module Équipe
+        /*
+        |--------------------------------------------------------------------------
+        | Module Contacts / Leads
+        |--------------------------------------------------------------------------
+        */
+
+        Route::prefix('leads')
+            ->name('leads.')
+            ->controller(AdminLeadController::class)
+            ->group(function () {
+                Route::get('/', 'index')->name('index');
+                Route::post('/{lead}/read', 'markAsRead')->name('read');
+                Route::post('/{lead}/archive', 'archive')->name('archive');
+                Route::delete('/{lead}', 'destroy')->name('destroy');
+            });
+
+        /*
+        |--------------------------------------------------------------------------
+        | Module Équipe
+        |--------------------------------------------------------------------------
+        */
+
         Route::prefix('equipe')
             ->name('equipe.')
             ->controller(TeamController::class)
@@ -127,14 +156,12 @@ Route::middleware([
                 Route::post('/{user}/assign-role', 'assignRole')->name('assignRole');
             });
 
-        // Module Leads/Contacts
-        Route::prefix('leads')->name('leads.')->group(function () {
-            Route::get('/', function () {
-                return Inertia::render('Admin/Leads/Index');
-            })->name('index');
-        });
+        /*
+        |--------------------------------------------------------------------------
+        | Module Analytics
+        |--------------------------------------------------------------------------
+        */
 
-        // Module Analytics
         Route::prefix('analytics')->name('analytics.')->group(function () {
             Route::get('/', function () {
                 return Inertia::render('Admin/Analytics/Index');
@@ -143,7 +170,12 @@ Route::middleware([
             Route::get('/stats', [DashboardController::class, 'getStats'])->name('stats');
         });
 
-        // Module Paramètres
+        /*
+        |--------------------------------------------------------------------------
+        | Module Paramètres
+        |--------------------------------------------------------------------------
+        */
+
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('/', function () {
                 return Inertia::render('Admin/Settings/Index');
@@ -158,7 +190,12 @@ Route::middleware([
             })->name('seo');
         });
 
-        // Routes API pour le dashboard
+        /*
+        |--------------------------------------------------------------------------
+        | API interne dashboard
+        |--------------------------------------------------------------------------
+        */
+
         Route::prefix('api')->name('api.')->group(function () {
             Route::get('/stats', [DashboardController::class, 'getStats'])->name('stats');
             Route::get('/recent-activities', [DashboardController::class, 'getRecentActivities'])->name('recent-activities');
@@ -169,7 +206,7 @@ Route::middleware([
 
 /*
 |--------------------------------------------------------------------------
-| Routes d'API Publiques
+| Routes API publiques
 |--------------------------------------------------------------------------
 */
 
@@ -187,7 +224,7 @@ Route::prefix('api')->name('api.')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Routes de fallback et erreurs
+| Pages légales
 |--------------------------------------------------------------------------
 */
 
@@ -198,6 +235,12 @@ Route::get('/mentions-legales', function () {
 Route::get('/politique-confidentialite', function () {
     return Inertia::render('Legal/Privacy');
 })->name('legal.privacy');
+
+/*
+|--------------------------------------------------------------------------
+| Fallback 404
+|--------------------------------------------------------------------------
+*/
 
 Route::fallback(function () {
     return Inertia::render('Errors/404');

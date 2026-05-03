@@ -6,210 +6,109 @@ use App\Http\Controllers\Controller;
 use App\Models\Lead;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
 
 class LeadController extends Controller
 {
-    /**
-     * Affiche la liste des leads
-     */
+    private function statuts(): array
+    {
+        return [
+            'tous' => 'Tous',
+            'nouveau' => 'Nouveau',
+            'en_cours' => 'En cours',
+            'traité' => 'Traité',
+            'archive' => 'Archivé',
+        ];
+    }
+
     public function index(Request $request)
     {
-        $user = Auth::user();
-        $teamId = $user->currentTeam->id ?? null;
-
         $query = Lead::query();
 
-        // Filtrer par équipe
-        if ($teamId) {
-            $query->where('team_id', $teamId);
+        if ($request->filled('statut') && $request->statut !== 'tous') {
+            $query->where('status', $request->statut);
         }
 
-        // Filtres
-        if ($request->has('status') && $request->status !== 'tous') {
-            $query->where('status', $request->status);
-        }
+        if ($request->filled('search')) {
+            $search = trim((string) $request->search);
+            $operator = config('database.default') === 'pgsql' ? 'ilike' : 'like';
 
-        if ($request->has('service') && $request->service !== 'tous') {
-            $query->where('service', $request->service);
-        }
-
-        if ($request->has('source') && $request->source !== 'tous') {
-            $query->where('source', $request->source);
-        }
-
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%")
-                  ->orWhere('company', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search, $operator) {
+                $q->where('nom', $operator, "%{$search}%")
+                    ->orWhere('email', $operator, "%{$search}%")
+                    ->orWhere('telephone', $operator, "%{$search}%")
+                    ->orWhere('entreprise', $operator, "%{$search}%")
+                    ->orWhere('service', $operator, "%{$search}%")
+                    ->orWhere('message', $operator, "%{$search}%");
             });
         }
 
-        $leads = $query->latest()
-            ->paginate(20)
-            ->withQueryString();
+        $leads = $query
+            ->latest()
+            ->paginate(15)
+            ->withQueryString()
+            ->through(fn (Lead $lead) => [
+                'id' => $lead->id,
 
-        // Statistiques
-        $stats = [
-            'total' => Lead::when($teamId, fn($q) => $q->where('team_id', $teamId))->count(),
-            'nouveau' => Lead::when($teamId, fn($q) => $q->where('team_id', $teamId))->where('status', 'nouveau')->count(),
-            'en_contact' => Lead::when($teamId, fn($q) => $q->where('team_id', $teamId))->where('status', 'en_contact')->count(),
-            'devis_envoye' => Lead::when($teamId, fn($q) => $q->where('team_id', $teamId))->where('status', 'devis_envoye')->count(),
-            'convertis' => Lead::when($teamId, fn($q) => $q->where('team_id', $teamId))->where('status', 'convertis')->count(),
-            'perdus' => Lead::when($teamId, fn($q) => $q->where('team_id', $teamId))->where('status', 'perdus')->count(),
-        ];
+                // Champs normalisés pour le front
+                'name' => $lead->nom,
+                'phone' => $lead->telephone,
+                'subject' => $lead->service ?: 'Demande de contact',
+                'statut' => $lead->status,
 
-        $statuses = [
-            'nouveau' => 'Nouveau',
-            'en_contact' => 'En contact',
-            'devis_envoye' => 'Devis envoyé',
-            'negociation' => 'Négociation',
-            'convertis' => 'Converti',
-            'perdus' => 'Perdu',
-        ];
+                // Champs réels aussi disponibles
+                'nom' => $lead->nom,
+                'email' => $lead->email,
+                'telephone' => $lead->telephone,
+                'entreprise' => $lead->entreprise,
+                'service' => $lead->service,
+                'status' => $lead->status,
 
-        $sources = [
-            'site_web' => 'Site web',
-            'reseaux_sociaux' => 'Réseaux sociaux',
-            'recommandation' => 'Recommandation',
-            'salon' => 'Salon/Événement',
-            'emailing' => 'Emailing',
-            'autre' => 'Autre',
-        ];
-
-        $services = [
-            'branding' => 'Branding',
-            'web' => 'Site web',
-            'social' => 'Social Media',
-            'video' => 'Vidéo',
-            'marketing' => 'Marketing',
-            'consulting' => 'Consulting',
-            'pack_complet' => 'Pack complet',
-        ];
+                'message' => $lead->message,
+                'is_read' => (bool) ($lead->is_read ?? false),
+                'source' => $lead->source,
+                'ip_address' => $lead->ip_address,
+                'created_at' => optional($lead->created_at)->format('d/m/Y H:i'),
+                'created_at_human' => optional($lead->created_at)->diffForHumans(),
+            ]);
 
         return Inertia::render('Admin/Leads/Index', [
             'leads' => $leads,
-            'filters' => $request->only(['search', 'status', 'service', 'source']),
-            'stats' => $stats,
-            'statuses' => $statuses,
-            'sources' => $sources,
-            'services' => $services,
+            'filters' => $request->only(['search', 'statut']),
+            'statuts' => $this->statuts(),
+            'stats' => [
+                'total' => Lead::count(),
+                'nouveau' => Lead::where('status', 'nouveau')->count(),
+                'non_lus' => Lead::where('is_read', false)->count(),
+                'traites' => Lead::where('status', 'traité')->count(),
+                'archives' => Lead::where('status', 'archive')->count(),
+            ],
         ]);
     }
 
-    /**
-     * Affiche les détails d'un lead
-     */
-    public function show(Lead $lead)
+    public function markAsRead(Lead $lead)
     {
-        $this->authorize('view', $lead);
-
-        return Inertia::render('Admin/Leads/Show', [
-            'lead' => $lead,
-        ]);
-    }
-
-    /**
-     * Met à jour le statut d'un lead
-     */
-    public function updateStatus(Request $request, Lead $lead)
-    {
-        $this->authorize('update', $lead);
-
-        $validated = $request->validate([
-            'status' => 'required|in:nouveau,en_contact,devis_envoye,negociation,convertis,perdus',
-            'notes' => 'nullable|string',
-        ]);
-
         $lead->update([
-            'status' => $validated['status'],
+            'is_read' => true,
+            'status' => $lead->status === 'nouveau' ? 'en_cours' : $lead->status,
         ]);
 
-        // Ajouter une note si fournie
-        if ($request->filled('notes')) {
-            $lead->notes()->create([
-                'content' => $validated['notes'],
-                'user_id' => Auth::id(),
-            ]);
-        }
-
-        return back()->with('success', 'Statut du lead mis à jour !');
+        return back()->with('success', 'Message marqué comme lu.');
     }
 
-    /**
-     * Ajoute une note à un lead
-     */
-    public function addNote(Request $request, Lead $lead)
+    public function archive(Lead $lead)
     {
-        $validated = $request->validate([
-            'content' => 'required|string',
+        $lead->update([
+            'is_read' => true,
+            'status' => 'archive',
         ]);
 
-        $lead->notes()->create([
-            'content' => $validated['content'],
-            'user_id' => Auth::id(),
-        ]);
-
-        return back()->with('success', 'Note ajoutée !');
+        return back()->with('success', 'Message archivé.');
     }
 
-    /**
-     * Supprime un lead
-     */
     public function destroy(Lead $lead)
     {
-        $this->authorize('delete', $lead);
-
         $lead->delete();
 
-        return redirect()->route('admin.leads.index')
-            ->with('success', 'Lead supprimé avec succès !');
-    }
-
-    /**
-     * Exporte les leads
-     */
-    public function export(Request $request)
-    {
-        $user = Auth::user();
-        $teamId = $user->currentTeam->id ?? null;
-
-        $query = Lead::query();
-
-        if ($teamId) {
-            $query->where('team_id', $teamId);
-        }
-
-        // Appliquer les mêmes filtres que l'index
-        if ($request->has('status') && $request->status !== 'tous') {
-            $query->where('status', $request->status);
-        }
-
-        $leads = $query->get();
-
-        // Créer le CSV
-        $csv = \League\Csv\Writer::createFromString('');
-        $csv->insertOne(['Nom', 'Email', 'Téléphone', 'Entreprise', 'Service', 'Statut', 'Source', 'Date']);
-
-        foreach ($leads as $lead) {
-            $csv->insertOne([
-                $lead->name,
-                $lead->email,
-                $lead->phone,
-                $lead->company,
-                $lead->service,
-                $lead->status,
-                $lead->source,
-                $lead->created_at->format('d/m/Y H:i'),
-            ]);
-        }
-
-        return response($csv->toString(), 200, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="leads_' . date('Y-m-d') . '.csv"',
-        ]);
+        return back()->with('success', 'Message supprimé.');
     }
 }
