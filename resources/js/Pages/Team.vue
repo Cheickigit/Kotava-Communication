@@ -29,12 +29,25 @@ const contactPhoneHref = 'tel:+22993374963';
 
 const activeIndex = ref(0);
 const imageErrors = ref({});
+const imageAttemptIndexes = ref({});
+
+const PHOTO_CACHE_VERSION = 'team-v2';
 
 const teamMembers = [
   {
     name: 'SMILE TCHICAYA',
     role: 'CEO, Directeur Stratégique & Graphiste, Community Manager',
-    photo: '/Smiley.png',
+    photo: '/smile.jpeg',
+    photoFallbacks: [
+      '/smile.jpg',
+      '/smile.png',
+      '/Smile.jpeg',
+      '/Smile.jpg',
+      '/Smile.png',
+      '/SMILE.jpeg',
+      '/SMILE.jpg',
+      '/SMILE.png',
+    ],
     icon: Target,
     accent: 'bg-brand-orange',
     glow: 'bg-brand-orange/[0.24]',
@@ -43,9 +56,19 @@ const teamMembers = [
       'Pilote la vision créative et stratégique de KOTAVA avec une approche orientée marque, impact et cohérence.',
   },
   {
-    name: 'MODESTE METO',
+    name: 'MODESTE COCOU METO',
     role: 'DG, Directeur Marketing & Communication',
-    photo: '/Modeste.png',
+    photo: '/Modeste.jpeg',
+    photoFallbacks: [
+      '/modeste.jpeg',
+      '/modeste.jpg',
+      '/modeste.png',
+      '/Modeste.jpg',
+      '/Modeste.png',
+      '/MODESTE.jpeg',
+      '/MODESTE.jpg',
+      '/MODESTE.png',
+    ],
     icon: BriefcaseBusiness,
     accent: 'bg-brand-emerald',
     glow: 'bg-brand-emerald/[0.24]',
@@ -57,6 +80,16 @@ const teamMembers = [
     name: 'BAHAMA SANGARÉ',
     role: 'Directeur Technique, Consultant Digital & Architecte Solutions',
     photo: '/bahama.png',
+    photoFallbacks: [
+      '/bahama.jpeg',
+      '/bahama.jpg',
+      '/Bahama.png',
+      '/Bahama.jpeg',
+      '/Bahama.jpg',
+      '/BAHAMA.png',
+      '/BAHAMA.jpeg',
+      '/BAHAMA.jpg',
+    ],
     icon: Code2,
     accent: 'bg-brand-blue',
     glow: 'bg-brand-blue/[0.30]',
@@ -102,8 +135,40 @@ const setActive = (index) => {
   activeIndex.value = index;
 };
 
-const handleImageError = (memberName) => {
-  imageErrors.value[memberName] = true;
+const getPhotoKey = (member, size = 'large') => {
+  return `${member.name}-${size}`;
+};
+
+const getMemberPhotoCandidates = (member) => {
+  return [member.photo, ...(member.photoFallbacks || [])];
+};
+
+const getMemberPhotoSrc = (member, size = 'large') => {
+  const key = getPhotoKey(member, size);
+  const candidates = getMemberPhotoCandidates(member);
+  const attemptIndex = imageAttemptIndexes.value[key] || 0;
+  const src = candidates[attemptIndex] || member.photo;
+
+  return `${src}?v=${PHOTO_CACHE_VERSION}`;
+};
+
+const hasImageError = (member, size = 'large') => {
+  const key = getPhotoKey(member, size);
+  return Boolean(imageErrors.value[key]);
+};
+
+const handleImageError = (member, size = 'large') => {
+  const key = getPhotoKey(member, size);
+  const candidates = getMemberPhotoCandidates(member);
+  const currentAttemptIndex = imageAttemptIndexes.value[key] || 0;
+
+  if (currentAttemptIndex < candidates.length - 1) {
+    imageAttemptIndexes.value[key] = currentAttemptIndex + 1;
+    imageErrors.value[key] = false;
+    return;
+  }
+
+  imageErrors.value[key] = true;
 };
 
 const getMemberPhotoClass = (member, size = 'large') => {
@@ -111,6 +176,12 @@ const getMemberPhotoClass = (member, size = 'large') => {
     return size === 'thumb'
       ? 'h-full w-full object-contain object-top bg-[#07101d] p-1'
       : 'h-full w-full object-contain object-top bg-[#07101d] p-3';
+  }
+
+  if (member.name === 'SMILE TCHICAYA') {
+    return size === 'thumb'
+      ? 'h-full w-full object-cover object-top'
+      : 'h-full w-full object-cover object-top';
   }
 
   return 'h-full w-full object-cover object-center';
@@ -216,11 +287,12 @@ const getMemberPhotoClass = (member, size = 'large') => {
                   <div>
                     <div class="relative mx-auto h-72 w-72 overflow-hidden rounded-[2.4rem] border border-white/10 bg-white/[0.06] shadow-2xl">
                       <img
-                        v-if="!imageErrors[activeMember.name]"
-                        :src="activeMember.photo"
+                        v-if="!hasImageError(activeMember, 'large')"
+                        :key="`${activeMember.name}-${getMemberPhotoSrc(activeMember, 'large')}`"
+                        :src="getMemberPhotoSrc(activeMember, 'large')"
                         :alt="activeMember.name"
-                        :class="getMemberPhotoClass(activeMember)"
-                        @error="handleImageError(activeMember.name)"
+                        :class="getMemberPhotoClass(activeMember, 'large')"
+                        @error="handleImageError(activeMember, 'large')"
                       />
 
                       <div
@@ -287,11 +359,12 @@ const getMemberPhotoClass = (member, size = 'large') => {
                     <div class="flex items-center gap-3">
                       <div class="h-11 w-11 overflow-hidden rounded-2xl bg-white/[0.08]">
                         <img
-                          v-if="!imageErrors[`${member.name}-thumb`]"
-                          :src="member.photo"
+                          v-if="!hasImageError(member, 'thumb')"
+                          :key="`${member.name}-thumb-${getMemberPhotoSrc(member, 'thumb')}`"
+                          :src="getMemberPhotoSrc(member, 'thumb')"
                           :alt="member.name"
                           :class="getMemberPhotoClass(member, 'thumb')"
-                          @error="handleImageError(`${member.name}-thumb`)"
+                          @error="handleImageError(member, 'thumb')"
                         />
 
                         <div

@@ -33,55 +33,95 @@ return new class extends Migration
             return;
         }
 
-        // PostgreSQL : enlever l'ancien CHECK de enum si Laravel l'a créé.
-        DB::statement('ALTER TABLE actualites DROP CONSTRAINT IF EXISTS actualites_statut_check');
+        $driver = DB::getDriverName();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Corriger la colonne statut
+        |--------------------------------------------------------------------------
+        | PostgreSQL accepte DROP CONSTRAINT / ALTER COLUMN TYPE.
+        | MySQL n'accepte pas cette syntaxe, donc on utilise MODIFY.
+        */
 
         if (Schema::hasColumn('actualites', 'statut')) {
-            DB::statement('ALTER TABLE actualites ALTER COLUMN statut TYPE VARCHAR(255)');
-            DB::statement("ALTER TABLE actualites ALTER COLUMN statut SET DEFAULT 'brouillon'");
+            if ($driver === 'pgsql') {
+                DB::statement('ALTER TABLE actualites DROP CONSTRAINT IF EXISTS actualites_statut_check');
+                DB::statement('ALTER TABLE actualites ALTER COLUMN statut TYPE VARCHAR(255)');
+                DB::statement("ALTER TABLE actualites ALTER COLUMN statut SET DEFAULT 'brouillon'");
+            }
+
+            if ($driver === 'mysql') {
+                DB::statement("ALTER TABLE `actualites` MODIFY `statut` VARCHAR(255) NOT NULL DEFAULT 'brouillon'");
+            }
+        } else {
+            Schema::table('actualites', function (Blueprint $table) {
+                $table->string('statut')->default('brouillon');
+            });
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Ajouter les colonnes manquantes
+        |--------------------------------------------------------------------------
+        */
 
         Schema::table('actualites', function (Blueprint $table) {
             if (! Schema::hasColumn('actualites', 'content')) {
-                $table->longText('content')->nullable()->after('description');
+                $table->longText('content')->nullable();
             }
 
             if (! Schema::hasColumn('actualites', 'category')) {
-                $table->string('category')->default('actualite')->after('content');
+                $table->string('category')->default('actualite');
             }
 
             if (! Schema::hasColumn('actualites', 'featured')) {
-                $table->boolean('featured')->default(false)->after('date_publication');
+                $table->boolean('featured')->default(false);
             }
 
             if (! Schema::hasColumn('actualites', 'meta_title')) {
-                $table->string('meta_title')->nullable()->after('featured');
+                $table->string('meta_title')->nullable();
             }
 
             if (! Schema::hasColumn('actualites', 'meta_description')) {
-                $table->text('meta_description')->nullable()->after('meta_title');
+                $table->text('meta_description')->nullable();
             }
 
             if (! Schema::hasColumn('actualites', 'user_id')) {
-                $table->unsignedBigInteger('user_id')->nullable()->after('meta_description');
+                $table->unsignedBigInteger('user_id')->nullable();
             }
 
             if (! Schema::hasColumn('actualites', 'team_id')) {
-                $table->unsignedBigInteger('team_id')->nullable()->after('user_id');
+                $table->unsignedBigInteger('team_id')->nullable();
             }
         });
 
-        DB::table('actualites')
-            ->whereNull('content')
-            ->update([
-                'content' => DB::raw('description'),
-            ]);
+        /*
+        |--------------------------------------------------------------------------
+        | Sécuriser les données existantes
+        |--------------------------------------------------------------------------
+        */
 
-        DB::table('actualites')
-            ->where('statut', 'publié')
-            ->update([
-                'published' => true,
-            ]);
+        if (
+            Schema::hasColumn('actualites', 'content') &&
+            Schema::hasColumn('actualites', 'description')
+        ) {
+            DB::table('actualites')
+                ->whereNull('content')
+                ->update([
+                    'content' => DB::raw('description'),
+                ]);
+        }
+
+        if (
+            Schema::hasColumn('actualites', 'statut') &&
+            Schema::hasColumn('actualites', 'published')
+        ) {
+            DB::table('actualites')
+                ->where('statut', 'publié')
+                ->update([
+                    'published' => true,
+                ]);
+        }
     }
 
     public function down(): void
